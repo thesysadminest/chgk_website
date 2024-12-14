@@ -1,7 +1,7 @@
 {% if latest_question_list %}
 	<u1>
 		{% for question in latest_question_list %}
-		<li><a href="/{{question.id}}/"> {{question.question_text}} </a>
+		<li><a href="/home/{{question.id}}/"> {{question.question_text}} </a>
 		</li>
 		
 		{% endfor %}
