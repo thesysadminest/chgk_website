@@ -126,7 +126,7 @@ STATIC_URL = 'static/'
 MEDIA_ROOT = 'static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'assets'),
 ]
 
 storages.backends
