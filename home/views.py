@@ -2,6 +2,7 @@
 from django.shortcuts import render
 
 # Create your views here.
+from rest_framework import serializers
 from django.http import HttpResponse
 from django.template import loader
 from .models import Question
@@ -20,6 +21,7 @@ def detail(request, question_id):
         raise Http404("Никаких вопросов нет.")
 
     response = "Вопрос: \n %s"
+
     return render(request, "home/index.html", {"question": question } )
 
 def vote(request, question_id):
