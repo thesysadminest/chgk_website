@@ -4,15 +4,17 @@ from django.shortcuts import render
 # Create your views here.
 from rest_framework import serializers
 from django.http import HttpResponse
+from django.template import Template
+from django.template import Context
 from django.template import loader
 from .models import Question
 
 
 def index(request):
     latest_question_list = Question.objects.order_by("pub_date")[:2]
-    template = loader.get_template('home/index.html')
-    context = {"latest_question_list" : latest_question_list,}
-    return HttpResponse(template.render(context, request))
+    template = Template('templates/home/index.html')
+    context = Context({"latest_question_list" : latest_question_list,})
+    return HttpResponse(template.render(context))
 
 def detail(request, question_id):
     try:
@@ -29,3 +31,4 @@ def vote(request, question_id):
 
 def results(request, question_id):
     return HttpResponse("YAY AYAYA AY", question_id)
+
