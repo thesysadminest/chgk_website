@@ -52,12 +52,5 @@ class QuestionListView(ListView):
 
 class QuestionDetailView(DetailView):
     model = Question
-    template_name = 'question_detail.html'
-
-    def get_context_data(self, model):
-       context = {}
-       context['question_id'] = model.id
-       context['question_text'] = model.question_text
-       context['answer_text'] = model.answer_text
-       return context
+    
 
