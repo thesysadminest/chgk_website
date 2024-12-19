@@ -9,7 +9,6 @@ class Question(models.Model):
 
     question_text = models.CharField(max_length = 200)
     answer_text = models.CharField(max_length = 200, default=' ')
-
     pub_date = models.DateTimeField("date published")
 
     def __str__(self):
@@ -19,7 +18,7 @@ class Question(models.Model):
         return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
     
     def get_absolute_url(self):
-        return reverse('model-detail-view', args=[str(self.id)])
+        return reverse('question-detail', args=[str(self.id)])
 
 class Packs(models.Model):
     question = models.ManyToManyField(Question)

@@ -6,27 +6,14 @@
 <p>Yeah i leave quite the impression five feet to be exact:</p>
 
 <h2>refs are supposed to work but have yet to debug them</h2>
-<h2>sorry the owl is gone idk how pictures work</h2>
 
 <p></p>
 <ul>
   <li><strong>current number of questions:</strong> {{ num_questions }}</li>
 </ul>
+
 {% load static %}
-<img src="/static/js/favicon.ico" alt="Owl Icon">
+<img src="../static/js/favicon.ico" alt="Owl Icon">
 
-{%if latest_question_list.length%}
-<u1>
-  {% for question in latest_question_list %}
-  <li>
-    <a href="/{{question.id}}/"> {{question.question_text}} </a>
-  </li>
-
-
-  {% endfor %}
-</u1>
-{% else %}
-<p>No more questions today.</p>
-{% endif %}
 
 {% endblock %}

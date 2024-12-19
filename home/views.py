@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 
 # Create your views here.
@@ -8,11 +7,11 @@ from django.template import Template
 from django.template import Context
 from django.template import loader
 from .models import Question, Packs
-from django.views import generic
-
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 
 def index(request):
-    latest_question_list = Question.objects.order_by("pub_date")[:2]
+    latest_question_list = Question.objects.order_by("pub_date")
     num_questions=Question.objects.all().count()
     num_packs=Packs.objects.all().count()
     template = loader.get_template('index.html')
@@ -37,13 +36,28 @@ def results(request, question_id):
     return HttpResponse("YAY AYAYA AY", question_id)
 '''
 
-class QuestionListView(generic.ListView):
-    model = Question
-    
-    def get_context_data(self, **kwargs):
-        context = super(QuestionListView, self).get_context_data(**kwargs)
-        context['some_data'] = 'This is just some data'
-        return context
+class QuestionListView(ListView):
+   model = Question
+   template_name = 'question_list.html'
 
-class QuestionDetailView(generic.DetailView):
+   def get_context_data(self, **kwargs):
+       latest_question_list = Question.objects.order_by("pub_date")
+       context = {} 
+       context = super (QuestionListView, self).get_context_data(**kwargs)
+       for question in kwargs:
+            context[question.key()] = question.value()
+       context['latest_question_list'] = latest_question_list
+       return context
+
+
+class QuestionDetailView(DetailView):
     model = Question
+    template_name = 'question_detail.html'
+
+    def get_context_data(self, model):
+       context = {}
+       context['question_id'] = model.id
+       context['question_text'] = model.question_text
+       context['answer_text'] = model.answer_text
+       return context
+

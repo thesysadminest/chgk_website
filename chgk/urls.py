@@ -20,10 +20,12 @@ from drf_spectacular.views import SpectacularAPIView
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from home.views import QuestionListView
+
 
 urlpatterns = [
     #path("", include("home.urls")),
-    path('admin/', admin.site.urls),
+    path('home/admin/', admin.site.urls),
 ]
 
 urlpatterns += [
@@ -31,9 +33,12 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    path('', RedirectView.as_view(url='/home/', permanent=True)),
+    path("", RedirectView.as_view(url='/home/', permanent=True)),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
+urlpatterns += [
+    path("", QuestionListView.as_view(), name="question list"),
+]
 
