@@ -79,7 +79,7 @@ class PackUpdate(generics.UpdateAPIView):
         else:
           return  Response({"message": "update failed"})
  
-class CreatePackView(generics.CreateAPIView):
+class PackView(generics.ListAPIView):
     query_set = Pack.objects.all()
     serializer_class = Pack
     
