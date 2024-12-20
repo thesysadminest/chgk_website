@@ -15,11 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ('id', 'question_text', 'answer_text', 'author', 'date_created')
+        fields = ('id', 'question_text', 'answer_text', 'author')
         #extra_kwargs = {"author" : {"read_only" : True}}
 
 class PackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pack
-        fields = ('id', 'name', 'author', 'description')
+        fields = ('id', 'name', 'questions', 'author', 'description')
         #extra_kwargs = {"author" : {"read_only" : True}}

@@ -49,7 +49,7 @@ class QuestionUpdate(generics.UpdateAPIView):
 
 
 
-class QuestionView(generics.CreateAPIView):
+class QuestionView(generics.ListAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
