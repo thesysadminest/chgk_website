@@ -1,10 +1,9 @@
 from django.shortcuts import render
-
-from rest_framework import generics
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+
+from rest_framework import generics, viewsets
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -12,10 +11,12 @@ from .serializers import QuestionSerializer, PackSerializer, UserSerializer
 from .models import Question, Pack
 
 
-class QuestionListCreate(generics.ListCreateAPIView):
+class QuestionViewList(generics.ListCreateAPIView):
+    
     serializer_class = QuestionSerializer
 
     def get_queryset(self):
+      queryset = Question.objects.all()
       user = self.request.user
       return Question.objects.filter(author=user)
 
@@ -24,6 +25,13 @@ class QuestionListCreate(generics.ListCreateAPIView):
         serializer.save(author=self.request.user)
       else:
         print(serializer.errors)
+
+class QuestionView(generics.ListCreateAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+      queryset = Question.objects.all().filter(id=self.kwargs['pk'])
+      return queryset
 
 class QuestionDelete(generics.DestroyAPIView):
     serializer_class = QuestionSerializer
@@ -46,12 +54,6 @@ class QuestionUpdate(generics.UpdateAPIView):
             return Response({"message" : "Data updated successfully!"})
         else:
             return Response({"message" : "Data update failed."})
-
-
-
-class QuestionView(generics.ListAPIView):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
 
 
 class PackCreate(generics.ListCreateAPIView):
@@ -94,7 +96,3 @@ class AddQuestionToPack(viewsets.ModelViewSet):
       pack = self.get_object()
       pack.questions.add(q)
       return Response({"message": "question added successfully"})
-
-''' TODO
-class DeleteQuestionToPack(generics.ModelViewSet):
-'''
