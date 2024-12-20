@@ -2,7 +2,7 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 
 class Question(models.Model):
 
@@ -35,4 +35,13 @@ class Pack(models.Model):
     def get_absolute_url(self):
         return reverse('question-detail', args=[str(self.id)])
     
-    
+class Team(models.Model):
+    score = models.IntegerField(default="")
+    name = models.TextField(default="", unique=True)
+
+class User(AbstractUser):
+  name = models.TextField(default="Name", unique=True)
+  team =  models.ForeignKey(Team, default="") 
+  score = models.IntegerField(default="")
+  
+
