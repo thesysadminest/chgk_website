@@ -13,12 +13,13 @@ class App extends React.Component {
 
         let data ;
 
-        axios.get('http://localhost:8000/api/question/')
-        .then(res => {
-            data = res.data;
+        axios.get('http://localhost:8000/api/question/1')
+        .then((response) => {
+            data = response.data;
             this.setState({
                 details : data    
             });
+            console.log(data);
         })
         .catch(err => {})
     }
@@ -26,17 +27,16 @@ class App extends React.Component {
   render() {
     return(
       <div>
-            {this.state.details.map((detail, id) =>  (
-            <div key={id}>
+            {this.state.details.map((detail) =>  (
             <div >
                   <div >
-                        <h1>{detail.detail} </h1>
-                        <footer >--- by
+                        <h1> "IT WORKS!"" </h1>
+                        <h1>{detail.question_text} </h1>
+                        <footer >
                         <cite title="Source Title">
-                        {detail.name}</cite>
+                        {detail.answer_text}</cite>
                         </footer>
                   </div>
-            </div>
             </div>
             )
         )}
