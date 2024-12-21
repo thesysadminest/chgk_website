@@ -1,48 +1,24 @@
-// Filename - src/App.js
+// Filename - App.js
 
-import React from 'react';
-import axios from 'axios';
+import React from "react";
+import Navbar from "./components/Navbar";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 
-class App extends React.Component {
+import Packs from "./pages/Packs";
+import Users from "./pages/Users";
+import Question from "./pages/Questions";
 
-    state = {
-        details : [],
-    }
-
-    componentDidMount() {
-
-        let data ;
-
-        axios.get('http://localhost:8000/api/question/1')
-        .then((response) => {
-            data = response.data;
-            this.setState({
-                details : data    
-            });
-            console.log(data);
-        })
-        .catch(err => {})
-    }
-
-  render() {
-    return(
-      <div>
-            {this.state.details.map((detail) =>  (
-            <div >
-                  <div >
-                        <h1> "IT WORKS!"" </h1>
-                        <h1>{detail.question_text} </h1>
-                        <footer >
-                        <cite title="Source Title">
-                        {detail.answer_text}</cite>
-                        </footer>
-                  </div>
-            </div>
-            )
-        )}
-      </div>
-      );
-  }
+function App() {
+    return (
+        <BrowserRouter>
+            <Navbar />
+            <Routes>
+                <Route path="/packs" element={<Packs />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/qs" element={<Question />} />
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
 export default App;

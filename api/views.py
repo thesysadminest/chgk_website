@@ -17,8 +17,7 @@ class QuestionViewList(generics.ListCreateAPIView):
 
     def get_queryset(self):
       queryset = Question.objects.all()
-      user = self.request.user
-      return Question.objects.filter(author=user)
+      return queryset
 
     def try_create(self, serializer):
       if serializer.is_valid():
