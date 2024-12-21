@@ -37,6 +37,7 @@ const Item = styled(ButtonBase, Paper)(({ theme }) => ({
 
 }));
 
+
 const NavBar = ({ selected }) => {
     return (
         <ThemeProvider theme={theme}>
