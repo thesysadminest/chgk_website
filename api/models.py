@@ -2,10 +2,20 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
-from django.contrib.auth.models import AbstractUser
+#from django.contrib.auth.models import User, AbstractUser
+
+class User(models.Model):
+    user_id = models.BigAutoField(primary_key=True)
+    username = models.CharField(max_length=256)
+    email = models.CharField(max_length=256)
+    password = models.CharField(max_length=1024)
+    date_created = models.DateField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return str(self.username)
 
 class Question(models.Model):
-
     question_text = models.CharField(max_length = 200, default="")
     answer_text = models.CharField(max_length = 200, default="")
 
@@ -32,13 +42,9 @@ class Pack(models.Model):
         return self.questions.all()
     
     
+
 class Team(models.Model):
-    score = models.IntegerField(default="")
     name = models.TextField(default="", unique=True)
-
-class User(AbstractUser):
-  name = models.TextField(default="Name", unique=True)
-  team =  models.ForeignKey(Team, default="") 
-  score = models.IntegerField(default="")
-  
-
+    team_score = models.IntegerField(default=0)
+    
+    
