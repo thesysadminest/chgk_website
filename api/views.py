@@ -1,7 +1,6 @@
 from django.shortcuts import render
-from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-
+from django.contrib.auth.models import User
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -11,6 +10,7 @@ from django.contrib.auth.hashers import make_password
 from .serializers import QuestionSerializer, PackSerializer, UserSerializer
 from .models import Question, Pack
 
+###     QUESTION      ###
 
 class QuestionViewList(generics.ListCreateAPIView):
     
@@ -50,6 +50,8 @@ class QuestionUpdate(generics.UpdateAPIView):
         else:
             return Response({"message" : "Data update failed."})
 
+
+###     PACK      ###
 
 class PackCreate(generics.ListCreateAPIView):
     serializer_class = PackSerializer
@@ -94,18 +96,20 @@ class AddQuestionToPack(viewsets.ModelViewSet):
         return Response({"message": "question added successfully"})
   
 
+###     USER      ###
+
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
     
-class UserListCreate(generics.ListCreateAPIView):
+class UserListCreate(generics.ListCreateAPIView): # NO URL YET
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
 
-class UserRegister(APIView):
+class UserRegister(APIView): # DOES IT NEED A URL?
     def post(self, request):
         user = request.data
         serializer = UserSerializer(data=user, context = {'request':request})
@@ -117,7 +121,7 @@ class UserRegister(APIView):
             "error" : "Error encountered"},
             status=406)
     
-class UserDestroy:
+class UserDestroy: # DOES IT NEED A URL? DO WE EVEN NEED IT?
     queryset = User.objects.all()  
     serializer_class = UserSerializer  
     permission_classes = [AllowAny]
