@@ -17,7 +17,7 @@ class Questions extends Component {
   }
 
   fetchQuestions() {
-    axios.get('http://127.0.0.1:8000/api/question/1')
+    axios.get('http://127.0.0.1:8000/api/question/')
       .then(response => {
         const data = response.data.map((item, index) => ({
           id: item.id,
@@ -36,10 +36,10 @@ class Questions extends Component {
     const { rows } = this.state;
 
     const columns = [
-      { field: 'id', headerName: 'ID', width: 70 },
-      { field: 'question_text', headerName: 'Question Text', width: 200 },
-      { field: 'answer_text', headerName: 'Answer Text', width: 200 },
-      { field: 'author', headerName: 'Author', width: 150 },
+      { field: 'id', headerName: 'ID', width: 150 },
+      { field: 'question_text', headerName: 'Question Text', width: 400 },
+      { field: 'answer_text', headerName: 'Answer Text', width: 400 },
+      { field: 'author', headerName: 'Author', width: 200 },
     ];
 
     return (
