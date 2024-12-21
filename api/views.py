@@ -6,6 +6,7 @@ from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action, APIView
+from django.contrib.auth.hashers import make_password
 
 from .serializers import QuestionSerializer, PackSerializer, UserSerializer
 from .models import Question, Pack
@@ -20,12 +21,6 @@ class QuestionViewList(generics.ListCreateAPIView):
       queryset = Question.objects.all()
       return queryset
 
-    def try_create(self, serializer):
-      if serializer.is_valid():
-        serializer.save(author=self.request.user)
-      else:
-        print(serializer.errors)
-
 class QuestionView(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
     permission_classes = [AllowAny]
@@ -37,10 +32,7 @@ class QuestionView(generics.ListCreateAPIView):
 class QuestionDelete(generics.DestroyAPIView):
     serializer_class = QuestionSerializer
     permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Question.objects.filter(author=user)
+    queryset = Question.objects.all()
 
 class QuestionUpdate(generics.UpdateAPIView):
     queryset = Question.objects.all()
@@ -62,15 +54,11 @@ class QuestionUpdate(generics.UpdateAPIView):
 class PackCreate(generics.ListCreateAPIView):
     serializer_class = PackSerializer
     permission_classes = [AllowAny]
-    
-    def try_create(self, serializer):
-        if serializer.is_valid():
-            serializer.save(author=self.request.user)
-        else:
-            print(serializer.errors)
+    queryset = Pack.objects.all()
 
 class PackDelete(generics.DestroyAPIView):  
     serializer_class = PackSerializer  
+    queryset = Pack.objects.all()
     permission_classes = [AllowAny]
 
 class PackUpdate(generics.UpdateAPIView):
@@ -93,17 +81,17 @@ class PackView(generics.ListAPIView):
     permission_classes = [AllowAny]
     
 class AddQuestionToPack(viewsets.ModelViewSet):
-  query_set = Pack.objects.all()
-  serializer_class = PackSerializer
-  permission_classes = [AllowAny]
+    query_set = Pack.objects.all()
+    serializer_class = PackSerializer
+    permission_classes = [AllowAny]
   
-  @action(detail=True,
-            methods=['POST'])
-  def update(self, request):
-      q = get_object_or_404(klass=Question, question=kwargs.get('question'))
-      pack = self.get_object()
-      pack.questions.add(q)
-      return Response({"message": "question added successfully"})
+    @action(detail=True,
+              methods=['POST'])
+    def update(self, request):
+        q = get_object_or_404(klass=Question, question=kwargs.get('question'))
+        pack = self.get_object()
+        pack.questions.add(q)
+        return Response({"message": "question added successfully"})
   
 
 class CreateUserView(generics.CreateAPIView):
@@ -111,20 +99,12 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
     
+class UserListCreate(generics.ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
-'''
-class LoginAPIView(generics.GenericAPIView):
-    permission_classes = ()
-    authentication_classes = ()
-    serializer_class = LoginSerializer
 
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-      '''  
-      
 class UserRegister(APIView):
     def post(self, request):
         user = request.data
@@ -136,3 +116,8 @@ class UserRegister(APIView):
         return Response({
             "error" : "Error encountered"},
             status=406)
+    
+class UserDestroy:
+    queryset = User.objects.all()  
+    serializer_class = UserSerializer  
+    permission_classes = [AllowAny]

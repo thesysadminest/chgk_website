@@ -1,7 +1,6 @@
 from django.contrib import admin
-from .models import Question, Pack
+from .models import Question, Pack, User
 
 admin.site.register(Question)
 admin.site.register(Pack)
-
-# Register your models here.
+admin.site.register(User)
