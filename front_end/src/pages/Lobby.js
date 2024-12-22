@@ -1,34 +1,24 @@
 import React from "react";
 
-import { 
-    Table,
-    Paper, 
-    Typography, 
-    Link,
-    Card
-} from "@mui/material";
+import {Box, Stack, Paper, ButtonBase} from "@mui/material";
+import {ThemeProvider, createTheme, styled} from '@mui/material/styles';
 
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid2";
-import { styled } from '@mui/material/styles';
-import ButtonBase from "@mui/material/ButtonBase";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import {ThemeProvider} from '@mui/material/styles';
-import {theme} from "../App.js";
-import { spacing } from '@mui/system';
+import purpleTheme from "../static/themes/divine_purple"
 
-const Item = styled(ButtonBase, Paper)(({ theme }) => ({ 
-  width : '100%',
-  height: '100%',
-  textAlign: 'center',
-  fontSize: 'calc(10px + 3vmin)',
-  fontFamily: 'Roboto, sans-serif'
-}));
+let dp_theme = createTheme(purpleTheme);
+
+const Item = styled(ButtonBase, Paper)(({ dp_theme }) => ({ 
+    width : '100%',
+    height: '100%',
+    textAlign: 'center',
+    fontSize: 'calc(10px + 3vmin)',
+    fontFamily: 'Roboto, sans-serif'
+  }));
+
 
 const Lobby = () => {
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={dp_theme}>
             <Box sx={{ height: '60vh', mr: '20vh', ml: '20vh', mb: '20vh', mt: '20vh', flexGrow: 0 }}>
                 <Stack spacing='10vh' sx={{ height:"100%"}}>
                   <Stack spacing='10vh' sx={{ height:"50vh"}} direction="row">
