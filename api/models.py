@@ -32,4 +32,3 @@ class Pack(models.Model):
     def get_questions(self):
         return self.questions.all()
     
-    
