@@ -23,5 +23,6 @@ class PackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pack
         fields = ('id', 'name', 'questions', 'author', 'description')
+        
         extra_kwargs = {"author" : {"read_only" : True}}
         

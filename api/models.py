@@ -22,6 +22,7 @@ class Question(models.Model):
 
 class Pack(models.Model):
     name = models.TextField(default='Name')
+    
     questions = models.ManyToManyField(Question)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="packs", default=None)
     description = models.TextField(default=' ')
