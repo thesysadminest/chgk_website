@@ -7,6 +7,12 @@ from django.contrib.auth.models import User
 class Team(models.Model):
     name = models.TextField(default="", unique=True)
     team_score = models.IntegerField(default=0)
+    
+    def get_name(self):
+      return self.name
+    
+    def get_team_score(self):
+        return self.team_score
 
 class Question(models.Model):
     question_text = models.CharField(max_length = 200, default="")

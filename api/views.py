@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, APIView
 from django.contrib.auth.hashers import make_password
 
-from .serializers import QuestionSerializer, PackSerializer, UserSerializer
-from .models import Question, Pack
+from .serializers import QuestionSerializer, PackSerializer, UserSerializer, TeamSerializer
+from .models import Question, Pack, Team
 
 ###     QUESTION      ###
 
@@ -29,6 +29,11 @@ class QuestionView(generics.ListCreateAPIView):
       queryset = Question.objects.all().filter(id=self.kwargs['pk'])
       return queryset
 
+class QuestionCreate(generics.ListCreateAPIView):
+    serializer_class = QuestionSerializer
+    permission_classes = [AllowAny]
+    queryset = Question.objects.all()
+    
 class QuestionDelete(generics.DestroyAPIView):
     serializer_class = QuestionSerializer
     permission_classes = [AllowAny]
@@ -77,10 +82,21 @@ class PackUpdate(generics.UpdateAPIView):
         else:
           return  Response({"message": "update failed"})
  
-class PackView(generics.ListAPIView):
-    query_set = Pack.objects.all()
-    serializer_class = Pack
+class PackView(generics.ListCreateAPIView):
+    serializer_class = PackSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+      queryset = Pack.objects.all().filter(id=self.kwargs['pk'])
+      return queryset
+    
+class PackViewList(generics.ListCreateAPIView):
+    serializer_class = PackSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+      queryset = Pack.objects.all()
+      return queryset
     
 class AddQuestionToPack(viewsets.ModelViewSet):
     query_set = Pack.objects.all()
@@ -96,6 +112,47 @@ class AddQuestionToPack(viewsets.ModelViewSet):
         return Response({"message": "question added successfully"})
   
 
+###     TEAM      ###
+
+class TeamView(generics.ListCreateAPIView):
+    serializer_class = TeamSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+      queryset = Team.objects.all().filter(id=self.kwargs['pk'])
+      return queryset
+    
+class TeamViewList(generics.ListCreateAPIView):
+    serializer_class = TeamSerializer
+    permission_classes = [AllowAny]
+    def get_queryset(self):
+      queryset = Question.objects.all()
+      return queryset
+    
+class TeamCreate(generics.ListCreateAPIView):
+    serializer_class = TeamSerializer
+    permission_classes = [AllowAny]
+    queryset = Team.objects.all()
+
+class TeamDelete(generics.DestroyAPIView):
+    serializer_class = TeamSerializer
+    permission_classes = [AllowAny]
+    queryset = Team.objects.all()
+    
+class TeamUpdate(generics.UpdateAPIView):
+    serializer_class = TeamSerializer
+    queryset = Team.objects.all()
+    permission_classes = [AllowAny]
+    
+    def update_team(self, request):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if (serializer.is_valid()):
+          serializer.save()
+          return Response({"message": "pack updated successfully"})
+        else:
+          return  Response({"message": "update failed"})
+
 ###     USER      ###
 
 class CreateUserView(generics.CreateAPIView):
@@ -103,10 +160,20 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
     
-class UserListCreate(generics.ListCreateAPIView): # NO URL YET
-    queryset = User.objects.all()
+class UserView(generics.ListCreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+      queryset = User.objects.all().filter(id=self.kwargs['pk'])
+      return queryset
+    
+class UserViewList(generics.ListCreateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+    def get_queryset(self):
+      queryset = User.objects.all()
+      return queryset
 
 
 class UserRegister(APIView): # DOES IT NEED A URL?
@@ -121,7 +188,7 @@ class UserRegister(APIView): # DOES IT NEED A URL?
             "error" : "Error encountered"},
             status=406)
     
-class UserDestroy: # DOES IT NEED A URL? DO WE EVEN NEED IT?
+class UserDelete(generics.DestroyAPIView): # DOES IT NEED A URL? DO WE EVEN NEED IT?
     queryset = User.objects.all()  
     serializer_class = UserSerializer  
     permission_classes = [AllowAny]
