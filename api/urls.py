@@ -14,5 +14,9 @@ urlpatterns = [
     path('pack/update/<int:pk>', views.PackUpdate.as_view(), name="update-pack"),
     path('pack/question/<int:pk>', views.AddQuestionToPack.as_view({'get' : 'list'}), name="add-q-to-pack"),
     
+    path('', views.getRoutes),
+    
+    path('profile/', views.getProfile, name='profile'),
+    path('profile/update/', views.updateProfile, name='update-profile'),
     
 ]

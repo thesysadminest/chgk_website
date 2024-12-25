@@ -1,14 +1,18 @@
 from django.shortcuts import render
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
-from rest_framework import generics, viewsets
+
+from rest_framework import generics, viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.decorators import action, APIView
+from rest_framework.decorators import action, APIView, api_view, permission_classes
 from django.contrib.auth.hashers import make_password
+from django.http import JsonResponse
+from api.serializers import MyTokenObtainPairSerializer, RegisterSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from django.contrib.auth.models import AbstractUser
 
 from .serializers import QuestionSerializer, PackSerializer, UserSerializer
-from .models import Question, Pack
+from .models import Question, Pack,CustomUser
 
 ###     QUESTION      ###
 
@@ -96,32 +100,51 @@ class AddQuestionToPack(viewsets.ModelViewSet):
         return Response({"message": "question added successfully"})
   
 
+@api_view(['GET'])
+def getRoutes(request):
+    routes = [
+        '/api/token/',
+        '/api/user/register/',
+        '/api/token/refresh/',
+        '/api/prediction/'
+        'api/profile/',
+        'api/profile/update/',
+
+    ]
+    return Response(routes)
+
 ###     USER      ###
 
-class CreateUserView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+#Login User
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+#Register User
+class RegisterView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (AllowAny, )
+    serializer_class = RegisterSerializer
     
-class UserListCreate(generics.ListCreateAPIView): # NO URL YET
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getProfile(request):
+    user = request.user
+    serializer = UserSerializer(user, many=False)
+    return Response(serializer.data)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def updateProfile(request):
+    user = request.user
+    serializer = UserSerializer(user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
 
 
-class UserRegister(APIView): # DOES IT NEED A URL?
-    def post(self, request):
-        user = request.data
-        serializer = UserSerializer(data=user, context = {'request':request})
-        if serializer.is_valid():
-            user_saved = serializer.save(password=make_password(user['password']))
-            return Response(user_saved,
-                status=200)
-        return Response({
-            "error" : "Error encountered"},
-            status=406)
-    
-class UserDestroy: # DOES IT NEED A URL? DO WE EVEN NEED IT?
-    queryset = User.objects.all()  
-    serializer_class = UserSerializer  
-    permission_classes = [AllowAny]
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get(self, request, *args, **kwargs):
+    user = UserSerializer(request.user)
+    return Response(user.data, status= 200 )
