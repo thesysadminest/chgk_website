@@ -21,12 +21,12 @@ class TeamSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ('id', 'question_text', 'answer_text', 'author', 'pub_date_q')
+        fields = ('id', 'question_text', 'answer_text', 'author_q', 'pub_date_q')
         extra_kwargs = {"author" : {"read_only" : True}}
 
 class PackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pack
-        fields = ('id', 'name', 'questions', 'author', 'description', 'pub_date_p')
+        fields = ('id', 'name', 'questions', 'author_p', 'description', 'pub_date_p')
         extra_kwargs = {"author" : {"read_only" : True}}
         

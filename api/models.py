@@ -20,7 +20,7 @@ class Question(models.Model):
     question_text = models.CharField(max_length = 200, default="")
     answer_text = models.CharField(max_length = 200, default="")
 
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions", default='None')
+    author_q = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions", default='None')
 
     pub_date_q = models.DateTimeField("date published")
     
@@ -29,16 +29,19 @@ class Question(models.Model):
 
     def get_answer(self):
         return self.get_answer
+    
+    def get_author_q(self):
+        return self.author
 
 class Pack(models.Model):
     name = models.TextField(default='Name')
     questions = models.ManyToManyField(Question)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="packs", default=None)
+    author_p = models.ForeignKey(User, on_delete=models.CASCADE, related_name="packs", default=None)
     description = models.TextField(default=' ')
     
     pub_date_p = models.DateTimeField("date published")
     
-    def get_author(self):
+    def get_author_p(self):
         return self.author
     
     def get_questions(self):
