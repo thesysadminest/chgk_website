@@ -1,5 +1,4 @@
 import React from 'react';
-import '../static/styles/Registration.css';
 
 function Registration() {
   const handleSubmit = (event) => {
@@ -16,7 +15,6 @@ function Registration() {
       }
     });
   };
-
   return (
     <div className="container">
       <div className="form-box">
@@ -41,5 +39,4 @@ function Registration() {
     </div>
   );
 }
-
 export default Registration;

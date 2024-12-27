@@ -1,8 +1,7 @@
-
 import { alpha, getContrastRatio } from '@mui/material/styles';
 
 const violetBase = '#7F00FF';
-const violetMain = alpha(violetBase, 0.7);
+const violetMain = alpha(violetBase, 1);
 
 const purpleTheme = {
   palette: {
@@ -13,7 +12,6 @@ const purpleTheme = {
       contrastText: getContrastRatio(violetMain, '#fff') > 4.5 ? '#fff' : '#111',
     },
   },
-
   components: {
       MuiButtonBase: {
           styleOverrides: {
@@ -39,5 +37,4 @@ const purpleTheme = {
       }
   },
 }
-
 export default purpleTheme;
