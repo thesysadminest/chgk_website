@@ -126,7 +126,7 @@ class TeamViewList(generics.ListCreateAPIView):
     serializer_class = TeamSerializer
     permission_classes = [AllowAny]
     def get_queryset(self):
-      queryset = Question.objects.all()
+      queryset = Team.objects.all()
       return queryset
     
 class TeamCreate(generics.ListCreateAPIView):
