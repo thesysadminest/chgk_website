@@ -28,6 +28,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class PackSerializer(serializers.ModelSerializer):
     author_p = serializers.StringRelatedField()   
     class Meta:
+        
         model = Pack
         fields = ('id', 'name', 'questions', 'author_p', 'description', 'pub_date_p')
         extra_kwargs = {"author" : {"read_only" : True}}
