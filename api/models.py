@@ -8,6 +8,8 @@ class Team(models.Model):
     name = models.TextField(default="", unique=True)
     team_score = models.IntegerField(default=0)
     
+    pub_date_t = models.DateTimeField("date published")
+    
     def get_name(self):
       return self.name
     
@@ -20,6 +22,8 @@ class Question(models.Model):
 
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions", default='None')
 
+    pub_date_q = models.DateTimeField("date published")
+    
     def get_question(self):
         return self.question_text
 
@@ -31,6 +35,8 @@ class Pack(models.Model):
     questions = models.ManyToManyField(Question)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="packs", default=None)
     description = models.TextField(default=' ')
+    
+    pub_date_p = models.DateTimeField("date published")
     
     def get_author(self):
         return self.author

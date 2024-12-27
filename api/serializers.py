@@ -16,17 +16,17 @@ class UserSerializer(serializers.ModelSerializer):
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ('id', 'name', 'team_score')
+        fields = ('id', 'name', 'team_score', 'pub_date_t')
 
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ('id', 'question_text', 'answer_text', 'author')
+        fields = ('id', 'question_text', 'answer_text', 'author', 'pub_date_q')
         extra_kwargs = {"author" : {"read_only" : True}}
 
 class PackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pack
-        fields = ('id', 'name', 'questions', 'author', 'description')
+        fields = ('id', 'name', 'questions', 'author', 'description', 'pub_date_p')
         extra_kwargs = {"author" : {"read_only" : True}}
         
