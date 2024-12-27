@@ -15,7 +15,7 @@ const Questions = () => {
           id: item.id,
           question_text: item.question_text,
           answer_text: item.answer_text,
-          author: item.author.username ? item.author.username : "1",
+          author: item.author ? item.author: "a?",
         }));
         setRows(data);
       })
@@ -46,6 +46,7 @@ const Questions = () => {
           { field: 'question_text', headerName: 'Question Text', flex: 3 },
           { field: 'answer_text', headerName: 'Answer Text', flex: 3 },
           { field: 'author', headerName: 'Author', flex: 2 },
+          { field: 'ppub_date_q', headerName: 'Date', flex: 1},
         ]}
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}

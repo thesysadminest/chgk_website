@@ -1,11 +1,7 @@
-import React, {useRef, useState} from "react";
-
-import {Box, Stack, Paper, ButtonBase, TextField, Typography} from "@mui/material";
-import {ThemeProvider, createTheme, styled} from '@mui/material/styles';
-import { spacing } from '@mui/system';
-import User from '../components/User.js'
-
-import purpleTheme from "../themes/appereance.js"
+import React, {useRef} from "react";
+import {Box, Stack, ButtonBase, TextField, Typography} from "@mui/material";
+import { styled } from '@mui/material/styles';
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Item = styled(ButtonBase)(({ dp_theme }) => ({ 
     height: '100',
@@ -13,56 +9,58 @@ const Item = styled(ButtonBase)(({ dp_theme }) => ({
     //fontSize: 'h6',
     fontFamily: 'Roboto, sans-serif',
     color: "#FFFFFF"
-  }));
-
+}));
 
 const Me = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
+
   let user = Object.create(
-      Object.getPrototypeOf(User), 
-      Object.getOwnPropertyDescriptors(JSON.parse(localStorage.getItem('user'))) 
+      Object.getPrototypeOf({ username: null }), 
+      Object.getOwnPropertyDescriptors(JSON.parse(localStorage.getItem('user')) || {}) 
   );
 
   const inputUsernameRef = useRef('');
   const inputPasswordRef = useRef('');
-  
-  if (user.username == null) {
+
+  if (!user.username) {
     return (
-      <Box sx={{  width: '50vw', ml: '15vh', mt: '15vh', mb: '25vh', flexGrow: 0 }}>
-      <Stack spacing='5vh'>
-        <TextField inputRef={inputUsernameRef} label="Имя пользователя" variant="filled" />
-        <TextField inputRef={inputPasswordRef} label="Пароль" variant="filled" />
-        
-        <Item 
-          onClick={() => {
-            user.username = inputUsernameRef.current.value;
-            localStorage.setItem("user", JSON.stringify(user));
-            window.location.reload(false);
-          }}> 
-        <Typography variant="h6" sx={{ mr: 1 }}>
-            Войти
-        </Typography> </Item>
-        
-      </Stack>
+      <Box sx={{ width: '50vw', ml: '15vh', mt: '15vh', mb: '25vh', flexGrow: 0 }}>
+        <Stack spacing='5vh'>
+          <TextField inputRef={inputUsernameRef} label="Имя пользователя" variant="filled" />
+          <TextField inputRef={inputPasswordRef} label="Пароль" variant="filled" />
+          
+          <Item 
+            onClick={() => {
+              user.username = inputUsernameRef.current.value;
+              localStorage.setItem("user", JSON.stringify(user));
+              navigate(from, { replace: true });
+            }}> 
+            <Typography variant="h6" sx={{ mr: 1 }}>
+              Войти
+            </Typography>
+          </Item>
+        </Stack>
       </Box>
     );
-  }
-  else {
+  } else {
     return (
-      <Box sx={{  width: '50vw', ml: '15vh', mt: '15vh', mb: '25vh', flexGrow: 0 }}>
+      <Box sx={{ width: '50vw', ml: '15vh', mt: '15vh', mb: '25vh', flexGrow: 0 }}>
         <Typography variant="h6" sx={{ mr: 1, textAlign: 'center' }}>
-            Добрый день, {user.username}! Прекрасно выглядите!
+          Добрый день, {user.username}! Прекрасно выглядите!
         </Typography> 
         
-        <Item sx={{  width: '50vw'}} 
+        <Item sx={{ width: '50vw'}} 
           onClick={() => {
             user.username = null;     
             localStorage.setItem("user", JSON.stringify(user));
             window.location.reload(false);
           }}> 
-        <Typography variant="h6" sx={{ mr: 1 }}>
+          <Typography variant="h6" sx={{ mr: 1 }}>
             Выйти
-        </Typography> </Item>
-        
+          </Typography>
+        </Item>
       </Box>
     );
   }

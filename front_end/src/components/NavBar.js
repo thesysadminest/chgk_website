@@ -26,7 +26,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import User from '../components/User.js'
-
+import UserMenu from '../components/UserMenu.js'
 
 const drawerWidth = 240; // фиксированная ширина бокового меню
 
@@ -111,8 +111,7 @@ let user = Object.create(
 export default function NavBar({ children }) {
     const theme = useTheme();
     const [open, setOpen] = React.useState(true);
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const fontSize = '2vh'; // размер текста
+    const fontSize = '2vh';
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -120,15 +119,7 @@ export default function NavBar({ children }) {
 
     const handleDrawerClose = () => {
         setOpen(false);
-    };
-
-    const handleClick = (event) => { 
-        setAnchorEl(anchorEl ? null : event.currentTarget);
-    }; 
-
-    const handleClose = () => { 
-        setAnchorEl(null);
-    };
+    }
     
     const renderIcon = (index) => {
         const size = 28;
@@ -165,126 +156,16 @@ export default function NavBar({ children }) {
             return "";
         }
     };
-    
-    const openPopover = Boolean(anchorEl); 
-    const id = openPopover ? 'simple-popover' : undefined;
 
     return (
         <div>
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            <AppBar position="fixed" open={open}>
-                <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        onClick={open ? handleDrawerClose : handleDrawerOpen}
-                        edge="start"
-                        sx={{
-                            marginRight: 5,
-                            minHeight: "5vh", // устанавливаем высоту для кнопки
-                        }}
-                    >
-                        {open ? <ChevronLeft /> : <MenuIcon />}
-                    </IconButton>
-                    
-                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                        {resolvePageName()}
-                    </Typography>
-                    
-                    
-                    {user.username ? (   
-                        <Item onClick={handleClick}>
-                            <Typography variant="h6" sx={{ mr: 1 }}> 
-                                {user.username} 
-                            </Typography> 
-                  
-                            <Person /> 
-                        
-                            <Popover sx = {{mt:2, ml: 2, mr: 3}}
-                                id={id} 
-                                open={openPopover} 
-                                anchorEl={anchorEl}
-                                onClose={handleClose}
-                                anchorOrigin={{ 
-                                    vertical: 'bottom',
-                                    horizontal: 'right', 
-                                }} 
-                                transformOrigin={{ 
-                                    vertical: 'top',
-                                    horizontal: 'right', 
-                                }}
-                                PaperProps={{ 
-                                    sx: {
-                                        width: '260px', 
-                                        height: '380px',
-                                    } 
-                                }}
-                            > 
-                        
-                                <Box sx={{ p: 2 }}>
-                                    <List>
-                                        {[['Профиль', '/me'], ['Настройки', '/settings'], ['Мой рейтинг', '/myrating'], ['Mоя команда', '/myteam']].map((text, index) => (
-                                            <ListItem disablePadding key={text[0]} sx={{ display: 'block', pb: 2 }}>
-                                                <ListItemButton component={Link} to={text[1]}
-                                                     sx={{
-                                                          justifyContent: 'center',
-                                                          px: 2.5,
-                                                          //minWidth: openPopover ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`, // контролируем ширину кнопки
-                                                      }}
-                                                onClick={handleClose}
-                                                >
-                                
-                                                    <ListItemText
-                                                        primary={text[0]}
-                                                        sx={{
-                                                            textAlign: 'center',
-                                                            whiteSpace: 'nowrap',
-                                                            fontSize: fontSize,
-                                                            color: "#FFFFFF",
-                                                        }}
-                                                    />
-
-                                                </ListItemButton>
-                                            </ListItem>
-                                        ))}
-                                    </List>
-                                            <Button sx={{
-                                                justifyContent: 'center',
-                                                px: 2.5,
-                                                ml: '58px',            
-                                                whiteSpace: 'nowrap',
-                                                fontSize: fontSize,
-                                                            
-                                             }}
-                                                onClick={() => {
-                                                    user.username = null;     
-                                                    localStorage.setItem("user", JSON.stringify(user));
-                                                    window.location.reload(false);
-
-                                                }}> 
-                                                <Typography variant="h6">
-                                                    Выйти
-                                                </Typography> 
-                                           </Button>  
-                                 </Box> 
-                         </Popover>
-                       </Item>
-                    ) : (
-                        <Item variant='default' href='/me' > 
-                            <Typography variant="h6"> 
-                                {user.username}
-                            </Typography> 
-                            <PersonAdd /> 
-                        </Item> 
-
-                    )}
-                    
-                </Toolbar>
-            </AppBar>
-
+            
+             
             <Drawer variant="permanent" open={open} sx={{ mt: "6vh" }}>
                 <DrawerHeader ></DrawerHeader>
+
                 <Divider />
                 <List>
                     {[['Главная', '/'], ['Вопросы', '/questions'], ['Пакеты', '/packs'], ['Пользователи', '/users'], ['Команды', '/teams']].map((text, index) => (
@@ -354,7 +235,31 @@ export default function NavBar({ children }) {
                     ))}
                 </List>
             </Drawer>
-            
+
+            <AppBar position="fixed" open={open}>
+                <Toolbar>
+                    <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        onClick={open ? handleDrawerClose : handleDrawerOpen}
+                        edge="start"
+                        sx={{
+                            marginRight: 5,
+                            minHeight: "5vh", // устанавливаем высоту для кнопки
+                        }}
+                    >
+                        {open ? <ChevronLeft /> : <MenuIcon />}
+                    </IconButton>
+                    
+                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+                        {resolvePageName()}
+                    </Typography>
+                    
+                    <UserMenu></UserMenu>
+                    
+                </Toolbar>
+            </AppBar>
+
             <Box
                 component="main"
                 sx={{ mt: "8vh", ml: "2vw", flexGrow: 1, p: 3, transition: theme.transitions.create('margin', {
