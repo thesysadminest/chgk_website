@@ -72,6 +72,7 @@ const UserMenu = ({ open, handleDrawerClose }) => {
                     <ListItemButton
                       component={Link}
                       to={text[1]}
+                      className="usermenu-button"
                       sx={{
                         justifyContent: 'center',
                         px: 2.5,

@@ -184,6 +184,7 @@ export default function NavBar({ children }) {
                 <ListItemButton
                   component={Link}
                   to={text[1]}
+                  className="navbar-button"
                   sx={{
                     justifyContent: open ? 'initial' : 'center',
                     px: 2.5,

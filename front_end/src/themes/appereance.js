@@ -1,6 +1,6 @@
 import { alpha, getContrastRatio, createTheme } from '@mui/material/styles';
 
-const violetBase = '#7F00FF';
+const violetBase = '#6633CC';
 const violetMain = alpha(violetBase, 1);
 
 const purpleTheme = createTheme({
@@ -9,7 +9,7 @@ const purpleTheme = createTheme({
       main: violetMain,
       light: alpha(violetBase, 0.3),
       dark: alpha(violetBase, 0.9),
-      contrastText: getContrastRatio(violetMain, '#fff') > 4.5 ? '#fff' : '#111',
+      contrastText: getContrastRatio(violetMain, '#fff') > 5 ? '#fff' : '#111',
     },
   },
   components: {
@@ -21,6 +21,20 @@ const purpleTheme = createTheme({
           '&:hover': {
             backgroundColor: alpha(violetBase, 0.8),
           },
+          // Добавим условие для кнопок в навбаре и UserMenu
+          '&.navbar-button, &.usermenu-button': {
+            backgroundColor: violetMain,
+            '&:hover': {
+              backgroundColor: alpha(violetBase, 0.8),
+            },
+          },
+          // Кнопки в таблицах DataGrid
+          '&.datagrid-button': {
+            backgroundColor: 'inherit',
+            '&:hover': {
+              backgroundColor: 'inherit',
+            },
+          },
         },
       },
     },
@@ -28,22 +42,16 @@ const purpleTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiDataGrid-columnHeader': {
-            '&:hover': {
-              backgroundColor: 'inherit',
-            },
+            backgroundColor: 'inherit',
           },
           '& .MuiDataGrid-columnHeader:focus': {
             backgroundColor: 'inherit',
           },
           '& .MuiDataGrid-columnHeader .MuiButtonBase-root': {
-            '&:hover': {
-              backgroundColor: 'inherit',
-            },
+            backgroundColor: 'inherit',
           },
           '& .MuiDataGrid-cell': {
-            '&:hover': {
-              backgroundColor: 'inherit',
-            },
+            backgroundColor: 'inherit',
           },
         },
       },
@@ -51,10 +59,22 @@ const purpleTheme = createTheme({
     MuiButtonBase: {
       styleOverrides: {
         root: {
-          backgroundColor: violetMain,
+          backgroundColor: 'inherit',
           borderRadius: 10,
-          '&:hover': {
+ 
+        
+          // Добавим условие для кнопок в навбаре и UserMenu
+          '&.navbar-button, &.usermenu-button': {
+            backgroundColor: violetMain,
+            '&:hover': {
+              backgroundColor: alpha(violetBase, 0.8),
+            },
+          },
+          // Кнопки в таблицах DataGrid
+          '&.datagrid-button': {
             backgroundColor: 'inherit',
+         
+           
           },
         },
       },

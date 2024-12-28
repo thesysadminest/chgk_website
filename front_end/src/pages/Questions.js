@@ -72,6 +72,7 @@ const Questions = () => {
               <MuiLink 
                 component="button" 
                 variant="body2" 
+                className="datagrid-button"
                 onClick={() => handleRowClick(params)} 
                 sx={{ color: visited[params.id] ? 'purple' : 'blue', textDecoration: 'underline', cursor: 'pointer' }}
               >
@@ -86,7 +87,21 @@ const Questions = () => {
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
         autoHeight
-        sx={{ boxShadow: 2, border: 1, borderColor: 'grey.300' }}
+        sx={{ 
+          boxShadow: 2, 
+          border: 1, 
+          borderColor: 'grey.300',
+          '& .MuiDataGrid-columnHeader .MuiButtonBase-root': {
+      
+              backgroundColor: 'inherit',
+              color: 'inherit',
+          
+            '&:active': {
+              backgroundColor: 'inherit',
+              color: 'white',
+            },
+          },
+        }}
         onRowClick={handleRowClick}
       />
     </Box>
