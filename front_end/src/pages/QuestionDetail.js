@@ -7,10 +7,17 @@ const QuestionDetail = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const [question, setQuestion] = useState({});
-  
-
+  const [question, setQuestion] = useState({
+    id: '',
+    author_q: '',
+    pub_date_q: '',
+    question_text: '',
+    answer_text: ''
+  });
   const [answer, setAnswer] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [answerColor, setAnswerColor] = useState('');
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : { username: null };
@@ -19,64 +26,95 @@ const QuestionDetail = () => {
   useEffect(() => {
     axios.get(`http://127.0.0.1:8000/api/question/${id}`)
       .then(response => {
-        setQuestion(response.data);
+        const data = Array.isArray(response.data) ? response.data[0] : response.data;
+        setQuestion({
+          id: data.id,
+          question_text: data.question_text || 'Неизвестно',
+          answer_text: data.answer_text || '',
+          author_q: data.author_q || 'Неизвестно',
+          pub_date_q: data.pub_date_q || 'Неизвестно'
+        });
       })
       .catch(error => {
         console.error('Ошибка при загрузке данных:', error);
       });
   }, [id]);
 
-  const {pub_date_q} = (question.pub_date_q ? question.pub_date_q : "A?");
-  const {author_q} = (question.author_q ? question.author_q : "A?");
-  const {question_text} = (question.question_text ? question.question_text : "A?");
-
-
   const handleAnswerChange = (event) => {
-    if (user.username) {
-      setAnswer(event.target.value);
-    }
+    setAnswer(event.target.value);
   };
 
   const handleSubmit = () => {
     if (user.username) {
-      // Обработка отправки ответа
-      console.log('Ответ отправлен:', answer);
+      if (answer.trim() === question.answer_text) {
+        setFeedback('Ответ верный');
+        setAnswerColor('#7fb890');
+      } else {
+        setFeedback('Ответ неверный');
+        setAnswerColor('#CD5C5C');
+      }
+    } else {
+      navigate('/me');
     }
   };
 
+  const handleRetry = () => {
+    navigate(`/question/${id}`);
+    setAnswer('');
+    setFeedback('');
+    setAnswerColor('');
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Вопрос ID: {id}
+    <Box sx={{ p: 4 }}>
+      <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, color: 'gray' }}>
+        ID вопроса: {question.id}
       </Typography>
-      <Typography variant="h6" gutterBottom>
-        Автор: {author_q}
+      <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, color: 'gray' }}>
+        Автор: {question.author_q}
       </Typography>
-      <Typography variant="h6" gutterBottom>
-        Дата публикации: {pub_date_q}
+      <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, color: 'gray' }}>
+        Дата публикации: {question.pub_date_q !== 'Неизвестно' ? new Date(question.pub_date_q).toLocaleDateString('ru-RU') : 'Неизвестно'}
       </Typography>
-      <Typography variant="h6" gutterBottom>
-        Текст вопроса: {question_text}
+      <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+        Текст вопроса: {question.question_text}
       </Typography>
       {user.username ? (
         <>
           <TextField
+            InputLabelProps={{ shrink: true }}
             label="Ваш ответ"
             multiline
-            rows={4}
+            rows={3}
             value={answer}
             onChange={handleAnswerChange}
-            variant="outlined"
+            variant="filled"
             fullWidth
-            sx={{ mt: 2, mb: 2 }}
+            sx={{ mt: 2, mb: 2, fontSize: '4h' }}
+            style={{ backgroundColor: answerColor }}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-          >
-            Отправить ответ
-          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+            >
+              Отправить ответ
+            </Button>
+            {feedback === 'Ответ неверный' && (
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{ ml: 2 }}
+                onClick={handleRetry}
+              >
+                Ответить повторно
+              </Button>
+            )}
+          </Box>
+          <Typography variant="subtitle1" sx={{ mt: 2, color: answerColor }}>
+            {feedback}
+          </Typography>
         </>
       ) : (
         <Typography variant="h6" sx={{ mt: 2 }}>

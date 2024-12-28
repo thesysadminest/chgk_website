@@ -1,40 +1,80 @@
-import { alpha, getContrastRatio } from '@mui/material/styles';
+import { alpha, getContrastRatio, createTheme } from '@mui/material/styles';
 
-const violetBase = '#7F00FF';
+const violetBase = '#6633CC';
 const violetMain = alpha(violetBase, 1);
 
-const purpleTheme = {
+const purpleTheme = createTheme({
   palette: {
     primary: {
       main: violetMain,
       light: alpha(violetBase, 0.3),
       dark: alpha(violetBase, 0.9),
-      contrastText: getContrastRatio(violetMain, '#fff') > 4.5 ? '#fff' : '#111',
+      contrastText: getContrastRatio(violetMain, '#fff') > 5 ? '#fff' : '#111',
     },
   },
   components: {
-      MuiButtonBase: {
-          styleOverrides: {
-              root: {
-                  backgroundColor: violetMain,
-                  borderRadius: 10,
-                  variants: 
-                  [ 
-                      {
-                         props: 
-                          { variant: 'accent' }, 
-                          style: ({ theme }) => ({ 
-                              backgroundColor: theme.palette.primary.light, 
-                          }) 
-                      }, 
-                      { 
-                          props: 
-                      { variant: 'default' }, 
-                      }, 
-                  ]
-              }
-          }
-      }
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          backgroundColor: violetMain,
+          borderRadius: 10,
+          '&:hover': {
+            backgroundColor: alpha(violetBase, 0.8),
+          },
+          
+          '&.navbar-button, &.usermenu-button': {
+            backgroundColor: violetMain,
+            '&:hover': {
+              backgroundColor: alpha(violetBase, 0.8),
+            },
+          },
+          '&.datagrid-button': {
+            backgroundColor: 'inherit',
+            '&:hover': {
+              backgroundColor: 'inherit',
+            },
+          },
+        },
+      },
+    },
+    MuiDataGrid: {
+      styleOverrides: {
+        root: {
+          '& .MuiDataGrid-columnHeader': {
+            backgroundColor: 'inherit',
+          },
+          '& .MuiDataGrid-columnHeader:focus': {
+            backgroundColor: 'inherit',
+          },
+          '& .MuiDataGrid-columnHeader .MuiButtonBase-root': {
+            backgroundColor: 'inherit',
+          },
+          '& .MuiDataGrid-cell': {
+            backgroundColor: 'inherit',
+          },
+        },
+      },
+    },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'inherit',
+          borderRadius: 10,
+          '&.navbar-button, &.usermenu-button': {
+            backgroundColor: violetMain,
+            '&:hover': {
+              backgroundColor: alpha(violetBase, 0.8),
+            },
+          },
+          '&.datagrid-button': {
+            backgroundColor: 'inherit',
+         
+           
+          },
+        },
+      },
+    },
   },
-}
+});
+
 export default purpleTheme;

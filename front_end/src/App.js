@@ -11,6 +11,9 @@ import Me from "./pages/Me";
 import User from "./components/User";
 import Registration from "./pages/Registration";
 import QuestionDetail from './pages/QuestionDetail';
+import PackDetail from './pages/PackDetail';
+import AddQuestion from './pages/AddQuestion';
+import AddPack from './pages/AddPack';
 
 import purpleTheme from "./themes/appereance.js";
 let dp_theme = createTheme(purpleTheme);
@@ -24,9 +27,12 @@ function MainContent() {
             <Routes>
                 <Route path="/" element={<Lobby />} />
                 <Route path="/packs" element={<Packs />} />
+                <Route path="/pack/:id" element={<PackDetail />} />
                 <Route path="/users" element={<Users />} />
                 <Route path="/questions" element={<Question />} />
                 <Route path="/question/:id" element={<QuestionDetail />} />
+                <Route path="/add-question" element={<AddQuestion />} />
+                <Route path="/add-pack" element={<AddPack />} />
                 <Route path="/me" element={<Me />} />
             </Routes>
            
