@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import User from '../components/User'; // Импортируем класс User
+import User from '../components/User'; 
 
 const AddQuestion = () => {
   const [questionText, setQuestionText] = useState('');
@@ -23,7 +23,6 @@ const AddQuestion = () => {
 
   const handleAddToOpenPack = () => {
     // Логика добавления вопроса в открытый пак
-    // Здесь должна быть ваша логика запроса к серверу
     alert('Вопрос успешно добавлен в открытый пак!');
     setQuestionText('');
     setCorrectAnswer('');
@@ -31,7 +30,6 @@ const AddQuestion = () => {
 
   const handleAddToMyPack = () => {
     // Логика добавления вопроса в личный пак
-    // Здесь должна быть ваша логика запроса к серверу
     alert('Вопрос успешно добавлен в ваш пак!');
     setQuestionText('');
     setCorrectAnswer('');

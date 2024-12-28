@@ -21,14 +21,13 @@ const purpleTheme = createTheme({
           '&:hover': {
             backgroundColor: alpha(violetBase, 0.8),
           },
-          // Добавим условие для кнопок в навбаре и UserMenu
+          
           '&.navbar-button, &.usermenu-button': {
             backgroundColor: violetMain,
             '&:hover': {
               backgroundColor: alpha(violetBase, 0.8),
             },
           },
-          // Кнопки в таблицах DataGrid
           '&.datagrid-button': {
             backgroundColor: 'inherit',
             '&:hover': {
@@ -61,16 +60,12 @@ const purpleTheme = createTheme({
         root: {
           backgroundColor: 'inherit',
           borderRadius: 10,
- 
-        
-          // Добавим условие для кнопок в навбаре и UserMenu
           '&.navbar-button, &.usermenu-button': {
             backgroundColor: violetMain,
             '&:hover': {
               backgroundColor: alpha(violetBase, 0.8),
             },
           },
-          // Кнопки в таблицах DataGrid
           '&.datagrid-button': {
             backgroundColor: 'inherit',
          

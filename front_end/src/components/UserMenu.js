@@ -15,7 +15,7 @@ const Item = styled(Button)(({ theme }) => ({
 const UserMenu = ({ open, handleDrawerClose }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
-  const fontSize = '2vh'; // размер текста
+  const fontSize = '2vh'; 
 
   const user = JSON.parse(localStorage.getItem('user')) || { username: null };
 
@@ -95,9 +95,9 @@ const UserMenu = ({ open, handleDrawerClose }) => {
               <Button
                 sx={{
                   justifyContent: 'center',
-                  width: '100%', // Чтобы кнопка занимала всю ширину
+                  width: '100%', 
                   backgroundColor: '#FFFFFF',
-                  color: '#7F00FF', // Фиолетовый текст
+                  color: '#7F00FF', 
                   '&:hover': {
                     backgroundColor: '#FFFFFF',
                     color: '#7F00FF',

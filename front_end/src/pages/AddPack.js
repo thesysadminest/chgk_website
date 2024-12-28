@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import User from '../components/User'; // Импортируем класс User
+import User from '../components/User'; 
 
 const AddPack = () => {
   const [packName, setPackName] = useState('');
@@ -23,7 +23,7 @@ const AddPack = () => {
 
   const handleAddPack = () => {
     // Логика добавления нового пака
-    // Здесь должна быть ваша логика запроса к серверу
+    
     alert('Пак успешно добавлен!');
     setPackName('');
     setDescription('');

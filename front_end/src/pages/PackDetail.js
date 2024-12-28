@@ -25,8 +25,8 @@ const PackDetail = () => {
 
         const packData = Array.isArray(data) ? data[0] : data;
         const questions = packData.questions ? packData.questions.map((item, index) => ({
-          id: item.id,  // Сохраняем оригинальный id вопроса
-          questionIndex: index + 1,  // Используем индекс элемента для первого столбца
+          id: item.id, 
+          questionIndex: index + 1,  
           question_text: item.question_text,
           author_q: item.author_q || "Неизвестно",
           pub_date_q: item.pub_date_q ? new Date(item.pub_date_q).toLocaleDateString('ru-RU') : 'Неизвестно'
@@ -67,7 +67,7 @@ const PackDetail = () => {
       </Typography>
       <Box sx={{ height: '60vh', width: '100%' }}>
         <DataGrid
-          rows={rows}  // Используем rows как источник данных для DataGrid
+          rows={rows}  
           columns={[
             { 
               field: 'questionIndex', 
@@ -91,7 +91,7 @@ const PackDetail = () => {
           pageSize={5}
           rowsPerPageOptions={[5, 10, 20]}
           autoHeight
-          getRowId={(row) => row.questionIndex}  // Используем questionIndex как уникальный идентификатор
+          getRowId={(row) => row.questionIndex}
           sx={{ boxShadow: 2, border: 1, borderColor: 'grey.300' }}
           onRowClick={handleRowClick}
         />

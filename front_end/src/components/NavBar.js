@@ -16,7 +16,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { AddCircle, ChevronLeft, Menu as MenuIcon } from '@mui/icons-material';
-import UserMenu from '../components/UserMenu'; // Импортируем компонент UserMenu
+import UserMenu from '../components/UserMenu'; 
 
 const drawerWidth = 240;
 
@@ -97,7 +97,7 @@ const Item = styled(ButtonBase)(({ theme }) => ({
   top: '50%',
   right: 20,
   transform: 'translateY(-70%)',
-  zIndex: 2, // Чтобы кнопка была выше ListItemButton
+  zIndex: 2,
   '&:hover': {
     backgroundColor: theme.palette.action.hover,
   },
@@ -241,7 +241,7 @@ export default function NavBar({ children }) {
               edge="start"
               sx={{
                 marginRight: 5,
-                minHeight: '5vh', // устанавливаем высоту для кнопки
+                minHeight: '5vh',
               }}
             >
               {open ? <ChevronLeft /> : <MenuIcon />}
