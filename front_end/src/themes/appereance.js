@@ -1,9 +1,9 @@
-import { alpha, getContrastRatio } from '@mui/material/styles';
+import { alpha, getContrastRatio, createTheme } from '@mui/material/styles';
 
 const violetBase = '#7F00FF';
 const violetMain = alpha(violetBase, 1);
 
-const purpleTheme = {
+const purpleTheme = createTheme({
   palette: {
     primary: {
       main: violetMain,
@@ -13,28 +13,53 @@ const purpleTheme = {
     },
   },
   components: {
-      MuiButtonBase: {
-          styleOverrides: {
-              root: {
-                  backgroundColor: violetMain,
-                  borderRadius: 10,
-                  variants: 
-                  [ 
-                      {
-                         props: 
-                          { variant: 'accent' }, 
-                          style: ({ theme }) => ({ 
-                              backgroundColor: theme.palette.primary.light, 
-                          }) 
-                      }, 
-                      { 
-                          props: 
-                      { variant: 'default' }, 
-                      }, 
-                  ]
-              }
-          }
-      }
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          backgroundColor: violetMain,
+          borderRadius: 10,
+          '&:hover': {
+            backgroundColor: alpha(violetBase, 0.8),
+          },
+        },
+      },
+    },
+    MuiDataGrid: {
+      styleOverrides: {
+        root: {
+          '& .MuiDataGrid-columnHeader': {
+            '&:hover': {
+              backgroundColor: 'inherit',
+            },
+          },
+          '& .MuiDataGrid-columnHeader:focus': {
+            backgroundColor: 'inherit',
+          },
+          '& .MuiDataGrid-columnHeader .MuiButtonBase-root': {
+            '&:hover': {
+              backgroundColor: 'inherit',
+            },
+          },
+          '& .MuiDataGrid-cell': {
+            '&:hover': {
+              backgroundColor: 'inherit',
+            },
+          },
+        },
+      },
+    },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          backgroundColor: violetMain,
+          borderRadius: 10,
+          '&:hover': {
+            backgroundColor: 'inherit',
+          },
+        },
+      },
+    },
   },
-}
+});
+
 export default purpleTheme;
