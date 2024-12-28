@@ -108,6 +108,8 @@ export default function NavBar({ children }) {
   const [open, setOpen] = React.useState(true);
   const fontSize = '2vh';
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLobby = location.pathname === '/';
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -143,7 +145,6 @@ export default function NavBar({ children }) {
     }
   };
 
-  const location = useLocation();
   const resolvePageName = () => {
     switch (location.pathname) {
       case '/':
@@ -172,6 +173,9 @@ export default function NavBar({ children }) {
           <DrawerHeader></DrawerHeader>
 
           <Divider />
+          {isLobby ? (
+              <Typography variant="h6" sx={{ ml: 2, color: '#6633CC' }}> Новости </Typography>
+          ) : (
           <List>
             {[
               ['Главная', '/'],
@@ -224,6 +228,7 @@ export default function NavBar({ children }) {
               </ListItem>
             ))}
           </List>
+          )}
           <Divider />
         </Drawer>
 
