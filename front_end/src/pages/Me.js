@@ -1,14 +1,18 @@
-import React, {useRef} from "react";
-import {Box, Stack, ButtonBase, TextField, Typography} from "@mui/material";
+import React, { useRef } from "react";
+import { Box, Stack, ButtonBase, TextField, Typography } from "@mui/material";
 import { styled } from '@mui/material/styles';
 import { useNavigate, useLocation } from "react-router-dom";
 
-const Item = styled(ButtonBase)(({ dp_theme }) => ({ 
-    height: '100',
-    textAlign: 'center',
-    //fontSize: 'h6',
-    fontFamily: 'Roboto, sans-serif',
-    color: "#FFFFFF"
+const Item = styled(ButtonBase)(({ theme }) => ({
+  height: '100',
+  textAlign: 'center',
+  //fontSize: 'h6',
+  fontFamily: 'Roboto, sans-serif',
+  color: "#FFFFFF",
+  backgroundColor: theme.palette.primary.main,
+  '&:hover': {
+    backgroundColor: theme.palette.primary.dark,
+  },
 }));
 
 const Me = () => {
@@ -17,8 +21,8 @@ const Me = () => {
   const from = location.state?.from || "/";
 
   let user = Object.create(
-      Object.getPrototypeOf({ username: null }), 
-      Object.getOwnPropertyDescriptors(JSON.parse(localStorage.getItem('user')) || {}) 
+    Object.getPrototypeOf({ username: null }),
+    Object.getOwnPropertyDescriptors(JSON.parse(localStorage.getItem('user')) || {})
   );
 
   const inputUsernameRef = useRef('');
@@ -51,7 +55,7 @@ const Me = () => {
           Добрый день, {user.username}! Прекрасно выглядите!
         </Typography> 
         
-        <Item sx={{ width: '50vw'}} 
+        <Item className="username-button" sx={{ width: '50vw'}} 
           onClick={() => {
             user.username = null;     
             localStorage.setItem("user", JSON.stringify(user));
