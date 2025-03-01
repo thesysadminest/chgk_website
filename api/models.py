@@ -19,7 +19,7 @@ class Question(models.Model):
     question_text = models.CharField(max_length = 200, default="")
     answer_text = models.CharField(max_length = 200, default="")
 
-    #author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions", default='None')
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", default='None')
 
     def get_question(self):
         return self.question_text

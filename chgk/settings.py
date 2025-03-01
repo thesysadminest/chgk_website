@@ -162,7 +162,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-#AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'api.CustomUser'
 
 
 # Static files (CSS, JavaScript, Images)

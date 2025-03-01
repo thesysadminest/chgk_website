@@ -142,9 +142,11 @@ def updateProfile(request):
         serializer.save()
     return Response(serializer.data)
 
+class UserViewList(generics.ListCreateAPIView):
+    
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get(self, request, *args, **kwargs):
-    user = UserSerializer(request.user)
-    return Response(user.data, status= 200 )
+    def get_queryset(self):
+      queryset = CustomUser.objects.all()
+      return queryset
