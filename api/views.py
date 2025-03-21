@@ -160,18 +160,6 @@ class TeamUpdate(generics.UpdateAPIView):
         else:
           return  Response({"message": "update failed"})
 
-@api_view(['GET'])
-def getRoutes(request):
-    routes = [
-        '/api/token/',
-        '/api/user/register/',
-        '/api/token/refresh/',
-        '/api/prediction/'
-        'api/profile/',
-        'api/profile/update/',
-
-    ]
-
 ###     USER      ###
 
 #Login User
@@ -183,24 +171,7 @@ class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = (AllowAny, )
     serializer_class = RegisterSerializer
-    
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getProfile(request):
-    user = request.user
-    serializer = UserSerializer(user, many=False)
-    return Response(serializer.data)
-
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-def updateProfile(request):
-    user = request.user
-    serializer = UserSerializer(user, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
-
+  
 class UserViewList(generics.ListCreateAPIView):
     
     serializer_class = UserSerializer
@@ -209,3 +180,32 @@ class UserViewList(generics.ListCreateAPIView):
     def get_queryset(self):
       queryset = CustomUser.objects.all()
       return queryset
+    
+class UserView(generics.ListCreateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+      queryset = CustomUser.objects.all().filter(id=self.kwargs['pk'])
+      return queryset
+    
+class UserUpdate(generics.UpdateAPIView):
+    serializer_class = UserSerializer
+    queryset = CustomUser.objects.all()
+    permission_classes = [AllowAny]
+    #lookup_field = "id"
+    
+    def update(self, request):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if (serializer.is_valid()):
+          serializer.save()
+          return Response({"message": "pack updated successfully"})
+        else:
+          return  Response({"message": "update failed"})
+        
+class UserDelete(generics.DestroyAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+    queryset = CustomUser.objects.all()
+        

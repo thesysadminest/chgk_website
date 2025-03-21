@@ -17,15 +17,13 @@ urlpatterns = [
     
     path('team/<int:pk>', views.TeamView.as_view(), name="view-team"),
     path('team/list', views.TeamViewList.as_view(), name="team-list"),
-    path('team/create/<int:pk>', views.TeamCreate.as_view(), name="team-pack"),
-    path('team/update/<int:pk>', views.TeamDelete.as_view(), name="delete-team"),
+    path('team/create/<int:pk>', views.TeamCreate.as_view(), name="create-team"),
+    path('team/update/<int:pk>', views.TeamDelete.as_view(), name="update-team"),
     path('team/delete/<int:pk>', views.TeamDelete.as_view(), name="delete-team"),
     
-    # path('user/<int:pk>', views.UserView.as_view(), name="view-user"),
-    # path('user/list', views.UserViewList.as_view(), name="user-list"),
-    # path('user/delete/<int:pk>', views.UserDelete.as_view(), name="delete-user"),
-    
-    path('', views.getRoutes),
-    path('user/list', views.UserViewList.as_view(), name='user-list'),
+    path('user/<int:pk>', views.UserView.as_view(), name="view-user"),
+    path('user/list', views.UserViewList.as_view(), name="user-list"),
+    path('user/update/<int:pk>', views.UserUpdate.as_view(),name="update-profile"),
+    path('user/delete/<int:pk>', views.UserDelete.as_view(), name="delete-user"),
     
 ]
