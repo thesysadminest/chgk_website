@@ -1,14 +1,22 @@
 from django.shortcuts import render
+from rest_framework import generics, viewsets, status
+
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
-from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from rest_framework.decorators import action, APIView
 from django.contrib.auth.hashers import make_password
 
+from rest_framework.response import Response
+from rest_framework.decorators import action, APIView, api_view, permission_classes
+
+from django.http import JsonResponse
+
+from api.serializers import MyTokenObtainPairSerializer, RegisterSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from django.contrib.auth.models import AbstractUser
+
 from .serializers import QuestionSerializer, PackSerializer, UserSerializer, TeamSerializer
-from .models import Question, Pack, Team
+from .models import Question, Pack, Team, CustomUser
 
 ###     QUESTION      ###
 
@@ -28,7 +36,7 @@ class QuestionView(generics.ListCreateAPIView):
     def get_queryset(self):
       queryset = Question.objects.all().filter(id=self.kwargs['pk'])
       return queryset
-
+    
 class QuestionCreate(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
     permission_classes = [AllowAny]
@@ -45,7 +53,6 @@ class QuestionUpdate(generics.UpdateAPIView):
     permission_classes = [AllowAny]
 
     def update_text(self, request):
-
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         
@@ -153,42 +160,52 @@ class TeamUpdate(generics.UpdateAPIView):
         else:
           return  Response({"message": "update failed"})
 
+@api_view(['GET'])
+def getRoutes(request):
+    routes = [
+        '/api/token/',
+        '/api/user/register/',
+        '/api/token/refresh/',
+        '/api/prediction/'
+        'api/profile/',
+        'api/profile/update/',
+
+    ]
+
 ###     USER      ###
 
-class CreateUserView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
-    
-class UserView(generics.ListCreateAPIView):
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+#Login User
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
-    def get_queryset(self):
-      queryset = User.objects.all().filter(id=self.kwargs['pk'])
-      return queryset
+#Register User
+class RegisterView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (AllowAny, )
+    serializer_class = RegisterSerializer
     
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getProfile(request):
+    user = request.user
+    serializer = UserSerializer(user, many=False)
+    return Response(serializer.data)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def updateProfile(request):
+    user = request.user
+    serializer = UserSerializer(user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
+
 class UserViewList(generics.ListCreateAPIView):
+    
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
     def get_queryset(self):
-      queryset = User.objects.all()
+      queryset = CustomUser.objects.all()
       return queryset
-
-
-class UserRegister(APIView): # DOES IT NEED A URL?
-    def post(self, request):
-        user = request.data
-        serializer = UserSerializer(data=user, context = {'request':request})
-        if serializer.is_valid():
-            user_saved = serializer.save(password=make_password(user['password']))
-            return Response(user_saved,
-                status=200)
-        return Response({
-            "error" : "Error encountered"},
-            status=406)
-    
-class UserDelete(generics.DestroyAPIView): # DOES IT NEED A URL? DO WE EVEN NEED IT?
-    queryset = User.objects.all()  
-    serializer_class = UserSerializer  
-    permission_classes = [AllowAny]
