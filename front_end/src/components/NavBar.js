@@ -15,8 +15,8 @@ import ListItemText from '@mui/material/ListItemText';
 import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { AddCircle, ChevronLeft, Menu as MenuIcon } from '@mui/icons-material';
-import UserMenu from '../components/UserMenu'; 
+import { AddCircle, ChevronLeft, ChevronRight } from '@mui/icons-material';
+import UserMenu from '../components/UserMenu';
 
 const drawerWidth = 240;
 
@@ -49,6 +49,12 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
   padding: theme.spacing(0, 1),
   ...theme.mixins.toolbar,
+  backgroundColor: '#d4d4d4',
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: '#c4c4c4',
+  },
 }));
 
 const AppBar = styled(MuiAppBar, {
@@ -111,16 +117,25 @@ export default function NavBar({ children }) {
   const location = useLocation();
   const isLobby = location.pathname === '/';
 
+  React.useEffect(() => {
+    if (isLobby) {
+      setOpen(true);
+    }
+  }, [isLobby]);
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
 
   const handleDrawerClose = () => {
-    setOpen(false);
+    if (!isLobby) {
+      setOpen(false);
+    }
+    
   };
 
   const handleAddQuestionClick = (event) => {
-    event.stopPropagation(); // Останавливаем событие, чтобы внешняя кнопка не срабатывала
+    event.stopPropagation();
     navigate('/add-question');
   };
 
@@ -133,12 +148,10 @@ export default function NavBar({ children }) {
     const size = 28;
     switch (index) {
       case 0:
-        return <img src="/home_w.ico" alt="home" style={{ width: size, height: size }} />;
-      case 1:
         return <img src="/question_w.ico" alt="question" style={{ width: size, height: size }} />;
-      case 2:
+      case 1:
         return <img src="/bag_w.ico" alt="bag" style={{ width: size, height: size }} />;
-      case 3:
+      case 2:
         return <img src="/user_w.ico" alt="user" style={{ width: size, height: size }} />;
       default:
         return <img src="/team_w.ico" alt="user" style={{ width: size, height: size }} />;
@@ -146,107 +159,148 @@ export default function NavBar({ children }) {
   };
 
   const resolvePageName = () => {
-    switch (location.pathname) {
-      case '/':
-        return 'Главная';
-      case '/me':
-        return 'Авторизация';
-      case '/questions':
-        return 'Вопросы';
-      case '/packs':
-        return 'Пакеты';
-      case '/users':
-        return 'Пользователи';
-      case '/teams':
-        return 'Команды';
-      default:
-        return '';
-    }
-  };
+  const path = location.pathname;
+
+  // Проверка на страницу с конкретным вопросом
+  if (/^\/question\/\d+$/.test(path)) {
+    return 'Внимание, вопрос';
+  }
+  else if (/^\/pack\/\d+$/.test(path)) {
+    return 'Внимание, пакет';
+  }
+
+  // Остальные статические маршруты
+  switch (path) {
+    case '/':
+      return 'Главная';
+    case '/me':
+      return 'Авторизация';
+    case '/questions':
+      return 'Вопросы';
+    case '/packs':
+      return 'Пакеты';
+    case '/users':
+      return 'Пользователи';
+    case '/teams':
+      return 'Команды';
+    default:
+      return '';
+  }
+};
 
   return (
     <div>
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
 
-        <Drawer variant="permanent" open={open} sx={{ mt: '6vh' }}>
-          <DrawerHeader></DrawerHeader>
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: drawerWidth,
+            height: '63.8px',
+            backgroundColor: '#d4d4d4',
+            zIndex: theme.zIndex.drawer + 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: '#c4c4c4',
+            },
+          }}
+          component={Link}
+          to="/"
+        >
+        </Box>
 
+        <Drawer variant="permanent" open={open} sx={{ mt: '6vh' }}>
           <Divider />
-          {isLobby ? (
-              <Typography variant="h6" sx={{ ml: 2, color: '#6633CC' }}> Новости </Typography>
-          ) : (
-          <List>
+          <List sx={{ mt: '11vh' }}>
             {[
-              ['Главная', '/'],
               ['Вопросы', '/questions'],
               ['Пакеты', '/packs'],
               ['Пользователи', '/users'],
               ['Команды', '/teams'],
-            ].map((text, index) => (
-              <ListItem disablePadding key={text[0]} sx={{ display: 'block', position: 'relative', pt: 0, pb: 2, pr: 1, pl: 1 }}>
-                <ListItemButton
-                  component={Link}
-                  to={text[1]}
-                  className="navbar-button"
-                  sx={{
-                    justifyContent: open ? 'initial' : 'center',
-                    px: 2.5,
-                    minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
-                  }}
-                >
-                  <ListItemIcon
+            ].map((text, index) => {
+              const isActive = location.pathname === text[1];
+              return (
+                <ListItem disablePadding key={text[0]} sx={{ display: 'block', position: 'relative', pt: 0, pb: 2, pr: 1, pl: 1 }}>
+                  <ListItemButton
+                    component={Link}
+                    to={text[1]}
                     sx={{
-                      ml: 1,
-                      minWidth: open ? 'auto' : 'calc(100% - 8px)',
-                      justifyContent: 'left',
+                      justifyContent: open ? 'initial' : 'center',
+                      px: 2.5,
+                      minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
+                      backgroundColor: isActive ? '#cd5c5c' : theme.palette.primary.main,
+                      '&:hover': {
+                        backgroundColor: isActive ? '#cd5c5c' : theme.palette.primary.dark,
+                      },
                     }}
                   >
-                    {renderIcon(index)}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={text[0]}
-                    sx={{
-                      ml: 1.2,
-                      opacity: open ? 1 : 0,
-                      whiteSpace: 'nowrap',
-                      fontSize: fontSize,
-                      color: '#FFFFFF',
-                    }}
-                  />
-                </ListItemButton>
-                {open && index === 1 && (
-                  <Item onClick={handleAddQuestionClick} sx={{ ml: 1.2 }}>
-                    <AddCircle sx={{ color: '#FFFFFF' }} />
-                  </Item>
-                )}
-                {open && index === 2 && (
-                  <Item onClick={handleAddPackClick} sx={{ ml: 1.2 }}>
-                    <AddCircle sx={{ color: '#FFFFFF' }} />
-                  </Item>
-                )}
-              </ListItem>
-            ))}
+                    <ListItemIcon
+                      sx={{
+                        ml: 1,
+                        minWidth: open ? 'auto' : 'calc(100% - 8px)',
+                        justifyContent: 'left',
+                      }}
+                    >
+                      {renderIcon(index)}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={text[0]}
+                      sx={{
+                        ml: 1.2,
+                        opacity: open ? 1 : 0,
+                        whiteSpace: 'nowrap',
+                        fontSize: fontSize,
+                        color: '#FFFFFF',
+                      }}
+                    />
+                  </ListItemButton>
+                  {open && index === 0 && (
+                    <Item onClick={handleAddQuestionClick} sx={{ ml: 1.2 }}>
+                      <AddCircle sx={{ color: '#FFFFFF' }} />
+                    </Item>
+                  )}
+                  {open && index === 1 && (
+                    <Item onClick={handleAddPackClick} sx={{ ml: 1.2 }}>
+                      <AddCircle sx={{ color: '#FFFFFF' }} />
+                    </Item>
+                  )}
+                </ListItem>
+              );
+            })}
           </List>
-          )}
           <Divider />
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '16px 0',
+                backgroundColor: '#d4d4d4',
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: '#c4c4c4',
+                },
+              }}
+              onClick={open ? handleDrawerClose : handleDrawerOpen}
+            >
+              {open ? (
+                <ChevronLeft sx={{ color: 'inherit' }} />
+              ) : (
+                <ChevronRight sx={{ color: 'inherit' }} />
+              )}
+            </Box>
+
+          
         </Drawer>
 
         <AppBar position="fixed" open={open}>
           <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={open ? handleDrawerClose : handleDrawerOpen}
-              edge="start"
-              sx={{
-                marginRight: 5,
-                minHeight: '5vh',
-              }}
-            >
-              {open ? <ChevronLeft /> : <MenuIcon />}
-            </IconButton>
-
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
               {resolvePageName()}
             </Typography>
@@ -275,7 +329,6 @@ export default function NavBar({ children }) {
           }}
         >
           {children}
-          <DrawerHeader />
         </Box>
       </Box>
     </div>

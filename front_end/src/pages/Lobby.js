@@ -1,51 +1,46 @@
 import React from "react";
-import { Box, Stack, Paper, ButtonBase, Typography } from "@mui/material";
-import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
+import { Box, Typography } from "@mui/material";
+import { ThemeProvider } from '@mui/material/styles';
 
-import purpleTheme from "../themes/appereance.js";
-let dp_theme = createTheme(purpleTheme);
-
-const Item = styled(ButtonBase)(({ theme }) => ({
-  width: '100%',
-  height: '100%',
-  textAlign: 'center',
-  fontSize: 'calc(10px + 3vmin)',
-  fontFamily: 'Roboto, sans-serif',
-  color: "#FFFFFF",
-  backgroundColor: theme.palette.primary.main,
-  '&:hover': {
-    backgroundColor: theme.palette.primary.dark,
-  },
-  '&.username-button': {
-    backgroundColor: theme.palette.primary.main,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.dark,
-    },
-  },
-}));
+import burgundyTheme from "../themes/appereance.js";
 
 const Lobby = () => {
   return (
-    <ThemeProvider theme={dp_theme}>
-      <Box sx={{ height: '60vh', mr: '10vh', ml: '10vh', mb: '20vh', mt: '5vh', flexGrow: 0 }}>
-        <Stack spacing='10vh' sx={{ height: "100%" }}>
-          <Stack spacing='10vh' sx={{ height: "50vh" }} direction="row">
-            <Item href='/questions' className="username-button">
-              <Typography variant="h6">Вопросы</Typography>
-            </Item>
-            <Item href='/packs' className="username-button">
-              <Typography variant="h6">Пакеты</Typography>
-            </Item>
-          </Stack>
-          <Stack spacing='10vh' sx={{ height: "50vh" }} direction="row">
-            <Item href='/users' className="username-button">
-              <Typography variant="h6">Пользователи</Typography>
-            </Item>
-            <Item href='/teams' className="username-button">
-              <Typography variant="h6">Команды</Typography>
-            </Item>
-          </Stack>
-        </Stack>
+    <ThemeProvider theme={burgundyTheme.palette}>
+      <Box
+        sx={{
+          display: 'flex-height',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          height: '80vh',
+        }}
+      >
+        <Typography
+          variant="h2"
+          component="div"
+          sx={{
+            fontWeight: 'bold',
+            fontSize: '4rem',
+            color: burgundyTheme.palette.primary.main,
+            textAlign: 'center',
+            mr: 3
+          }}
+        >
+          Новости
+
+        </Typography>
+
+        <Typography
+          variant="h7"
+          sx={{
+            fontSize: '1.5rem',
+            color: burgundyTheme.palette.primary.main,
+            textAlign: 'center',
+            mr: 3
+          }}
+        >
+          Введена примерная цветовая гамма сайта. Изменены (возможно непреднамеренно) некоторые кнопки. В качестве кнопки "домой" советуем использовать серый прямоугольник в левом верхнем углу. Enjoy!
+        </Typography>
       </Box>
     </ThemeProvider>
   );

@@ -78,7 +78,7 @@ const PackDetail = () => {
                   component="button" 
                   variant="body2" 
                   onClick={() => handleRowClick(params)} 
-                  sx={{ color: visited[params.row.id] ? 'purple' : 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                  sx={{ color: visited[params.row.id] ? 'burgundy' : 'white', textDecoration: 'underline', cursor: 'pointer' }}
                 >
                   {params.value}
                 </MuiLink>

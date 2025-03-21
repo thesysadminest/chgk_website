@@ -96,11 +96,11 @@ const UserMenu = ({ open, handleDrawerClose }) => {
                 sx={{
                   justifyContent: 'center',
                   width: '100%', 
-                  backgroundColor: '#FFFFFF',
-                  color: '#7F00FF', 
+                  backgroundColor: '#d4d4d4',
+                  // color: '#7F00FF', 
                   '&:hover': {
                     backgroundColor: '#FFFFFF',
-                    color: '#7F00FF',
+                    // color: '#7F00FF',
                   },
                 }}
                 onClick={() => {
@@ -109,7 +109,7 @@ const UserMenu = ({ open, handleDrawerClose }) => {
                   window.location.reload(false);
                 }}
               >
-                <Typography variant="h6">Выйти</Typography>
+                <Typography variant="h6" sx={{ color: '#2A2A2A' }}> ВЫЙТИ </Typography>
               </Button>
             </Box>
           </Popover>

@@ -30,12 +30,16 @@ const Questions = () => {
   }, []);
 
   const handleRowClick = (params) => {
-    navigate(`/question/${params.id}`, { state: { question: params.cell } });
+    navigate(`/question/${params.id}`, { state: { question: params.row } });
     setVisited({ ...visited, [params.id]: true });
   };
 
   const handleAddQuestion = () => {
     navigate('/add-question');
+  };
+
+  const handleToPacks = () => {
+    navigate('/packs'); // Или на страницу списка вопросов, если она отличается
   };
 
   const requestSearch = (searchValue) => {
@@ -48,10 +52,16 @@ const Questions = () => {
 
   return (
     <Box sx={{ height: '80vh', width: '75vw', pr: '5vw', mt: '2vh' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Button variant="contained" color="primary" onClick={handleAddQuestion}>
-          Добавить вопрос
-        </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="contained" color="secondary" onClick={handleToPacks}>
+            Перейти к пакам
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleAddQuestion}>
+            Добавить вопрос
+          </Button>
+        </Box>
+
         <TextField
           variant="outlined"
           size="small"
@@ -61,11 +71,11 @@ const Questions = () => {
           sx={{ width: '300px' }} 
         />
       </Box>
+
       <DataGrid
         rows={rows}
         columns={[
-          { 
-            field: 'id', 
+          { field: 'id', 
             headerName: 'ID', 
             flex: 0.7,
             renderCell: (params) => (
@@ -74,7 +84,11 @@ const Questions = () => {
                 variant="body2" 
                 className="datagrid-button"
                 onClick={() => handleRowClick(params)} 
-                sx={{ color: visited[params.id] ? 'purple' : 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                sx={{ 
+                  color: visited[params.id] ? 'grey' : 'white', // Серый для посещённых, белый для непосещённых
+                  textDecoration: 'underline', 
+                  cursor: 'pointer' 
+                }}
               >
                 {params.value}
               </MuiLink>
@@ -92,16 +106,18 @@ const Questions = () => {
           border: 1, 
           borderColor: 'grey.300',
           '& .MuiDataGrid-columnHeader .MuiButtonBase-root': {
-      
-              backgroundColor: 'inherit',
-              color: 'inherit',
-          
+            backgroundColor: 'inherit',
+            color: 'inherit',
             '&:active': {
               backgroundColor: 'inherit',
               color: 'white',
             },
           },
+          '& .visited-row': {
+            color: 'grey', // Серый цвет текста для посещённых строк
+          },
         }}
+        getRowClassName={(params) => visited[params.id] ? 'visited-row' : ''} // Добавляем класс для посещённых строк
         onRowClick={handleRowClick}
       />
     </Box>

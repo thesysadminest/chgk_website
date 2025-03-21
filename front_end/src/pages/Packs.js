@@ -39,6 +39,10 @@ const Packs = () => {
     navigate('/add-pack');
   };
 
+  const handleGoToQuestions = () => {
+    navigate('/questions'); // Переход к банку вопросов
+  };
+
   const requestSearch = (searchValue) => {
     setSearchText(searchValue);
     const filteredRows = originalRows.filter((row) => {
@@ -49,10 +53,16 @@ const Packs = () => {
 
   return (
     <Box sx={{ height: '80vh', width: '75vw', pr: '5vw', mt: '2vh' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Button variant="contained" color="primary" onClick={handleAddPack}>
-          Добавить пак
-        </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="contained" color="secondary" onClick={handleGoToQuestions}>
+            Перейти к банку вопросов
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleAddPack}>
+            Добавить пак
+          </Button>
+        </Box>
+
         <TextField
           variant="outlined"
           size="small"
@@ -62,6 +72,7 @@ const Packs = () => {
           sx={{ width: '300px' }} 
         />
       </Box>
+
       <DataGrid
         rows={rows}
         columns={[
@@ -74,7 +85,11 @@ const Packs = () => {
                 component="button" 
                 variant="body2" 
                 onClick={() => handleRowClick(params)} 
-                sx={{ color: visited[params.row.id] ? 'purple' : 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                sx={{ 
+                  color: 'white',
+                  textDecoration: 'underline', 
+                  cursor: 'pointer' 
+                }}
               >
                 {params.value}
               </MuiLink>
@@ -88,7 +103,17 @@ const Packs = () => {
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
         autoHeight
-        sx={{ boxShadow: 2, border: 1, borderColor: 'grey.300' }}
+        sx={{ 
+          boxShadow: 2, 
+          border: 1, 
+          borderColor: 'grey.300',
+          '& .MuiDataGrid-cell': {
+            color: 'white', // Белый цвет текста в ячейках
+          },
+          '& .MuiDataGrid-columnHeader': {
+            color: 'white', // Белый цвет текста в заголовках
+          },
+        }}
         onRowClick={handleRowClick}
       />
     </Box>

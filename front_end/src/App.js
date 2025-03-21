@@ -15,8 +15,8 @@ import PackDetail from './pages/PackDetail';
 import AddQuestion from './pages/AddQuestion';
 import AddPack from './pages/AddPack';
 
-import purpleTheme from "./themes/appereance.js";
-let dp_theme = createTheme(purpleTheme);
+import burgundyTheme from "./themes/appereance.js";
+let dp_theme = createTheme(burgundyTheme);
 
 function MainContent() {
     const location = useLocation();
