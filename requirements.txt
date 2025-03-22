@@ -1,0 +1,4 @@
+django==4.2
+django-cors-headers
+djangorestframework-simplejwt 
+psycopg2

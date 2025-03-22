@@ -93,6 +93,20 @@ WSGI_APPLICATION = 'chgk.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# settings for virtual machine; currently not working
+'''
+DATABASES = {
+      "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        'NAME': 'django_db',
+        'USER': 'django_app',
+        'PASSWORD': 'superpass',
+        'HOST': '51.250.11.44',
+        'PORT': '5432',
+    }  
+}
+'''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -132,7 +146,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-#AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'api.CustomUser'
 
 
 # Static files (CSS, JavaScript, Images)

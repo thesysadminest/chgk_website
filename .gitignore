@@ -9,6 +9,9 @@ __pycache__/
 #Visual Studio files
 /.vs
 
+# Databases
+*.sqlite
+
 #npm
 node_modules/
 
@@ -18,6 +21,7 @@ install-pyenv-win.ps1
 .python-version
 
 # Distribution / packaging
+migrations/
 .Python
 build/
 develop-eggs/

@@ -2,8 +2,13 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 
+class CustomUser(AbstractUser):
+    bio = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.username
 
 class Team(models.Model):
     name = models.TextField(default="", unique=True)
@@ -21,7 +26,7 @@ class Question(models.Model):
     question_text = models.CharField(max_length = 200, default="")
     answer_text = models.CharField(max_length = 200, default="")
 
-    author_q = models.ForeignKey(User, on_delete=models.CASCADE,related_name="author_q", default="author")
+    author_q = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", default='None')
 
     pub_date_q = models.DateTimeField("date published")
     
@@ -40,7 +45,7 @@ class Question(models.Model):
 class Pack(models.Model):
     name = models.TextField(default='Name')
     questions = models.ManyToManyField(Question)
-    author_p = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_p", default=None)
+    #author_p = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="packs", default='None')
     description = models.TextField(default=' ')
     
     pub_date_p = models.DateTimeField("date published")
