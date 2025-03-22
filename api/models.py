@@ -5,10 +5,7 @@ from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
-    bio = models.CharField(max_length=255, blank=True)
-
-    def __str__(self):
-        return self.username
+    bio = models.TextField(blank=True, null=True)
 
 class Team(models.Model):
     name = models.TextField(default="", unique=True)

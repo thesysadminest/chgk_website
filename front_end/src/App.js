@@ -9,11 +9,12 @@ import Packs from "./pages/Packs";
 import Users from "./pages/Users";
 import Me from "./pages/Me";
 import User from "./components/User";
-import Registration from "./pages/Registration";
+import Authorization from "./pages/Authorization";
 import QuestionDetail from './pages/QuestionDetail';
 import PackDetail from './pages/PackDetail';
 import AddQuestion from './pages/AddQuestion';
 import AddPack from './pages/AddPack';
+import UserDetail from './pages/UserDetail';
 
 import burgundyTheme from "./themes/appereance.js";
 let dp_theme = createTheme(burgundyTheme);
@@ -33,7 +34,8 @@ function MainContent() {
                 <Route path="/question/:id" element={<QuestionDetail />} />
                 <Route path="/add-question" element={<AddQuestion />} />
                 <Route path="/add-pack" element={<AddPack />} />
-                <Route path="/me" element={<Me />} />
+                <Route path="/user/:id" element={<UserDetail />} />
+                <Route path="/authorization" element={<Authorization />} />
             </Routes>
            
         </NavBar>

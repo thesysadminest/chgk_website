@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics, viewsets, status
+from rest_framework.views import APIView
 
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -10,8 +11,11 @@ from rest_framework.decorators import action, APIView, api_view, permission_clas
 
 from django.http import JsonResponse
 
-from api.serializers import MyTokenObtainPairSerializer, RegisterSerializer
+from api.serializers import MyTokenObtainPairSerializer, RegisterSerializer, LoginSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from django.contrib.auth import authenticate
 
 from django.contrib.auth.models import AbstractUser
 
@@ -168,10 +172,47 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 #Register User
 class RegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    permission_classes = (AllowAny, )
     serializer_class = RegisterSerializer
-  
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            serializer = RegisterSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'bio': user.bio,
+                    },
+                    'token': str(refresh.access_token),
+                }, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class LoginView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = authenticate(email=serializer.validated_data['email'], password=serializer.validated_data['password'])
+            if user:
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'bio': user.bio,
+                    },
+                    'token': str(refresh.access_token),
+                }, status=status.HTTP_200_OK)
+            #return Response({'error': 'Неверные учетные данные'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class UserViewList(generics.ListCreateAPIView):
     
     serializer_class = UserSerializer

@@ -15,9 +15,9 @@ const Item = styled(Button)(({ theme }) => ({
 const UserMenu = ({ open, handleDrawerClose }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
-  const fontSize = '2vh'; 
+  const fontSize = '2vh';
 
-  const user = JSON.parse(localStorage.getItem('user')) || { username: null };
+  const user = JSON.parse(localStorage.getItem('user')) || { username: null, id: null };
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -29,6 +29,14 @@ const UserMenu = ({ open, handleDrawerClose }) => {
 
   const openPopover = Boolean(anchorEl);
   const id = openPopover ? 'simple-popover' : undefined;
+
+  const handleProfileClick = () => {
+    if (user.id) {
+      navigate(`/user/${user.id}`);
+    } else {
+      navigate('/authorization');
+    }
+  };
 
   return (
     <>
@@ -63,21 +71,20 @@ const UserMenu = ({ open, handleDrawerClose }) => {
             <Box sx={{ p: 2 }}>
               <List>
                 {[
-                  ['Профиль', '/me'],
+                  ['Профиль', handleProfileClick], // Используем обработчик для перехода
                   ['Настройки', '/settings'],
                   ['Мой рейтинг', '/myrating'],
-                  ['Mоя команда', '/myteam'],
+                  ['Моя команда', '/myteam'],
                 ].map((text, index) => (
                   <ListItem disablePadding key={text[0]} sx={{ display: 'block', pb: 2 }}>
                     <ListItemButton
                       component={Link}
-                      to={text[1]}
-                      className="usermenu-button"
+                      to={typeof text[1] === 'function' ? '#' : text[1]} // Обрабатываем клик
+                      onClick={typeof text[1] === 'function' ? text[1] : handleClose} // Обрабатываем клик
                       sx={{
                         justifyContent: 'center',
                         px: 2.5,
                       }}
-                      onClick={handleClose}
                     >
                       <ListItemText
                         primary={text[0]}
@@ -95,17 +102,14 @@ const UserMenu = ({ open, handleDrawerClose }) => {
               <Button
                 sx={{
                   justifyContent: 'center',
-                  width: '100%', 
+                  width: '100%',
                   backgroundColor: '#d4d4d4',
-                  // color: '#7F00FF', 
                   '&:hover': {
                     backgroundColor: '#FFFFFF',
-                    // color: '#7F00FF',
                   },
                 }}
                 onClick={() => {
-                  user.username = null;
-                  localStorage.setItem('user', JSON.stringify(user));
+                  localStorage.removeItem('user');
                   window.location.reload(false);
                 }}
               >
@@ -115,7 +119,7 @@ const UserMenu = ({ open, handleDrawerClose }) => {
           </Popover>
         </Item>
       ) : (
-        <Item component={Link} to="/me">
+        <Item component={Link} to="/authorization">
           <Typography variant="h6" sx={{ mr: 1 }}>
             Авторизоваться
           </Typography>

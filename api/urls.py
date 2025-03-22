@@ -25,5 +25,4 @@ urlpatterns = [
     path('user/list', views.UserViewList.as_view(), name="user-list"),
     path('user/update/<int:pk>', views.UserUpdate.as_view(),name="update-profile"),
     path('user/delete/<int:pk>', views.UserDelete.as_view(), name="delete-user"),
-    
 ]
