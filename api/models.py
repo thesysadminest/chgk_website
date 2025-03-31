@@ -6,12 +6,19 @@ from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
     bio = models.TextField(blank=True, null=True)
+    
+    USERNAME_FIELD = 'username'
+    email = models.EmailField(unique=True, blank=True, null=True)
+    REQUIRED_FIELDS = ['email']
+
 
 class Team(models.Model):
     name = models.TextField(default="", unique=True)
     team_score = models.IntegerField(default=0)
     
-    pub_date_t = models.DateTimeField("date published")
+    captain = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="users", null=True, blank=True)
+    
+    pub_date_t = models.DateTimeField("date published",auto_now_add=True)
     
     def get_name(self):
       return self.name
@@ -20,39 +27,61 @@ class Team(models.Model):
         return self.team_score
 
 class Question(models.Model):
-    question_text = models.CharField(max_length = 200, default="")
-    answer_text = models.CharField(max_length = 200, default="")
+    question_text = models.TextField(default="")
+    answer_text = models.TextField(default="")
+    question_note = models.TextField(default="")
 
-    author_q = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", default='None')
+    author_q = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
 
-    pub_date_q = models.DateTimeField("date published")
+    pub_date_q = models.DateTimeField("date published", auto_now_add=True)
     
     def get_question(self):
         return self.question_text
 
     def get_answer(self):
-        return self.get_answer
+        return self.answer_text
     
     def get_authorq(self):
-        return self.User.author_q.username
+        return self.author_q.username if self.author_q else "Unknown"
+
     
     def get_dateq(self):
       return self.pub_date_q  
+    
+    def get_note(self):
+      return self.question_note  
 
 class Pack(models.Model):
-    name = models.TextField(default='Name')
-    questions = models.ManyToManyField(Question)
-    #author_p = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="packs", default='None')
-    description = models.TextField(default=' ')
+    name = models.TextField(default="Name")
+    questions = models.ManyToManyField(Question, related_name="pack")
+    author_p = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="packs", null=True, blank=True)
     
-    pub_date_p = models.DateTimeField("date published")
+    description = models.TextField(default="")
+    
+    pub_date_p = models.DateTimeField("date published", auto_now_add=True)
     
     def get_authorp(self):
-        return self.User.author_p.username
+        return self.author_p.username if self.author_p else "Unknown"
     
     def get_datep(self):
       return self.pub_date_p  
     
     def get_questions(self):
         return self.questions.all()
+    
+    def get_description(self):
+        return self.description 
+    
+
+class GameAttempt(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="game_attempts")
+    pack = models.ForeignKey(Pack, on_delete=models.CASCADE, related_name="pack_attempts")
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="question_attempts")
+    is_correct = models.BooleanField(default=False)
+    correct_answers = models.IntegerField(default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"User: {self.user.username} | Question: {self.question.id} | Correct: {self.is_correct}"
+
     

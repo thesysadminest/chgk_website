@@ -10,31 +10,37 @@ function Authorization() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
 
-    console.log('Отправляемые данные:', data); // Логируем данные
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
 
-    const requestData = {
-      username: data.username,
-      email: data.email,
-      password: data.password,
-      bio: data.bio || '',
-    };
+    console.log("Form Data:", data);
 
-    const url = isLogin ? 'http://127.0.0.1:8000/api/user/login/' : 'http://127.0.0.1:8000/api/user/register/';
+    const requestData = isLogin
+      ? { username: data.username, password: data.password }
+      : { username: data.username, email: data.email, password: data.password };
+
+    console.log("Request Payload:", requestData);
+
+    const url = isLogin
+      ? 'http://127.0.0.1:8000/api/user/login/'
+      : 'http://127.0.0.1:8000/api/user/register/';
 
     fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(requestData),
     })
       .then((response) => {
         if (!response.ok) {
           return response.json().then(err => {
-            console.error('Ошибка сервера:', err); // Логируем ошибку сервера
-            throw new Error(err.message || 'Ошибка при отправке запроса');
+            console.error("Server Error:", err);
+            throw new Error(err.message || "Error while sending request");
           });
         }
         return response.json();
@@ -43,34 +49,23 @@ function Authorization() {
         if (data.token) {
           localStorage.setItem('user', JSON.stringify(data.user));
           localStorage.setItem('token', data.token);
-          alert(isLogin ? 'Вход выполнен успешно!' : 'Регистрация прошла успешно!');
+          alert(isLogin ? "Successfully logged in!" : "Successfully registered!");
           window.location.href = '/';
         } else {
-          setError(data.error || 'Ошибка авторизации');
+          setError(data.error || "Authorization error");
         }
       })
       .catch((error) => {
-        console.error('Ошибка:', error);
-        setError(error.message || 'Ошибка при отправке запроса');
+        console.error("Error:", error);
+        setError(error.message || "Error while sending a request");
       });
   };
 
   return (
-    <Container maxWidth="sm" sx={{ marginBottom: 8 }}> {/* Отступ снизу */}
-      <Paper
-        sx={{
-          padding: 3,
-          marginTop: 4,
-          borderRadius: 4,
-          backgroundColor: '#d4d4d4',
-        }}
-      >
+    <Container maxWidth="sm" sx={{ marginBottom: 8 }}>
+      <Paper sx={{ padding: 3, marginTop: 4, borderRadius: 4, backgroundColor: '#d4d4d4' }}>
         <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ fontWeight: 'bold', color: 'primary.main', marginTop: 2 }}
-          >
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main', marginTop: 2 }}>
             Botanic Garden
           </Typography>
           <Typography variant="h6" sx={{ color: '#2A2A2A' }}>
@@ -88,102 +83,31 @@ function Authorization() {
           <Grid container spacing={2} justifyContent="center">
             {!isLogin && (
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Имя пользователя"
-                  name="username"
-                  placeholder="Например: tomato2025"
-                  required
-                  variant="outlined"
-                  sx={{ marginBottom: 2 }}
-                  InputLabelProps={{
-                    sx: {
-                      color: 'text.gray',
-                      '&.Mui-focused': {
-                        color: 'primary.main',
-                      },
-                    },
-                  }}
-                  InputProps={{
-                    style: { fontSize: '1rem', color: '#000000' }, // Не белый цвет текста
-                  }}
+                <TextField fullWidth label="Email" name="email" type="email" placeholder="Enter your email" required variant="outlined" sx={{ marginBottom: 2 }} />
                 />
               </Grid>
             )}
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email адрес"
-                name="email"
-                type="email"
-                placeholder="Например: botanic@garden.ru"
-                required
-                variant="outlined"
-                sx={{ marginBottom: 2 }}
-                InputLabelProps={{
-                  sx: {
-                    color: 'text.gray',
-                    '&.Mui-focused': {
-                      color: 'primary.main',
-                    },
-                  },
-                }}
-                InputProps={{
-                  style: { fontSize: '1rem', color: '#000000' }, // Не белый цвет текста
-                }}
-              />
+              <TextField fullWidth label="Username" name="username" type="text" placeholder="Example: botanic_garden" required variant="outlined" sx={{ marginBottom: 2 }} />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Пароль"
-                name="password"
-                type="password"
-                placeholder="Минимум 8 символов, минимум 1 буква"
-                inputProps={{ minLength: 8 }}
-                required
-                variant="outlined"
-                sx={{ marginBottom: 2 }}
-                InputLabelProps={{
-                  
-                  sx: {
-                    color: 'text.gray',
-                    '&.Mui-focused': {
-                      color: 'primary.main',
-                    },
-                  },
-                }}
-                InputProps={{
-                  style: { fontSize: '1rem', color: '#000000' }, // Не белый цвет текста
-                }}
-              />
+              <TextField fullWidth label="Password" name="password" type="password" placeholder="Min 8 symbols, min 1 letter" inputProps={{ minLength: 8 }} required variant="outlined" sx={{ marginBottom: 2 }} />
             </Grid>
             <Grid item xs={12}>
-              <Button
-                fullWidth
-                type="submit"
-                variant="contained"
-                size="large"
-                sx={{ marginTop: 2, fontSize: '1rem', padding: '10px' }}
-              >
-                {isLogin ? 'Войти' : 'Зарегистрироваться'}
+              <Button fullWidth type="submit" variant="contained" size="large" sx={{ marginTop: 2, fontSize: '1rem', padding: '10px' }}>
+                {isLogin ? 'Log in' : 'Sign up'}
               </Button>
             </Grid>
           </Grid>
         </form>
 
-        <Box sx={{ justifyContent: 'center', marginTop: 3, display: 'flex' }}>
-          <Typography variant="body1" sx={{ color: 'text.gray' }}>
-            {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
+        <Box sx={{ textAlign: 'center', marginTop: 3 }}>
+          <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+            {isLogin ? "No account yet? " : "Already have an account? "}
+            <Link component="button" variant="body1" onClick={() => setIsLogin(!isLogin)} sx={{ color: 'primary.main', fontSize: '1rem' }}>
+              {isLogin ? "Sign up" : "Log in"}
+            </Link>
           </Typography>
-          <Link
-            component="button"
-            variant="body1"
-            onClick={() => setIsLogin(!isLogin)}
-            sx={{ color: 'primary.main', ml: '1rem' }}
-          >
-            {isLogin ? 'Зарегистрируйтесь' : 'Войдите'}
-          </Link>
         </Box>
       </Paper>
     </Container>

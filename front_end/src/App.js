@@ -16,6 +16,10 @@ import AddQuestion from './pages/AddQuestion';
 import AddPack from './pages/AddPack';
 import UserDetail from './pages/UserDetail';
 
+// I AM AN INTRUDER!!! DELETE ME IF YOU DON'T WANT ME HERE
+//import GameMain from './pages/GameMain';
+//import GameRedirect from "./components/GameRedirect";
+
 import burgundyTheme from "./themes/appereance.js";
 let dp_theme = createTheme(burgundyTheme);
 
@@ -36,7 +40,13 @@ function MainContent() {
                 <Route path="/add-pack" element={<AddPack />} />
                 <Route path="/user/:id" element={<UserDetail />} />
                 <Route path="/authorization" element={<Authorization />} />
+                
+                
+
+
             </Routes>
+            {console.log("Current pathname:", window.location.pathname)}
+
            
         </NavBar>
     );
