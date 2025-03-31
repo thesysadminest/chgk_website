@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button, Container, Paper, Grid, Link } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 function Authorization() {
+  const theme = useTheme();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
 
@@ -96,15 +98,14 @@ function Authorization() {
                   sx={{ marginBottom: 2 }}
                   InputLabelProps={{
                     sx: {
-                      color: 'text.secondary',
+                      color: 'text.gray',
                       '&.Mui-focused': {
-                        color: 'burgundy',
-                        fontSize: '0.9rem',
+                        color: 'primary.main',
                       },
                     },
                   }}
                   InputProps={{
-                    style: { fontSize: '1rem', color: '#FFFFFF' }, // Белый цвет текста
+                    style: { fontSize: '1rem', color: '#000000' }, // Не белый цвет текста
                   }}
                 />
               </Grid>
@@ -121,15 +122,14 @@ function Authorization() {
                 sx={{ marginBottom: 2 }}
                 InputLabelProps={{
                   sx: {
-                    color: 'text.secondary',
+                    color: 'text.gray',
                     '&.Mui-focused': {
-                      color: 'burgundy',
-                      fontSize: '0.9rem',
+                      color: 'primary.main',
                     },
                   },
                 }}
                 InputProps={{
-                  style: { fontSize: '1rem', color: '#FFFFFF' }, // Белый цвет текста
+                  style: { fontSize: '1rem', color: '#000000' }, // Не белый цвет текста
                 }}
               />
             </Grid>
@@ -145,16 +145,16 @@ function Authorization() {
                 variant="outlined"
                 sx={{ marginBottom: 2 }}
                 InputLabelProps={{
+                  
                   sx: {
-                    color: 'text.secondary',
+                    color: 'text.gray',
                     '&.Mui-focused': {
-                      color: 'burgundy',
-                      fontSize: '0.9rem',
+                      color: 'primary.main',
                     },
                   },
                 }}
                 InputProps={{
-                  style: { fontSize: '1rem', color: '#FFFFFF' }, // Белый цвет текста
+                  style: { fontSize: '1rem', color: '#000000' }, // Не белый цвет текста
                 }}
               />
             </Grid>
@@ -172,18 +172,18 @@ function Authorization() {
           </Grid>
         </form>
 
-        <Box sx={{ textAlign: 'center', marginTop: 3 }}>
-          <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-            {isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? '}
-            <Link
-              component="button"
-              variant="body1"
-              onClick={() => setIsLogin(!isLogin)}
-              sx={{ color: 'primary.main', fontSize: '1rem' }}
-            >
-              {isLogin ? 'Зарегистрируйтесь' : 'Войдите'}
-            </Link>
+        <Box sx={{ justifyContent: 'center', marginTop: 3, display: 'flex' }}>
+          <Typography variant="body1" sx={{ color: 'text.gray' }}>
+            {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
           </Typography>
+          <Link
+            component="button"
+            variant="body1"
+            onClick={() => setIsLogin(!isLogin)}
+            sx={{ color: 'primary.main', ml: '1rem' }}
+          >
+            {isLogin ? 'Зарегистрируйтесь' : 'Войдите'}
+          </Link>
         </Box>
       </Paper>
     </Container>

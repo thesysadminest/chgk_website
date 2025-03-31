@@ -25,6 +25,7 @@ const burgundyTheme = createTheme({
     },
     text: {
       primary: graphiteText,
+      gray: lightGray,
       secondary: alpha(graphiteText, 0.7),
     },
   },

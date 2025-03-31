@@ -1,27 +1,50 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import { ThemeProvider } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 
-import burgundyTheme from "../themes/appereance.js";
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(`
+  .blur-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: inset 0 0 50px 50px rgba(0, 255, 0, 0.3);
+    pointer-events: none;
+    z-index: 1000;
+  }
+`);
+
+// Применяем стили к документу
+// document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+
+// Добавляем саму рамку
+//const overlay = document.createElement('div');
+//overlay.className = 'blur-overlay';
+//document.body.appendChild(overlay);
 
 const Lobby = () => {
+  const theme = useTheme();
   return (
-    <ThemeProvider theme={burgundyTheme.palette}>
-      <Box
+      <Box 
         sx={{
           display: 'flex-height',
           justifyContent: 'space-between',
           alignItems: 'center',
           height: '80vh',
+          
         }}
       >
+        
         <Typography
           variant="h2"
           component="div"
           sx={{
             fontWeight: 'bold',
             fontSize: '4rem',
-            color: burgundyTheme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             textAlign: 'center',
             mr: 3
           }}
@@ -34,7 +57,7 @@ const Lobby = () => {
           variant="h7"
           sx={{
             fontSize: '1.5rem',
-            color: burgundyTheme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             textAlign: 'center',
             mr: 3
           }}
@@ -42,7 +65,6 @@ const Lobby = () => {
           Введена примерная цветовая гамма сайта. Изменены (возможно непреднамеренно) некоторые кнопки. В качестве кнопки "домой" советуем использовать серый прямоугольник в левом верхнем углу. Enjoy!
         </Typography>
       </Box>
-    </ThemeProvider>
   );
 };
 

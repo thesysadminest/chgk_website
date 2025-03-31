@@ -120,7 +120,7 @@ const UserMenu = ({ open, handleDrawerClose }) => {
         </Item>
       ) : (
         <Item component={Link} to="/authorization">
-          <Typography variant="h6" sx={{ mr: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ mr: 1 }}>
             Авторизоваться
           </Typography>
           <PersonAdd sx={{ color: '#FFFFFF' }} />

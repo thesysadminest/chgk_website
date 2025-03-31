@@ -61,6 +61,8 @@ const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
+  marginLeft: `calc(${theme.spacing(8)} + 1px)`,
+  width: `calc(100% - ${theme.spacing(8)} - 1px)`,
   transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -109,6 +111,7 @@ const Item = styled(ButtonBase)(({ theme }) => ({
   },
 }));
 
+
 export default function NavBar({ children }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
@@ -122,6 +125,14 @@ export default function NavBar({ children }) {
       setOpen(true);
     }
   }, [isLobby]);
+  
+  React.useEffect(() => {
+    const toolbar = document.getElementById('toolbar');
+    const mainbox = document.getElementById('mainbox');
+    if (toolbar && mainbox) {
+      mainbox.style.marginTop = window.getComputedStyle(toolbar).height;
+    }
+  }, []);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -209,6 +220,14 @@ export default function NavBar({ children }) {
             '&:hover': {
               backgroundColor: '#c4c4c4',
             },
+          ...(open && {
+              ...openedMixin(theme),
+              '& .MuiDrawer-paper': openedMixin(theme),
+            }),
+            ...(!open && {
+              ...closedMixin(theme),
+              '& .MuiDrawer-paper': closedMixin(theme),
+            }),
           }}
           component={Link}
           to="/"
@@ -262,7 +281,22 @@ export default function NavBar({ children }) {
                   </ListItemButton>
                   {open && index === 0 && (
                     <Item onClick={handleAddQuestionClick} sx={{ ml: 1.2 }}>
-                      <AddCircle sx={{ color: '#FFFFFF' }} />
+                      <AddCircle sx={{ 
+                        color: '#FFFFFF',
+                        //opacity: '0',
+                        //'pointer-events': 'none',
+                        //transition: theme.transitions.create('opacity', {
+                        //   easing: theme.transitions.easing.sharp,
+                        //   duration: theme.transitions.duration.leavingScreen,
+                        // }),
+                        // ...(open && {
+                        //   opacity: '1',
+                        //   transition: theme.transitions.create('opacity', {
+                        //     easing: theme.transitions.easing.sharp,
+                        //     duration: theme.transitions.duration.enteringScreen,
+                        //   }),
+                        // }),
+                      }} />
                     </Item>
                   )}
                   {open && index === 1 && (
@@ -273,34 +307,39 @@ export default function NavBar({ children }) {
                 </ListItem>
               );
             })}
-          </List>
-          <Divider />
-            <Box
+          
+          {!isLobby && (
+          <ListItem disablePadding sx={{ display: 'block', position: 'relative', pt: 0, pb: 2, pr: 1, pl: 1 }}>
+            <ListItemButton
+              onClick={open ? handleDrawerClose : handleDrawerOpen}
               sx={{
-                display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center',
-                padding: '16px 0',
-                backgroundColor: '#d4d4d4',
-                cursor: 'pointer',
+                px: 2.5,
+                minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
+                // backgroundColor: theme.palette.primary.main,
+                border: '0.5px solid grey',
                 '&:hover': {
-                  backgroundColor: '#c4c4c4',
+                  backgroundColor: theme.palette.primary.dark,
                 },
               }}
-              onClick={open ? handleDrawerClose : handleDrawerOpen}
             >
-              {open ? (
-                <ChevronLeft sx={{ color: 'inherit' }} />
-              ) : (
-                <ChevronRight sx={{ color: 'inherit' }} />
-              )}
-            </Box>
+            
+            {open ? (
+              <ChevronLeft sx={{ color: 'inherit' }} />
+            ) : (
+              <ChevronRight sx={{ color: 'inherit' }} />
+            )}
+            </ListItemButton>
+            </ListItem>
+          )}
+            
+          </List>
+          <Divider />
 
-          
         </Drawer>
 
         <AppBar position="fixed" open={open}>
-          <Toolbar>
+          <Toolbar id="toolbar">
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
               {resolvePageName()}
             </Typography>
@@ -310,12 +349,14 @@ export default function NavBar({ children }) {
         </AppBar>
 
         <Box
+          id='mainbox'
           component="main"
           sx={{
-            mt: '8vh',
-            ml: '2vw',
             flexGrow: 1,
-            p: 3,
+            p: 5,
+            justifyContent: 'center',
+            display: 'flex',
+            'boxShadow': 'inset 0 0 50px 20px rgba(0, 255, 0, 0.3)',
             transition: theme.transitions.create('margin', {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,

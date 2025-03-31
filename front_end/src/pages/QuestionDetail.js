@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Typography, TextField, Button, Link as MuiLink } from '@mui/material';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
+import { RotateLeft } from '@mui/icons-material';
 
 const QuestionDetail = () => {
   const { id } = useParams();
@@ -66,7 +67,7 @@ const QuestionDetail = () => {
   };
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{  }}>
       <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, color: 'gray' }}>
         ID вопроса: {question.id}
       </Typography>
@@ -108,7 +109,7 @@ const QuestionDetail = () => {
                 sx={{ ml: 2 }}
                 onClick={handleRetry}
               >
-                Ответить повторно
+                <RotateLeft sx={{ color: '#FFFFFF' }} />
               </Button>
             )}
           </Box>

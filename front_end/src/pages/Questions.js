@@ -51,7 +51,7 @@ const Questions = () => {
   };
 
   return (
-    <Box sx={{ height: '80vh', width: '75vw', pr: '5vw', mt: '2vh' }}>
+    <Box sx={{ height: '80vh', width: '75vw' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button variant="contained" color="secondary" onClick={handleToPacks}>
