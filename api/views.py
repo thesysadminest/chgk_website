@@ -199,7 +199,7 @@ class LoginView(APIView):
             print("serializing error:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        user = authenticate(username=serializer.validated_data['username'], password=serializer.validated_data['password'])
+        user = authenticate(username=request.data['username'], password=request.data['password'])
         
         if not user:
             print("authentification failed")
