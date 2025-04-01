@@ -38,19 +38,27 @@ function Authorization() {
     })
       .then((response) => {
         if (!response.ok) {
-          return response.json().then(err => {
-            console.error("Server Error:", err);
-            throw new Error(err.message || "Error while sending request");
+          return response.text().then(text => {
+            console.error("Server Response:", text);
+            try {
+              const json = JSON.parse(text);
+              throw new Error(json.message || "Error while sending request");
+            } catch {
+              throw new Error("Unexpected server response");
+            }
           });
         }
         return response.json();
       })
       .then((data) => {
         if (data.token) {
-          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('user', JSON.stringify(data.user || {}));
           localStorage.setItem('token', data.token);
           alert(isLogin ? "Successfully logged in!" : "Successfully registered!");
-          window.location.href = '/';
+          setTimeout(() => {
+            window.location.href = (isLogin ? '/' : '/authorization');
+          }, 500);
+
         } else {
           setError(data.error || "Authorization error");
         }
@@ -82,10 +90,10 @@ function Authorization() {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} justifyContent="center">
             {!isLogin && (
-              <Grid item xs={12}>
-                <TextField fullWidth label="Email" name="email" type="email" placeholder="Enter your email" required variant="outlined" sx={{ marginBottom: 2 }} />
-                />
-              </Grid>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Email" name="email" type="email" placeholder="Enter your email" required variant="outlined" sx={{ marginBottom: 2 }} />
+                
+            </Grid>
             )}
             <Grid item xs={12}>
               <TextField fullWidth label="Username" name="username" type="text" placeholder="Example: botanic_garden" required variant="outlined" sx={{ marginBottom: 2 }} />

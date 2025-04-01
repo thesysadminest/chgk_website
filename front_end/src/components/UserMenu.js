@@ -17,7 +17,14 @@ const UserMenu = ({ open, handleDrawerClose }) => {
   const navigate = useNavigate();
   const fontSize = '2vh';
 
-  const user = JSON.parse(localStorage.getItem('user')) || { username: null, id: null };
+  let user;
+  try {
+    user = JSON.parse(localStorage.getItem('user')) || { username: null, id: null };
+  } catch (e) {
+    console.error("Error parsing user data from localStorage:", e);
+    user = { username: null, id: null };
+  }
+
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
