@@ -46,7 +46,7 @@ const Lobby = () => {
             fontSize: '4rem',
             color: theme.palette.primary.contrastText,
             textAlign: 'center',
-            mr: 3
+            pr: 5
           }}
         >
           Новости
@@ -56,10 +56,10 @@ const Lobby = () => {
         <Typography
           variant="h7"
           sx={{
-            fontSize: '1.5rem',
+            fontSize: '1.3rem',
             color: theme.palette.primary.contrastText,
-            textAlign: 'center',
-            mr: 3
+            pr: 5,
+            pl: 0
           }}
         >
           Введена примерная цветовая гамма сайта. Изменены (возможно непреднамеренно) некоторые кнопки. В качестве кнопки "домой" советуем использовать серый прямоугольник в левом верхнем углу. Enjoy!

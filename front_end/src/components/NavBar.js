@@ -18,6 +18,7 @@ import Box from '@mui/material/Box';
 import { AddCircle, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import UserMenu from '../components/UserMenu';
 
+
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -172,19 +173,23 @@ export default function NavBar({ children }) {
   const resolvePageName = () => {
   const path = location.pathname;
 
-  // Проверка на страницу с конкретным вопросом
   if (/^\/question\/\d+$/.test(path)) {
     return 'Внимание, вопрос';
   }
   else if (/^\/pack\/\d+$/.test(path)) {
     return 'Внимание, пакет';
   }
+  else if (/^\/user\/\d+$/.test(path)) {
+    return 'Информация о пользователе';
+  }
+  else if (/^\/team\/\d+$/.test(path)) {
+    return 'Информация о команде';
+  }
 
-  // Остальные статические маршруты
   switch (path) {
     case '/':
       return 'Главная';
-    case '/me':
+    case '/authorization':
       return 'Авторизация';
     case '/questions':
       return 'Вопросы';
@@ -194,6 +199,12 @@ export default function NavBar({ children }) {
       return 'Пользователи';
     case '/teams':
       return 'Команды';
+    case '/add-question':
+      return 'Добавить вопрос';
+    case '/add-pack':
+      return 'Добавить пак';
+    case '/add-pack/add-question':
+      return 'Добавить пак';
     default:
       return '';
   }
@@ -211,7 +222,7 @@ export default function NavBar({ children }) {
             left: 0,
             width: drawerWidth,
             height: '63.8px',
-            backgroundColor: '#d4d4d4',
+            backgroundColor: 'background.gray',
             zIndex: theme.zIndex.drawer + 2,
             display: 'flex',
             alignItems: 'center',
@@ -309,29 +320,28 @@ export default function NavBar({ children }) {
             })}
           
           {!isLobby && (
-          <ListItem disablePadding sx={{ display: 'block', position: 'relative', pt: 0, pb: 2, pr: 1, pl: 1 }}>
-            <ListItemButton
-              onClick={open ? handleDrawerClose : handleDrawerOpen}
-              sx={{
-                justifyContent: 'center',
-                px: 2.5,
-                minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
-                // backgroundColor: theme.palette.primary.main,
-                border: '0.5px solid grey',
-                '&:hover': {
-                  backgroundColor: theme.palette.primary.dark,
-                },
-              }}
-            >
-            
-            {open ? (
-              <ChevronLeft sx={{ color: 'inherit' }} />
-            ) : (
-              <ChevronRight sx={{ color: 'inherit' }} />
+              <ListItem disablePadding sx={{ display: 'block', position: 'relative', pt: 0, pb: 2, pr: 1, pl: 1 }}>
+                <ListItemButton
+                  onClick={open ? handleDrawerClose : handleDrawerOpen}
+                  sx={{
+                    justifyContent: 'center',
+                    px: 2.5,
+                    minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
+                    border: '0.5px solid grey',
+                    backgroundColor: 'transparent',
+                    '&:hover': {
+                      backgroundColor: '#c0c0c0',
+                    },
+                  }}
+                >
+                  {open ? (
+                    <ChevronLeft sx={{ color: 'inherit' }} />
+                  ) : (
+                    <ChevronRight sx={{ color: 'inherit' }} />
+                  )}
+                </ListItemButton>
+              </ListItem>
             )}
-            </ListItemButton>
-            </ListItem>
-          )}
             
           </List>
           <Divider />
@@ -340,7 +350,7 @@ export default function NavBar({ children }) {
 
         <AppBar position="fixed" open={open}>
           <Toolbar id="toolbar">
-            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
               {resolvePageName()}
             </Typography>
 
@@ -353,10 +363,15 @@ export default function NavBar({ children }) {
           component="main"
           sx={{
             flexGrow: 1,
-            p: 5,
+            pt: 2.5,
             justifyContent: 'center',
             display: 'flex',
-            'boxShadow': 'inset 0 0 50px 20px rgba(0, 255, 0, 0.3)',
+            minHeight: 'calc(100vh - 64px)',
+            boxShadow: 'inset 0 0 30px 30px rgba(5, 5, 5, 0.2)',
+            position: 'relative', 
+            overflow: 'visible', 
+            marginBottom: 0, 
+            pb: 0, 
             transition: theme.transitions.create('margin', {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
@@ -369,8 +384,17 @@ export default function NavBar({ children }) {
             }),
           }}
         >
-          {children}
-        </Box>
+         
+            <Box sx={{
+              width: '100%',
+              pt: 2, 
+              pl: 5.2,
+              position: 'relative',
+              zIndex: 1
+            }}>
+              {children}
+            </Box>
+         </Box>
       </Box>
     </div>
   );

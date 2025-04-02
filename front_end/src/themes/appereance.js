@@ -3,6 +3,7 @@ import { alpha, getContrastRatio, createTheme } from '@mui/material/styles';
 const burgundyBase = '#7E0001';
 const burgundyLight = '#CD2626';
 const graphiteBackground = '#2A2A2A';
+const grryBackground = '#c0c0c0';
 const graphiteText = '#FFFFFF';
 const lightGray = '#4A4A4A';
 
@@ -22,6 +23,7 @@ const burgundyTheme = createTheme({
     background: {
       default: graphiteBackground,
       paper: alpha(graphiteBackground, 0.9),
+      gray: grryBackground,
     },
     text: {
       primary: graphiteText,
@@ -96,7 +98,7 @@ const burgundyTheme = createTheme({
         },
       },
     },
-    MuiMenu: {
+    MuiMyProfilenu: {
       styleOverrides: {
         paper: {
           backgroundColor: graphiteBackground,
@@ -104,7 +106,7 @@ const burgundyTheme = createTheme({
         },
       },
     },
-    MuiMenuItem: {
+    MuiMyProfilenuItem: {
       styleOverrides: {
         root: {
           color: graphiteText,

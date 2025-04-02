@@ -12,12 +12,16 @@ function Authorization() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
-
+    
     const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
+    const data = {
+      username: formData.get('username'),
+      email: formData.get('email'),
+      password: formData.get('password')
+    };
 
     try {
-      const url = isLogin
+      const url = isLogin 
         ? 'http://127.0.0.1:8000/api/user/login/'
         : 'http://127.0.0.1:8000/api/user/register/';
 
@@ -25,36 +29,34 @@ function Authorization() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(isLogin 
+          ? { username: data.username, password: data.password }
+          : { username: data.username, email: data.email, password: data.password }
+        ),
       });
 
-      const responseData = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
-        // Handle Django validation errors
-        if (response.status === 400) {
-          const errors = Object.values(responseData).flat().join('\n');
-          throw new Error(errors);
-        }
-        throw new Error(responseData.detail || 'Authentication failed');
+        throw new Error(result.detail || result.message || 'Authorization error');
       }
 
-      // Save tokens and user data
-      localStorage.setItem('access_token', responseData.tokens.access);
-      localStorage.setItem('refresh_token', responseData.tokens.refresh);
-      localStorage.setItem('user', JSON.stringify(responseData.user));
-
-      navigate('/'); // Redirect to home page
+      localStorage.setItem('user', JSON.stringify(result.user || { username: data.username }));
+      localStorage.setItem('token', result.access || result.token);
+      
+      window.location.href = '/';
+      
     } catch (error) {
-      console.error('Authentication error:', error);
-      setError(error.message || 'Something went wrong');
+      console.error('Œ¯Ë·Í‡:', error);
+      setError(error.message || 'Authorization error');
     }
   };
 
   return (
     <Container maxWidth="sm" sx={{ marginBottom: 8 }}>
-      <Paper sx={{ padding: 3, marginTop: 4, borderRadius: 4, backgroundColor: '#d4d4d4' }}>
+      <Paper sx={{ padding: 3, marginTop: 4, borderRadius: 4, backgroundColor: 'background.gray' }}>
         <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main', marginTop: 2 }}>
             Botanic Garden
@@ -65,12 +67,7 @@ function Authorization() {
         </Box>
 
         {error && (
-          <Typography variant="body1" sx={{
-            color: 'error.main',
-            textAlign: 'center',
-            marginBottom: 3,
-            whiteSpace: 'pre-line'
-          }}>
+          <Typography variant="body1" sx={{ color: 'error.main', textAlign: 'center', marginBottom: 3 }}>
             {error}
           </Typography>
         )}
@@ -78,47 +75,51 @@ function Authorization() {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} justifyContent="center">
             {!isLogin && (
-              <>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    name="email"
-                    type="email"
-                    required
-                    variant="outlined"
-                  />
-                </Grid>
-              </>
+              <Grid item xs={12}>
+                <TextField 
+                  fullWidth 
+                  label="Email" 
+                  name="email" 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  required 
+                  variant="outlined" 
+                  InputLabelProps={{ sx: { marginBottom: 2, color: 'gray' } }}
+                />
+              </Grid>
             )}
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Username"
-                name="username"
-                type="text"
-                required
-                variant="outlined"
+              <TextField 
+                fullWidth 
+                label="Username" 
+                name="username" 
+                type="text" 
+                placeholder="Example: botanic_garden" 
+                required 
+                variant="outlined" 
+                InputLabelProps={{ sx: { marginBottom: 2, color: 'gray' } }}
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Password"
-                name="password"
-                type="password"
-                required
-                inputProps={{ minLength: 8 }}
-                variant="outlined"
+              <TextField 
+                fullWidth 
+                label="Password" 
+                name="password" 
+                type="password" 
+                placeholder="Min 8 symbols, min 1 letter" 
+                inputProps={{ minLength: 8 }} 
+                required 
+                variant="outlined" 
+                InputLabelProps={{ sx: { marginBottom: 2, color: 'gray' } }}
               />
             </Grid>
             <Grid item xs={12}>
-              <Button
-                fullWidth
-                type="submit"
-                variant="contained"
-                size="large"
-                sx={{ marginTop: 2 }}
+              <Button 
+                fullWidth 
+                type="submit" 
+                variant="contained" 
+                size="large" 
+                sx={{ marginTop: 2, fontSize: '1rem', padding: '10px' }}
               >
                 {isLogin ? 'Log in' : 'Sign up'}
               </Button>
@@ -129,13 +130,11 @@ function Authorization() {
         <Box sx={{ textAlign: 'center', marginTop: 3 }}>
           <Typography variant="body1" sx={{ color: 'text.secondary' }}>
             {isLogin ? "No account yet? " : "Already have an account? "}
-            <Link
-              component="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError('');
-              }}
-              sx={{ color: 'primary.main' }}
+            <Link 
+              component="button" 
+              variant="body1" 
+              onClick={() => setIsLogin(!isLogin)} 
+              sx={{ color: 'primary.main', fontSize: '1rem' }}
             >
               {isLogin ? "Sign up" : "Log in"}
             </Link>

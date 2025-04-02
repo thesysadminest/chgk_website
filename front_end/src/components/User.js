@@ -5,5 +5,5 @@ export default class User {
 const tryUser = localStorage.getItem("user");
 if (tryUser == null) {
     localStorage.setItem("user", JSON.stringify(new User()));
-    alert("user null"); 
+    // alert("user null"); 
 }

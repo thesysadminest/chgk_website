@@ -4,15 +4,13 @@ import { styled } from '@mui/material/styles';
 import { useNavigate, Link } from 'react-router-dom';
 import { Person, PersonAdd } from '@mui/icons-material';
 
-const drawerWidth = 240;
-
 const Item = styled(Button)(({ theme }) => ({
   height: '100',
   textAlign: 'center',
   fontFamily: 'Roboto, sans-serif',
 }));
 
-const UserMenu = ({ open, handleDrawerClose }) => {
+const UserMenu = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const fontSize = '2vh';
@@ -24,7 +22,6 @@ const UserMenu = ({ open, handleDrawerClose }) => {
     console.error("Error parsing user data from localStorage:", e);
     user = { username: null, id: null };
   }
-
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -38,11 +35,7 @@ const UserMenu = ({ open, handleDrawerClose }) => {
   const id = openPopover ? 'simple-popover' : undefined;
 
   const handleProfileClick = () => {
-    if (user.id) {
-      navigate(`/user/${user.id}`);
-    } else {
-      navigate('/authorization');
-    }
+    navigate('/myprofile');
   };
 
   return (
@@ -55,7 +48,16 @@ const UserMenu = ({ open, handleDrawerClose }) => {
           <Person sx={{ color: '#FFFFFF' }} />
 
           <Popover
-            sx={{ mt: 2, ml: 2, mr: 3 }}
+            sx={{ 
+              mt: 2, 
+              ml: 2, 
+              mr: 3,
+              '& .MuiPaper-root': {
+                backgroundColor: '#424242', 
+                opacity: 1, 
+                color: '#FFFFFF',
+              }
+            }}
             id={id}
             open={openPopover}
             anchorEl={anchorEl}
@@ -78,7 +80,7 @@ const UserMenu = ({ open, handleDrawerClose }) => {
             <Box sx={{ p: 2 }}>
               <List>
                 {[
-                  ['Профиль', handleProfileClick], // Используем обработчик для перехода
+                  ['Профиль', handleProfileClick],
                   ['Настройки', '/settings'],
                   ['Мой рейтинг', '/myrating'],
                   ['Моя команда', '/myteam'],
@@ -86,11 +88,14 @@ const UserMenu = ({ open, handleDrawerClose }) => {
                   <ListItem disablePadding key={text[0]} sx={{ display: 'block', pb: 2 }}>
                     <ListItemButton
                       component={Link}
-                      to={typeof text[1] === 'function' ? '#' : text[1]} // Обрабатываем клик
-                      onClick={typeof text[1] === 'function' ? text[1] : handleClose} // Обрабатываем клик
+                      to={typeof text[1] === 'function' ? '#' : text[1]}
+                      onClick={typeof text[1] === 'function' ? text[1] : handleClose}
                       sx={{
                         justifyContent: 'center',
                         px: 2.5,
+                        '&:hover': {
+                          backgroundColor: '#616161',
+                        },
                       }}
                     >
                       <ListItemText
@@ -117,10 +122,11 @@ const UserMenu = ({ open, handleDrawerClose }) => {
                 }}
                 onClick={() => {
                   localStorage.removeItem('user');
+                  localStorage.removeItem('token');
                   window.location.reload(false);
                 }}
               >
-                <Typography variant="h6" sx={{ color: '#2A2A2A' }}> ВЫЙТИ </Typography>
+                <Typography variant="h6" sx={{ color: '#2A2A2A' }}>ВЫЙТИ</Typography>
               </Button>
             </Box>
           </Popover>

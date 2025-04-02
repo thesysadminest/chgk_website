@@ -7,7 +7,7 @@ import Lobby from "./pages/Lobby";
 import Question from "./pages/Questions";
 import Packs from "./pages/Packs";
 import Users from "./pages/Users";
-import Me from "./pages/Me";
+import MyProfile from "./pages/MyProfile";
 import User from "./components/User";
 import Authorization from "./pages/Authorization";
 import QuestionDetail from './pages/QuestionDetail';
@@ -15,6 +15,7 @@ import PackDetail from './pages/PackDetail';
 import AddQuestion from './pages/AddQuestion';
 import AddPack from './pages/AddPack';
 import UserDetail from './pages/UserDetail';
+import PackAddQuestion from './pages/PackAddQuestion';
 
 // I AM AN INTRUDER!!! DELETE ME IF YOU DON'T WANT ME HERE
 import GameMain from './pages/GameMain';
@@ -34,15 +35,17 @@ function MainContent() {
                 <Route path="/packs" element={<Packs />} />
                 <Route path="/pack/:id" element={<PackDetail />} />
                 <Route path="/users" element={<Users />} />
+                <Route path="/user/:id" element={<UserDetail />} />
                 <Route path="/questions" element={<Question />} />
                 <Route path="/question/:id" element={<QuestionDetail />} />
                 <Route path="/add-question" element={<AddQuestion />} />
                 <Route path="/add-pack" element={<AddPack />} />
                 <Route path="/user/:id" element={<UserDetail />} />
                 <Route path="/authorization" element={<Authorization />} />
+                <Route path="/add-pack/add-question" element={<PackAddQuestion />} />
+                <Route path="/myprofile" element={<MyProfile />} />
                 <Route path="/game/:id" element={<GameRedirect />} />
                 <Route path="/game/:id/:firstQuestionId" element={<GameMain />} />
-                
 
 
             </Routes>

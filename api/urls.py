@@ -10,7 +10,7 @@ urlpatterns = [
     
     path('pack/list', views.PackViewList.as_view(), name="pack-list"),
     path('pack/<int:pk>', views.PackView.as_view(), name="view-pack"),
-    path('pack/create/<int:pk>', views.PackCreate.as_view(), name="create-pack"),
+    path('pack/create', views.PackCreate.as_view(), name="create-pack"),
     path('pack/delete/<int:pk>', views.PackDelete.as_view(), name="delete-pack"),
     path('pack/update/<int:pk>', views.PackUpdate.as_view(), name="update-pack"),
     #path('pack/question/<int:pk>', views.AddQuestionToPack.as_view({'get' : 'list'}), name="add-q-to-pack"),
@@ -19,7 +19,7 @@ urlpatterns = [
 
     path('team/<int:pk>', views.TeamView.as_view(), name="view-team"),
     path('team/list', views.TeamViewList.as_view(), name="team-list"),
-    path('team/create/<int:pk>', views.TeamCreate.as_view(), name="create-team"),
+    path('team/create/', views.TeamCreate.as_view(), name="create-team"),
     path('team/update/<int:pk>', views.TeamUpdate.as_view(), name="update-team"),
     path('team/delete/<int:pk>', views.TeamDelete.as_view(), name="delete-team"),
     
