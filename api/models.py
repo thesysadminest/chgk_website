@@ -53,7 +53,7 @@ class Question(models.Model):
 
 class Pack(models.Model):
     name = models.TextField(default="Name")
-    questions = models.ManyToManyField(Question, related_name="pack")
+    questions = models.ManyToManyField(Question, related_name="questions")
     author_p = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="packs", null=True, blank=True)
     
     description = models.TextField(default="")
@@ -76,7 +76,7 @@ class Pack(models.Model):
 class GameAttempt(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="game_attempts")
     pack = models.ForeignKey(Pack, on_delete=models.CASCADE, related_name="pack_attempts")
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="question_attempts")
+    questions = models.ManyToManyField(Question, related_name="game_attempts")  
     is_correct = models.BooleanField(default=False)
     correct_answers = models.IntegerField(default=0)
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -1,45 +1,42 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import axiosInstance from "../components/axiosInstance";
 
 const GameRedirect = () => {
-  const { packId } = useParams();
+  const { id } = useParams(); // Изменено с packId на id, чтобы соответствовать Route path="/game/:id"
   const navigate = useNavigate();
 
   useEffect(() => {
     const startGame = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        if (!token) {
+        const access_token = localStorage.getItem('access_token');
+        if (!access_token) {
           console.error("Токен отсутствует. Перенаправляем на авторизацию.");
           navigate("/authorization");
+          return; // Добавлен return для прекращения выполнения функции
         }
 
-        const response = await axiosInstance.get(`http://127.0.0.1:8000/api/game/${packId}/start/`,
-          {
-            headers: {
-              "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-            }
+        const response = await axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/start/`, {
+          headers: {
+            "Authorization": `Bearer ${access_token}` // Используем уже полученный token
           }
-        );
-        console.log("Ответ API:", response.data);  // 🔍 Проверяем ответ от сервера
+        });
 
         const firstQuestionId = response.data?.first_question_id;
         if (firstQuestionId) {
-          navigate(`/game/${packId}/${firstQuestionId}`);
+          navigate(`/game/${id}/${firstQuestionId}`); // Перенаправляем на страницу игры
         } else {
           console.error("Ошибка: Нет вопросов в паке!");
-          navigate("/packs");  // Если нет вопросов, возвращаем на выбор квизов
+          navigate("/packs");
         }
       } catch (error) {
         console.error("Ошибка загрузки первого вопроса:", error);
-        navigate("/packs");  // Если сервер не отвечает, возвращаем на выбор квизов
+        navigate("/packs");
       }
     };
 
     startGame();
-  }, [packId, navigate]);
+  }, [id, navigate]);
 
   return <p>Загрузка игры...</p>;
 };

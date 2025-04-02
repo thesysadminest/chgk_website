@@ -29,11 +29,11 @@ class QuestionViewList(generics.ListCreateAPIView):
     
     serializer_class = QuestionSerializer
     permission_classes = [AllowAny]
-    """
+    
     def get_queryset(self):
       queryset = Question.objects.all()
       return queryset
-    """  
+     
 
 class QuestionView(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
@@ -42,11 +42,6 @@ class QuestionView(generics.ListCreateAPIView):
     def get_queryset(self):
       queryset = Question.objects.all().filter(id=self.kwargs['pk'])
       return queryset
-    
-    def get(self, request, question_id):
-        question = get_object_or_404(Question, id=question_id)
-        serializer = QuestionSerializer(question)
-        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class QuestionCreate(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
@@ -109,11 +104,11 @@ class PackView(generics.RetrieveAPIView):
 class PackViewList(generics.ListCreateAPIView):
     serializer_class = PackSerializer
     permission_classes = [AllowAny]
-    """
+    
     def get_queryset(self):
       queryset = Pack.objects.all()
       return queryset
-    """
+    
 class AddQuestionToPack(viewsets.ModelViewSet):
     queryset = Pack.objects.all()
     serializer_class = PackSerializer
@@ -180,32 +175,12 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        user = CustomUser.objects.get(username=request.data['username'])
-        refresh = RefreshToken.for_user(user)
-        response.data['token'] = str(refresh.access_token)
-        return response
-
-        
-class LoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        print("request:", request.data)  # �������� ������
-        
-        serializer = LoginSerializer(data=request.data)
-        
-        if not serializer.is_valid():
-            print("serializing error:", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        user = authenticate(username=request.data['username'], password=request.data['password'])
-        
-        if not user:
-            print("authentification failed")
-            return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
         
         refresh = RefreshToken.for_user(user)
+        
         return Response({
             'user': {
                 'id': user.id,
@@ -213,10 +188,44 @@ class LoginView(APIView):
                 'email': user.email,
                 'bio': user.bio,
             },
-            'token': str(refresh.access_token),
+            'tokens': {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }
+        }, status=status.HTTP_201_CREATED)
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        user = authenticate(
+            username=serializer.validated_data['username'],
+            password=serializer.validated_data['password']
+        )
+        
+        if not user:
+            return Response(
+                {"detail": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'bio': user.bio,
+            },
+            'tokens': {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }
         }, status=status.HTTP_200_OK)
-
-
 
 class UserViewList(generics.ListCreateAPIView):
     
@@ -317,7 +326,7 @@ class UserDelete(generics.DestroyAPIView):
 #      
 
 class GameStart(APIView):
-    authentication_classes = [JWTAuthentication]  
+    # authentication_classes = [JWTAuthentication]  
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pack_id):

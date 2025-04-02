@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     path('question/list', views.QuestionViewList.as_view(), name="question-list"),
     path('question/<int:pk>', views.QuestionView.as_view(), name="view-question"),
-    path('question/create/<int:pk>', views.QuestionCreate.as_view(), name="create-question"),
+    path('question/create/', views.QuestionCreate.as_view(), name="create-question"),
     path('question/delete/<int:pk>', views.QuestionDelete.as_view(), name="delete-question"),
     path('question/update/<int:pk>', views.QuestionUpdate.as_view(), name="update-question"),
     

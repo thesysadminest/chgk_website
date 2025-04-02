@@ -5,7 +5,7 @@ import { Box, Typography, TextField, Button, Link as MuiLink } from '@mui/materi
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 
 const GameMain = () => {
-  const { packId, questionId } = useParams();
+  const { id, firstQuestionId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [question, setQuestion] = useState(null);
@@ -20,10 +20,10 @@ const GameMain = () => {
   });
 
   useEffect(() => {
-    axiosInstance.get(`http://127.0.0.1:8000/api/game/${packId}/${questionId}`,
+    axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}`,
       {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          "Authorization": `Bearer ${localStorage.getItem('access_token')}`
         }
       })
       .then(response => {
@@ -31,9 +31,9 @@ const GameMain = () => {
         setTimeLeft(60);
       })
       .catch(error => {
-        console.error('Ошибка при загрузке данных:', error);
+        console.error('Error loading:', error);
       });
-  }, [packId, questionId]);
+  }, [id, firstQuestionId]);
 
   useEffect(() => {
     if (timeLeft === 0) {
@@ -51,16 +51,16 @@ const GameMain = () => {
 
   const handleSubmit = () => {
     if (user.username && answer.trim()) {
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem('access_token');
       if (!token) {
         console.error("Токен отсутствует. Перенаправляем на авторизацию.");
         navigate("/authorization");
       }
 
-      axiosInstance.post(`http://127.0.0.1:8000/api/game/${packId}/${questionId}/submit`, { answer },
+      axiosInstance.post(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/submit`, { answer },
         {
           headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            "Authorization": `Bearer ${localStorage.getItem('access_token')}`
           }
         })
         .then(response => {
@@ -75,18 +75,18 @@ const GameMain = () => {
   };
 
   const handleNextQuestion = () => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem('access_token');
     if (!token) {
       console.error("Токен отсутствует. Перенаправляем на авторизацию.");
       navigate("/authorization");
     }
 
-    axiosInstance.get(`http://127.0.0.1:8000/api/game/${packId}/${questionId}/next`)
+    axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/next`)
       .then(response => {
         if (response.data.next_question_id) {
-          navigate(`/game/${packId}/${response.data.next_question_id}`);
+          navigate(`/game/${id}/${response.data.next_question_id}`);
         } else {
-          navigate(`/game/${packId}/results`);
+          navigate(`/game/${id}/results`);
         }
       })
       .catch(error => {
