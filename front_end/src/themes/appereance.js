@@ -98,7 +98,7 @@ const burgundyTheme = createTheme({
         },
       },
     },
-    MuiMyProfilenu: {
+    MuiMenu: {
       styleOverrides: {
         paper: {
           backgroundColor: graphiteBackground,
@@ -106,7 +106,7 @@ const burgundyTheme = createTheme({
         },
       },
     },
-    MuiMyProfilenuItem: {
+    MuiMenuItem: {
       styleOverrides: {
         root: {
           color: graphiteText,
