@@ -25,6 +25,13 @@ const burgundyTheme = createTheme({
       paper: alpha(graphiteBackground, 0.9),
       gray: grryBackground,
     },
+    typography: {
+      fontFamily: [
+        '"Roboto"', 
+        '"Arial"',
+        'sans-serif',
+      ].join(","),
+    },
     text: {
       primary: graphiteText,
       gray: lightGray,

@@ -81,7 +81,7 @@ const UserMenu = () => {
             <Box sx={{ p: 2 }}>
               <List>
                 {[
-                  ['Профиль', handleProfileClick], // Используем обработчик для перехода
+                  ['Профиль', handleProfileClick],
                   ['Настройки', '/settings'],
                   ['Мой рейтинг', '/myrating'],
                   ['Моя команда', '/myteam'],

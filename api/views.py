@@ -268,66 +268,7 @@ class CurrentUserView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
     
-###     GAME INTERFACE      ###
-
-
-#class GameViewSet(viewsets.ViewSet):
-    
-#   @action(detail=True, methods=['get'])
-#    def start(self, request, pk=None):
-#        pack = get_object_or_404(Pack, pk=pk)
-#        questions = pack.questions.all()
-#        if not questions.exists():
-#            return Response({"message": "no questions"}, status=status.HTTP_400_BAD_REQUEST)
-#        
-#        request.session[f'game_{pk}'] = {"index": 0, "correct": 0, "incorrect": 0}
-#        return Response(QuestionSerializer(questions.first()).data)
-#    
-#    @action(detail=True, methods=['post'])
-#    def check(self, request, pk=None):
-#       session_key = f'game_{pk}'
-#        game_data = request.session.get(session_key)
-#        if not game_data:
-#            return Response({"message": "game did not start"}, status=status.HTTP_400_BAD_REQUEST)
-#        
-#        pack = get_object_or_404(Pack, pk=pk)
-#        questions = pack.questions.all()
-#        index = game_data["index"]
-#        if index >= len(questions):
-#            return Response({"message": "game over"}, status=status.HTTP_400_BAD_REQUEST)
-#        
-#        question = questions[index]
-#        user_answer = request.data.get("answer", "").strip().lower()
-#        correct_answer = question.answer.strip().lower()
-#        
-#        if user_answer == correct_answer:
-#            game_data["correct"] += 1
-#            is_correct = True
-#        else:
-#            game_data["incorrect"] += 1
-#            is_correct = False
-#        
-#        game_data["index"] += 1
-#        request.session[session_key] = game_data
-#        
-#        return Response({
-#            "is_correct": is_correct,
-#            "correct_answer": correct_answer,
-#            "next_question": QuestionSerializer(questions[game_data["index"]]).data if game_data["index"] < len(questions) else None
-#        })
-#    
-#    @action(detail=True, methods=['get'])
-#    def result(self, request, pk=None):
-#        session_key = f'game_{pk}'
-#        game_data = request.session.pop(session_key, None)
-#        if not game_data:
-#            return Response({"message": "game not found"}, status=status.HTTP_400_BAD_REQUEST)
-#        
-#        return Response({
-#            "correct": game_data["correct"],
-#            "incorrect": game_data["incorrect"]
-#        })
-#      
+###     GAME INTERFACE      ###     
 
 class GameStart(APIView):
     # authentication_classes = [JWTAuthentication]  
