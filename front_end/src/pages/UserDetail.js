@@ -31,7 +31,7 @@ const StyledProfileBox = styled(Paper)(({ theme }) => ({
 }));
 
 const UserDetail = () => {
-  const { userId } = useParams();
+  const userId = useParams().id;
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [userQuestions, setUserQuestions] = useState([]);
@@ -46,13 +46,15 @@ const UserDetail = () => {
       try {
         // Получаем основные данные пользователя (публичные)
         const userResponse = await axios.get(
-          `http://127.0.0.1:8000/user/${userId}/public/`
+          `http://127.0.0.1:8000/api/user/${userId}`
         );
         
-        setUserData(userResponse.data);
+        setUserData(userResponse.data[0]);
 
+        // дальше закомментил потому что на бэке нет таких методов
+        
         // Получаем публичные вопросы пользователя
-        const questionsResponse = await axios.get(
+        /*const questionsResponse = await axios.get(
           `http://127.0.0.1:8000/user/${userId}/questions/public/`
         );
         setUserQuestions(questionsResponse.data);
@@ -67,7 +69,7 @@ const UserDetail = () => {
         const gameHistoryResponse = await axios.get(
           `http://127.0.0.1:8000/user/${userId}/game_attempts/public/`
         );
-        setGameHistory(gameHistoryResponse.data);
+        setGameHistory(gameHistoryResponse.data);*/
 
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
@@ -107,7 +109,7 @@ const UserDetail = () => {
       </Box>
     );
   }
-
+  
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
       <StyledProfileBox>

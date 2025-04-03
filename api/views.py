@@ -249,6 +249,24 @@ class UserDelete(generics.DestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     queryset = CustomUser.objects.all()
+
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """
+        Получение данных текущего авторизованного пользователя
+        """
+        try:
+            user = request.user
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "Не удалось получить данные пользователя", "details": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
 ###     GAME INTERFACE      ###
 

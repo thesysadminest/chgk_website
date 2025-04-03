@@ -27,6 +27,7 @@ urlpatterns = [
     path('user/list', views.UserViewList.as_view(), name="user-list"),
     path('user/update/<int:pk>', views.UserUpdate.as_view(),name="update-profile"),
     path('user/delete/<int:pk>', views.UserDelete.as_view(), name="delete-user"),
+    path('user/me/', views.CurrentUserView.as_view(), name='current-user'),
     
     path('game/<int:pack_id>/start/', views.GameStart.as_view(), name='start-game'),
     path('game/<int:pack_id>/<int:question_id>/', views.QuestionDetailView.as_view(), name='question-detail'),
