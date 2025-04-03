@@ -43,13 +43,14 @@ function Authorization() {
         throw new Error(result.detail || result.message || 'Authorization error');
       }
 
+      localStorage.setItem('access_token', result.access || result.token);  // Ключ 'access_token' вместо 'token'
+      localStorage.setItem('refresh_token', result.refresh);  // Если сервер возвращает refresh-токен
       localStorage.setItem('user', JSON.stringify(result.user || { username: data.username }));
-      localStorage.setItem('token', result.access || result.token);
       
       window.location.href = '/';
       
     } catch (error) {
-      console.error('������:', error);
+      console.error('������:', error);
       setError(error.message || 'Authorization error');
     }
   };

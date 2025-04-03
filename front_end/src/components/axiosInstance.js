@@ -6,16 +6,15 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   async (config) => {
-    let access_token = localStorage.getItem("access_token");
-    if (!access_token) {
-      window.location.href = "/authorization";  // �������� �� �����������
-    } else {
+    const access_token = localStorage.getItem("access_token");
+    if (access_token) {  // Только добавляем заголовок, если токен есть
       config.headers["Authorization"] = `Bearer ${access_token}`;
     }
+    // Если токена нет - не делаем ничего (перенаправление будет в компоненте)
     return config;
   },
   (error) => Promise.reject(error)
-);
+);  
 
 axiosInstance.interceptors.response.use(
   (response) => response,
@@ -30,7 +29,7 @@ axiosInstance.interceptors.response.use(
 
         return axiosInstance(error.config);
       } catch (refreshError) {
-        console.error("������ ���������� ������:", refreshError);
+        console.error("������ ���������� ������:", refreshError);
         localStorage.clear();
         window.location.href = "/authorization";
       }

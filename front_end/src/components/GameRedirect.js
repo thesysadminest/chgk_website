@@ -3,38 +3,35 @@ import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../components/axiosInstance";
 
 const GameRedirect = () => {
-  const { id } = useParams(); // Изменено с packId на id, чтобы соответствовать Route path="/game/:id"
+  const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     const startGame = async () => {
+      const access_token = localStorage.getItem('access_token');
+      if (!access_token) {
+        navigate("/authorization");
+        return;
+      }
+  
       try {
-        const access_token = localStorage.getItem('access_token');
-        if (!access_token) {
-          console.error("Токен отсутствует. Перенаправляем на авторизацию.");
-          navigate("/authorization");
-          return; // Добавлен return для прекращения выполнения функции
-        }
-
-        const response = await axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/start/`, {
-          headers: {
-            "Authorization": `Bearer ${access_token}` // Используем уже полученный token
-          }
-        });
-
+        const response = await axiosInstance.get(`/game/${id}/start/`);
         const firstQuestionId = response.data?.first_question_id;
+        
         if (firstQuestionId) {
-          navigate(`/game/${id}/${firstQuestionId}`); // Перенаправляем на страницу игры
+          navigate(`/game/${id}/${firstQuestionId}`);
         } else {
-          console.error("Ошибка: Нет вопросов в паке!");
           navigate("/packs");
         }
       } catch (error) {
-        console.error("Ошибка загрузки первого вопроса:", error);
-        navigate("/packs");
+        if (error.response?.status === 401) {
+          navigate("/authorization");
+        } else {
+          navigate("/packs");
+        }
       }
     };
-
+  
     startGame();
   }, [id, navigate]);
 

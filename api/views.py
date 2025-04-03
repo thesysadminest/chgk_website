@@ -209,10 +209,8 @@ class LoginView(APIView):
         return Response({
             'success': True,
             'user': serializer.validated_data['user'],
-            'tokens': {
-                'refresh': serializer.validated_data['refresh'],
-                'access': serializer.validated_data['access']
-            }
+            'refresh': serializer.validated_data['refresh'],
+            'access': serializer.validated_data['access']
         }, status=status.HTTP_200_OK)
 
 class UserViewList(generics.ListCreateAPIView):
@@ -339,7 +337,7 @@ class GameStart(APIView):
 class QuestionDetailView(APIView):
     def get(self, request, pack_id, question_id):
         pack = get_object_or_404(Pack, id=pack_id)
-        question = get_object_or_404(pack.questions, id=question_id, pack = pack)
+        question = get_object_or_404(pack.questions, id=question_id)
         
         serializer = QuestionSerializer(question)
         return Response(serializer.data)
@@ -350,7 +348,7 @@ class SubmitAnswerView(APIView):
     
     def post(self, request, pack_id, question_id):
         pack = get_object_or_404(Pack, id=pack_id)
-        question = get_object_or_404(Question.objects.filter(pack=pack), id=question_id)
+        question = question = get_object_or_404(pack.questions, id=question_id)
         
         user_answer = (request.data.get("answer") or "").strip().lower()
         correct_answer = (question.answer_text or "").strip().lower()
