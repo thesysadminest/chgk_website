@@ -55,7 +55,7 @@ const QuestionDetail = () => {
         setAnswerColor('#CD5C5C');
       }
     } else {
-      navigate('/me');
+      navigate('/authorization');
     }
   };
 
@@ -119,7 +119,7 @@ const QuestionDetail = () => {
         </>
       ) : (
         <Typography variant="h6" sx={{ mt: 2 }}>
-          Для ввода и проверки ответа необходимо <MuiLink component={Link} to="/me" state={{ from: location }} underline="hover">авторизоваться</MuiLink>.
+          Для ввода и проверки ответа необходимо <MuiLink component={Link} to="/authorization" state={{ from: location }} underline="hover">авторизоваться</MuiLink>.
         </Typography>
       )}
     </Box>

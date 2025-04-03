@@ -4,7 +4,6 @@ import {
   Box, 
   Typography, 
   Avatar, 
-  Button, 
   Divider, 
   List, 
   ListItem, 
@@ -13,12 +12,13 @@ import {
   Chip,
   Tabs,
   Tab,
-  Paper
+  Paper,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import EmailIcon from '@mui/icons-material/Email';
-import PersonIcon from '@mui/icons-material/Person';
 import QuizIcon from '@mui/icons-material/Quiz';
 import GroupIcon from '@mui/icons-material/Group';
 import HistoryIcon from '@mui/icons-material/History';
@@ -36,61 +36,42 @@ const UserDetail = () => {
   const [userData, setUserData] = useState(null);
   const [userQuestions, setUserQuestions] = useState([]);
   const [userPacks, setUserPacks] = useState([]);
-  const [userTeams, setUserTeams] = useState([]);
   const [gameHistory, setGameHistory] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [isCurrentUser, setIsCurrentUser] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        
-        // Получаем данные пользователя
+        // Получаем основные данные пользователя (публичные)
         const userResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
+          `http://127.0.0.1:8000/user/${userId}/public/`
         );
         
         setUserData(userResponse.data);
-        setIsCurrentUser(currentUser?.id.toString() === userId);
 
-        // Получаем вопросы пользователя
+        // Получаем публичные вопросы пользователя
         const questionsResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/questions/`,
-          { headers: { 'Authorization': `Bearer ${token}` } }
+          `http://127.0.0.1:8000/user/${userId}/questions/public/`
         );
         setUserQuestions(questionsResponse.data);
 
-        // Получаем пакеты пользователя
+        // Получаем публичные пакеты пользователя
         const packsResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/packs/`,
-          { headers: { 'Authorization': `Bearer ${token}` } }
+          `http://127.0.0.1:8000/api/user/${userId}/packs/public/`
         );
         setUserPacks(packsResponse.data);
 
-        // Получаем команды пользователя
-        const teamsResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/teams/`,
-          { headers: { 'Authorization': `Bearer ${token}` } }
-        );
-        setUserTeams(teamsResponse.data);
-
-        // Получаем историю игр
+        // Получаем публичную историю игр
         const gameHistoryResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/game_attempts/`,
-          { headers: { 'Authorization': `Bearer ${token}` } }
+          `http://127.0.0.1:8000/user/${userId}/game_attempts/public/`
         );
         setGameHistory(gameHistoryResponse.data);
 
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
+        setError(error.response?.data?.detail || error.message || 'Ошибка загрузки данных');
       } finally {
         setLoading(false);
       }
@@ -104,11 +85,27 @@ const UserDetail = () => {
   };
 
   if (loading) {
-    return <Typography>Загрузка профиля...</Typography>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
   }
 
   if (!userData) {
-    return <Typography>Пользователь не найден</Typography>;
+    return (
+      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+        <Alert severity="warning">Пользователь не найден</Alert>
+      </Box>
+    );
   }
 
   return (
@@ -120,20 +117,13 @@ const UserDetail = () => {
           </Avatar>
           <Box>
             <Typography variant="h4">{userData.username}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-              <EmailIcon color="action" sx={{ mr: 1 }} />
-              <Typography variant="body1" color="text.secondary">
-                {userData.email || 'Email не указан'}
-              </Typography>
-            </Box>
-            {isCurrentUser && (
-              <Button 
-                variant="outlined" 
-                sx={{ mt: 2 }}
-                onClick={() => navigate(`/user/${userId}/edit`)}
-              >
-                Редактировать профиль
-              </Button>
+            {userData.email && (
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                <EmailIcon color="action" sx={{ mr: 1 }} />
+                <Typography variant="body1" color="text.secondary">
+                  {userData.email}
+                </Typography>
+              </Box>
             )}
           </Box>
         </Box>
@@ -155,18 +145,12 @@ const UserDetail = () => {
             label={`Пакетов: ${userPacks.length}`} 
             variant="outlined" 
           />
-          <Chip 
-            icon={<PersonIcon />} 
-            label={`Команд: ${userTeams.length}`} 
-            variant="outlined" 
-          />
         </Box>
       </StyledProfileBox>
 
       <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 3 }}>
         <Tab label="Вопросы" icon={<QuizIcon />} />
         <Tab label="Пакеты" icon={<GroupIcon />} />
-        <Tab label="Команды" icon={<PersonIcon />} />
         <Tab label="История игр" icon={<HistoryIcon />} />
       </Tabs>
 
@@ -189,7 +173,7 @@ const UserDetail = () => {
               ))}
             </List>
           ) : (
-            <Typography>Пользователь еще не создал вопросов</Typography>
+            <Typography>Пользователь еще не создал публичных вопросов</Typography>
           )}
         </Paper>
       )}
@@ -212,50 +196,18 @@ const UserDetail = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={pack.name}
-                    secondary={`${pack.questions.length} вопросов · ${new Date(pack.pub_date_p).toLocaleDateString()}`}
+                    secondary={'${pack.questions?.length || 0} вопросов'}
                   />
                 </ListItem>
               ))}
             </List>
           ) : (
-            <Typography>Пользователь еще не создал пакетов</Typography>
+            <Typography>Пользователь еще не создал публичных пакетов</Typography>
           )}
         </Paper>
       )}
 
       {activeTab === 2 && (
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>Команды</Typography>
-          {userTeams.length > 0 ? (
-            <List>
-              {userTeams.map((team) => (
-                <ListItem 
-                  key={team.id}
-                  button
-                  onClick={() => navigate(`/team/${team.id}`)}
-                >
-                  <ListItemAvatar>
-                    <Avatar>
-                      <PersonIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={team.name}
-                    secondary={`Очки: ${team.team_score}`}
-                  />
-                  {team.captain?.id.toString() === userId && (
-                    <Chip label="Капитан" size="small" color="primary" />
-                  )}
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>Пользователь не состоит в командах</Typography>
-          )}
-        </Paper>
-      )}
-
-      {activeTab === 3 && (
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>История игр</Typography>
           {gameHistory.length > 0 ? (
@@ -263,12 +215,12 @@ const UserDetail = () => {
               {gameHistory.map((attempt) => (
                 <ListItem key={attempt.id}>
                   <ListItemText
-                    primary={`Пак: ${attempt.pack.name}`}
+                    primary={`Пакет: ${attempt.pack?.name || 'Неизвестно'}`}
                     secondary={
                       <>
                         <span>{new Date(attempt.timestamp).toLocaleString()}</span>
                         <br />
-                        <span>Правильных ответов: {attempt.correct_answers} из {attempt.pack.questions.length}</span>
+                        <span>Правильных ответов: {attempt.correct_answers}</span>
                       </>
                     }
                   />
@@ -276,7 +228,7 @@ const UserDetail = () => {
               ))}
             </List>
           ) : (
-            <Typography>История игр пуста</Typography>
+            <Typography>Публичная история игр отсутствует</Typography>
           )}
         </Paper>
       )}
