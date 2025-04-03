@@ -31,12 +31,13 @@ const UserMenu = () => {
     setAnchorEl(null);
   };
 
-  const openPopover = Boolean(anchorEl);
-  const id = openPopover ? 'simple-popover' : undefined;
-
   const handleProfileClick = () => {
     navigate('/myprofile');
+    handleClose();
   };
+
+  const openPopover = Boolean(anchorEl);
+  const id = openPopover ? 'simple-popover' : undefined;
 
   return (
     <>
@@ -80,7 +81,7 @@ const UserMenu = () => {
             <Box sx={{ p: 2 }}>
               <List>
                 {[
-                  ['Профиль', handleProfileClick],
+                  ['Профиль', handleProfileClick], // Используем обработчик для перехода
                   ['Настройки', '/settings'],
                   ['Мой рейтинг', '/myrating'],
                   ['Моя команда', '/myteam'],

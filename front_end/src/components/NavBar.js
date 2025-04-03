@@ -205,6 +205,8 @@ export default function NavBar({ children }) {
       return 'Добавить пак';
     case '/add-pack/add-question':
       return 'Добавить пак';
+    case '/myprofile':
+      return 'Мой профиль';
     default:
       return '';
   }

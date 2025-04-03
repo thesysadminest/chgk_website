@@ -82,34 +82,39 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True, required=True)
 
-    def validate(self, attrs):
-        username = attrs.get('username')
-        password = attrs.get('password')
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
 
         if not username or not password:
-            raise serializers.ValidationError("Both username and password are required.")
+            raise serializers.ValidationError({
+                'error': 'Both username and password are required.'
+            })
 
         user = CustomUser.objects.filter(username=username).first()
         
         if not user:
-            raise serializers.ValidationError({"username": "User not found."})
+            raise serializers.ValidationError({
+                'error': 'Invalid username or password.'
+            })
 
         if not user.check_password(password):
-            raise serializers.ValidationError({"password": "Incorrect password."})
+            raise serializers.ValidationError({
+                'error': 'Invalid username or password.'
+            })
 
         refresh = RefreshToken.for_user(user)
-        return {
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'bio': user.bio,
-            },
-            'tokens': {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
+        
+        data['user'] = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'bio': user.bio,
         }
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        
+        return data
 
 class GameAttemptSerializer(serializers.ModelSerializer):
     class Meta:

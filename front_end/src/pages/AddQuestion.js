@@ -65,7 +65,7 @@ const AddQuestion = () => {
 
   const handleAddToMyPack = async () => {
     if (!isAuthenticated) return;
-
+    // Реализация добавления в мой пак
   };
 
   if (loading) {
@@ -94,12 +94,12 @@ const AddQuestion = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ maxWidth: 800, mx: 'auto', pt: 0 }}>
+      <Typography variant="h4" >
         Создание нового вопроса
       </Typography>
       
-      <Alert severity="warning" sx={{ mb: 2 }}>
+      <Alert severity="warning" sx={{ mb: 1 }}>
         Пожалуйста, убедитесь, что ваш вопрос этичен и не затрагивает острые социальные, 
         политические или религиозные темы. Вопросы, нарушающие правила сообщества, 
         будут удалены.
@@ -114,6 +114,7 @@ const AddQuestion = () => {
         multiline
         rows={4}
         required
+        sx={{ mb: 0 }}
       />
 
       <TextField
@@ -123,6 +124,7 @@ const AddQuestion = () => {
         onChange={(e) => setCorrectAnswer(e.target.value)}
         margin="normal"
         required
+        sx={{ mb: 2 }}
       />
 
       <TextField
@@ -134,63 +136,59 @@ const AddQuestion = () => {
         multiline
         rows={2}
         helperText="Можно указать источники, пояснения или примечания"
+        sx={{ mb: 4 }}
       />
 
       <Box sx={{ 
-  display: 'flex', 
-  justifyContent: 'space-between', 
-  mt: 6, // Увеличенный отступ сверху
-  gap: 2,
-  position: 'sticky',
-  bottom: 20,
-  p: 2,
-}}>
-  <Button 
-    variant="contained" 
-    onClick={handleAddToOpenPack}
-    disabled={!questionText || !correctAnswer}
-    sx={{
-      flex: 1,
-      bgcolor: !questionText || !correctAnswer ? '#f5f5f5' : '#8e24aa', // Бордовый в активном состоянии
-      color: !questionText || !correctAnswer ? '#bdbdbd' : '#ffffff', // Светло-серый в неактивном
-      '&:hover': {
-        bgcolor: !questionText || !correctAnswer ? '#f5f5f5' : '#7b1fa2'
-      },
-      fontSize: '0.875rem',
-      py: 1.5,
-      borderRadius: 1,
-      boxShadow: 'none',
-      border: !questionText || !correctAnswer ? '1px solid #e0e0e0' : 'none',
-      textTransform: 'none',
-      fontWeight: 500
-    }}
-  >
-    Добавить в открытый пак
-  </Button>
-  <Button 
-    variant="contained" 
-    onClick={handleAddToMyPack}
-    disabled={!questionText || !correctAnswer}
-    sx={{
-      flex: 1,
-      bgcolor: !questionText || !correctAnswer ? '#f5f5f5' : '#8e24aa', // Бордовый в активном состоянии
-      color: !questionText || !correctAnswer ? '#bdbdbd' : '#ffffff', // Светло-серый в неактивном
-      '&:hover': {
-        bgcolor: !questionText || !correctAnswer ? '#f5f5f5' : '#7b1fa2'
-      },
-      fontSize: '0.875rem',
-      py: 1.5,
-      borderRadius: 1,
-      boxShadow: 'none',
-      border: !questionText || !correctAnswer ? '1px solid #e0e0e0' : 'none',
-      textTransform: 'none',
-      fontWeight: 500
-    }}
-  >
-    Добавить в мой пак
-  </Button>
-</Box>
-</Box>
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        gap: 2,
+        mb: 3
+      }}>
+        <Button 
+          variant="contained" 
+          onClick={handleAddToOpenPack}
+          disabled={!questionText || !correctAnswer}
+          sx={{
+            flex: 1,
+            bgcolor: !questionText || !correctAnswer ? '#f5f5f5' : '#752021',
+            color: !questionText || !correctAnswer ? '#bdbdbd' : '#ffffff',
+            '&:hover': {
+              bgcolor: !questionText || !correctAnswer ? '#f5f5f5' : '#c23639'
+            },
+            py: 1.5,
+            borderRadius: 1,
+            boxShadow: 'none',
+            border: !questionText || !correctAnswer ? '1px solid #e0e0e0' : 'none',
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Добавить в открытый пак
+        </Button>
+        <Button 
+          variant="contained" 
+          onClick={handleAddToMyPack}
+          disabled={!questionText || !correctAnswer}
+          sx={{
+            flex: 1,
+            bgcolor: !questionText || !correctAnswer ? '#f5f5f5' : '#752021',
+            color: !questionText || !correctAnswer ? '#bdbdbd' : '#ffffff',
+            '&:hover': {
+              bgcolor: !questionText || !correctAnswer ? '#f5f5f5' : '#c23639'
+            },
+            py: 1.5,
+            borderRadius: 1,
+            boxShadow: 'none',
+            border: !questionText || !correctAnswer ? '1px solid #e0e0e0' : 'none',
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Добавить в мой пак
+        </Button>
+      </Box>
+    </Box>
   );
 };
 
