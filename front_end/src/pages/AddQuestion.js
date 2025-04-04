@@ -71,7 +71,9 @@ const AddQuestion = () => {
       if (questionResponse.status === 201) {
         const questionId = questionResponse.data.id;
         
-       
+        
+      // потом раскомментировать
+       /*
         if (packType === 'open') {
           await axios.post(
             'http://127.0.0.1:8000/api/pack/open/add_question/',
@@ -83,7 +85,7 @@ const AddQuestion = () => {
             { question_id: questionId },
             { headers: { 'Authorization': `Bearer ${token}` } }
           );
-        }
+        }*/
 
         alert(`Вопрос успешно добавлен в ${packType === 'open' ? 'открытый' : 'ваш'} пак!`);
         setQuestionText('');

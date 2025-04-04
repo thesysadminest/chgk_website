@@ -31,11 +31,6 @@ const UserMenu = () => {
     setAnchorEl(null);
   };
 
-  const handleProfileClick = () => {
-    navigate('/myprofile');
-    handleClose();
-  };
-
   const openPopover = Boolean(anchorEl);
   const id = openPopover ? 'simple-popover' : undefined;
 
@@ -81,7 +76,7 @@ const UserMenu = () => {
             <Box sx={{ p: 2 }}>
               <List>
                 {[
-                  ['Профиль', handleProfileClick],
+                  ['Профиль', '/myprofile'],
                   ['Настройки', '/settings'],
                   ['Мой рейтинг', '/myrating'],
                   ['Моя команда', '/myteam'],
@@ -89,8 +84,8 @@ const UserMenu = () => {
                   <ListItem disablePadding key={text[0]} sx={{ display: 'block', pb: 2 }}>
                     <ListItemButton
                       component={Link}
-                      to={typeof text[1] === 'function' ? '#' : text[1]}
-                      onClick={typeof text[1] === 'function' ? text[1] : handleClose}
+                      to={text[1]}
+                      onClick={handleClose}
                       sx={{
                         justifyContent: 'center',
                         px: 2.5,

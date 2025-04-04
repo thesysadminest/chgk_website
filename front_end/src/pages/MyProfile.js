@@ -38,7 +38,7 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('access_token');
         const userData = JSON.parse(localStorage.getItem('user'));
         
         if (!token || !userData) {
@@ -47,7 +47,7 @@ const MyProfile = () => {
         }
 
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userData.id}/`,
+          `http://127.0.0.1:8000/api/user/${userData.id}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`
@@ -55,7 +55,7 @@ const MyProfile = () => {
           }
         );
         
-        setUser(response.data);
+        setUser(response.data[0]);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
         navigate('/authorization');
@@ -99,6 +99,7 @@ const MyProfile = () => {
   if (!user) {
     return <Typography>Пользователь не найден</Typography>;
   }
+  
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
