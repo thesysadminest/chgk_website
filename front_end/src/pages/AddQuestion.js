@@ -78,8 +78,6 @@ const AddQuestion = () => {
             { question_id: questionId },
             { headers: { 'Authorization': `Bearer ${token}` } }
           );
-        } else {
-          // Логика добавления в мой пак
           await axios.post(
             'http://127.0.0.1:8000/api/pack/my/add_question/',
             { question_id: questionId },

@@ -102,11 +102,11 @@ const GameMain = () => {
             {question.question_text}
           </Typography>
           <Typography variant="subtitle1" sx={{ mb: 2, color: 'gray' }}>
-            Оставшееся время: {timeLeft} сек
+            Time left: {timeLeft} 
           </Typography>
           <TextField
             InputLabelProps={{ shrink: true }}
-            label="Ваш ответ"
+            label="Your answer"
             multiline
             rows={3}
             value={answer}
@@ -118,10 +118,10 @@ const GameMain = () => {
           />
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button variant="contained" color="primary" onClick={handleSubmit}>
-              Проверить
+              Check
             </Button>
             <Button variant="contained" color="secondary" sx={{ ml: 2 }} onClick={handleNextQuestion}>
-              Дальше
+              Next
             </Button>
           </Box>
           <Typography variant="subtitle1" sx={{ mt: 2, color: answerColor }}>
@@ -129,7 +129,7 @@ const GameMain = () => {
           </Typography>
         </>
       ) : (
-        <Typography variant="h6">Загрузка вопроса...</Typography>
+        <Typography variant="h6">Loading question...</Typography>
       )}
     </Box>
   );

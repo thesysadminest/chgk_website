@@ -44,7 +44,7 @@ const UserDetail = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Получаем основные данные пользователя (публичные)
+       
         const userResponse = await axios.get(
           `http://127.0.0.1:8000/api/user/${userId}`
         );

@@ -17,10 +17,8 @@ sheet.replaceSync(`
   }
 `);
 
-// Применяем стили к документу
 // document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 
-// Добавляем саму рамку
 //const overlay = document.createElement('div');
 //overlay.className = 'blur-overlay';
 //document.body.appendChild(overlay);

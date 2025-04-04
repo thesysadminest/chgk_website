@@ -39,7 +39,7 @@ const Questions = () => {
   };
 
   const handleToPacks = () => {
-    navigate('/packs'); // Или на страницу списка вопросов, если она отличается
+    navigate('/packs'); 
   };
 
   const requestSearch = (searchValue) => {
@@ -114,10 +114,10 @@ const Questions = () => {
             },
           },
           '& .visited-row': {
-            color: 'grey', // Серый цвет текста для посещённых строк
+            color: 'grey', 
           },
         }}
-        getRowClassName={(params) => visited[params.id] ? 'visited-row' : ''} // Добавляем класс для посещённых строк
+        getRowClassName={(params) => visited[params.id] ? 'visited-row' : ''} 
         onRowClick={handleRowClick}
       />
     </Box>

@@ -40,7 +40,7 @@ const Packs = () => {
   };
 
   const handleGoToQuestions = () => {
-    navigate('/questions'); // Переход к банку вопросов
+    navigate('/questions');
   };
 
   const requestSearch = (searchValue) => {
@@ -108,10 +108,10 @@ const Packs = () => {
           border: 1, 
           borderColor: 'grey.300',
           '& .MuiDataGrid-cell': {
-            color: 'white', // Белый цвет текста в ячейках
+            color: 'white',
           },
           '& .MuiDataGrid-columnHeader': {
-            color: 'white', // Белый цвет текста в заголовках
+            color: 'white', 
           },
         }}
         onRowClick={handleRowClick}

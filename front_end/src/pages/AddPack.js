@@ -32,7 +32,6 @@ const AddPack = () => {
           throw new Error('Требуется авторизация');
         }
 
-        // 1. Проверяем авторизацию
         const authResponse = await axios.get('http://127.0.0.1:8000/api/user/me/', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -41,14 +40,12 @@ const AddPack = () => {
           setIsAuthenticated(true);
           const userId = authResponse.data.id;
 
-          // 2. Загружаем вопросы пользователя
           try {
             const questionsResponse = await axios.get(
-              `http://127.0.0.1:8000/api/question/list/`, // Используем общий список вопросов
+              `http://127.0.0.1:8000/api/question/list/`,
               { headers: { 'Authorization': `Bearer ${token}` } }
             );
             
-            // Фильтруем вопросы по автору
             const filteredQuestions = questionsResponse.data.filter(
               q => q.author_q?.id === userId
             );
@@ -106,7 +103,6 @@ const AddPack = () => {
       if (packResponse.status === 201) {
         const packId = packResponse.data.id;
         
-        // Добавляем вопросы в пак
         await Promise.all(
           selectedQuestions.map(questionId => 
             axios.post(

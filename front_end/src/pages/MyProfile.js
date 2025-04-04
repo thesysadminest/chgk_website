@@ -46,7 +46,6 @@ const MyProfile = () => {
           return;
         }
 
-        // Получаем актуальные данные пользователя
         const response = await axios.get(
           `http://127.0.0.1:8000/api/user/${userData.id}/`,
           {

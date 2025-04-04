@@ -43,8 +43,8 @@ function Authorization() {
         throw new Error(result.detail || result.message || 'Authorization error');
       }
 
-      localStorage.setItem('access_token', result.access || result.token);  // Ключ 'access_token' вместо 'token'
-      localStorage.setItem('refresh_token', result.refresh);  // Если сервер возвращает refresh-токен
+      localStorage.setItem('access_token', result.access || result.token);  
+      localStorage.setItem('refresh_token', result.refresh);  
       localStorage.setItem('user', JSON.stringify(result.user || { username: data.username }));
       
       window.location.href = '/';
