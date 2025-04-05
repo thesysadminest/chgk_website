@@ -219,8 +219,7 @@ class UserViewList(generics.ListCreateAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-      queryset = CustomUser.objects.all()
-      return queryset
+      return CustomUser.objects.all()
     
 class UserView(generics.ListCreateAPIView):
     serializer_class = UserSerializer

@@ -42,7 +42,7 @@ const MyProfile = () => {
         const userData = JSON.parse(localStorage.getItem('user'));
         
         if (!token || !userData) {
-          navigate('/authorization');
+          navigate('/login');
           return;
         }
 
@@ -58,7 +58,7 @@ const MyProfile = () => {
         setUser(response.data[0]);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
-        navigate('/authorization');
+        navigate('/login');
       } finally {
         setLoading(false);
       }
@@ -125,7 +125,7 @@ const MyProfile = () => {
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Button 
-            variant="contained" 
+            variant="main_button" 
             startIcon={<Add />}
             onClick={handleCreateClick}
             sx={{ mr: 2 }}

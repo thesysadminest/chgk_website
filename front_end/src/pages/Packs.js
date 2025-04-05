@@ -55,10 +55,10 @@ const Packs = () => {
     <Box sx={{ height: '80vh', width: '75vw', pr: '5vw', mt: '2vh' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="contained" color="secondary" onClick={handleGoToQuestions}>
+          <Button variant="main_button" color="secondary" onClick={handleGoToQuestions}>
             Перейти к банку вопросов
           </Button>
-          <Button variant="contained" color="primary" onClick={handleAddPack}>
+          <Button variant="main_button" color="primary" onClick={handleAddPack}>
             Добавить пак
           </Button>
         </Box>
@@ -106,7 +106,7 @@ const Packs = () => {
         sx={{ 
           boxShadow: 2, 
           border: 1, 
-          borderColor: 'grey.300',
+          inactiveBorderColor: 'grey.300',
           '& .MuiDataGrid-cell': {
             color: 'white',
           },

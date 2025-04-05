@@ -10,7 +10,7 @@ const GameRedirect = () => {
     const startGame = async () => {
       const access_token = localStorage.getItem('access_token');
       if (!access_token) {
-        navigate("/authorization");
+        navigate("/login");
         return;
       }
   
@@ -25,7 +25,7 @@ const GameRedirect = () => {
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          navigate("/authorization");
+          navigate("/login");
         } else {
           navigate("/packs");
         }

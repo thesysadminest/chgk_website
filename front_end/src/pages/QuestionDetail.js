@@ -55,7 +55,7 @@ const QuestionDetail = () => {
         setAnswerColor('#CD5C5C');
       }
     } else {
-      navigate('/authorization');
+      navigate('/login');
     }
   };
 
@@ -96,7 +96,7 @@ const QuestionDetail = () => {
           />
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button
-              variant="contained"
+              variant="main_button"
               color="primary"
               onClick={handleSubmit}
             >
@@ -104,7 +104,7 @@ const QuestionDetail = () => {
             </Button>
             {feedback === 'Ответ неверный' && (
               <Button
-                variant="contained"
+                variant="main_button"
                 color="secondary"
                 sx={{ ml: 2 }}
                 onClick={handleRetry}
@@ -119,7 +119,7 @@ const QuestionDetail = () => {
         </>
       ) : (
         <Typography variant="h6" sx={{ mt: 2 }}>
-          Для ввода и проверки ответа необходимо <MuiLink component={Link} to="/authorization" state={{ from: location }} underline="hover">авторизоваться</MuiLink>.
+          Для ввода и проверки ответа необходимо <MuiLink component={Link} to="/login" state={{ from: location }} underline="hover">авторизоваться</MuiLink>.
         </Typography>
       )}
     </Box>

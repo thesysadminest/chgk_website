@@ -30,7 +30,7 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         console.error("refresh error:", refreshError);
         localStorage.clear();
-        window.location.href = "/authorization";
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);

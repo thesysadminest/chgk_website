@@ -1,168 +1,171 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { DataGrid } from '@mui/x-data-grid';
-import { Box, Link as MuiLink, Button, TextField, Tooltip } from '@mui/material';
+import { DataGrid, useGridApiRef } from '@mui/x-data-grid'; // Импорт apiRef
+import { Box, Link as MuiLink, Button, TextField, CircularProgress, Typography, Alert, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { checkAuth } from '../utils/authCheck';
 
 const Users = () => {
   const [rows, setRows] = useState([]);
-  const [originalRows, setOriginalRows] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [visited, setVisited] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+  const apiRef = useGridApiRef(); // Ссылка на API таблицы
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/api/user/list')
-      .then(response => {
-        const data = response.data.map(item => ({
-          id: item.id,
-          username: item.username,
-          email: item.email || "Не указан",
-          bio: item.bio || "Не указана",
-          date_joined: item.date_joined 
-            ? new Date(item.date_joined).toLocaleDateString('ru-RU') 
-            : 'Неизвестно'
-        }));
-        setRows(data);
-        setOriginalRows(data);
-      })
-      .catch(error => {
-        console.error('Ошибка при загрузке данных:', error);
-      });
+    const fetchAuthStatus = async () => {
+      const { isAuthorized, user } = await checkAuth();
+      setIsAuthorized(isAuthorized);
+      if (isAuthorized) {
+        setCurrentUser(user); // Сохраняем данные текущего пользователя
+      }
+    };
 
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      axios.get('http://127.0.0.1:8000/api/user/myprofile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .then(response => {
-        setCurrentUser(response.data);
-      })
-      .catch(error => {
-        console.error('Ошибка при получении данных пользователя:', error);
-      });
-    }
+    fetchAuthStatus();
   }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await axios.get('http://127.0.0.1:8000/api/user/list', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const formattedData = response.data.map(user => ({
+          id: user.id,
+          username: user.username || 'Неизвестно',
+          email: user.email || 'Не указан',
+          bio: user.bio || 'Не указана',
+          date_joined: user.date_joined 
+            ? new Date(user.date_joined).toLocaleDateString('ru-RU') 
+            : 'Неизвестно',
+        }));
+
+        setRows(formattedData);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        setError(err.message || 'Ошибка загрузки данных');
+        if (err.response?.status === 401) navigate('/authorization');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [navigate]);
 
   const handleFindMe = () => {
     if (currentUser) {
-      const meRow = rows.find(row => row.id === currentUser.id);
-      if (meRow) {
-        navigate(`/user/${currentUser.id}`, { state: { user: meRow } });
-        setVisited({ ...visited, [currentUser.id]: true });
-      }
+      // Используем API таблицы для прокрутки к строке
+      apiRef.current.scrollToIndexes({
+        rowIndex: rows.findIndex(row => row.id === currentUser.id),
+      });
     }
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    window.location.reload();
   };
 
   const handleRowClick = (params) => {
     navigate(`/user/${params.id}`, { state: { user: params.row } });
-    setVisited({ ...visited, [params.id]: true });
   };
 
-  const requestSearch = (searchValue) => {
-    setSearchText(searchValue);
-    const filteredRows = originalRows.filter((row) => {
-      return row.username.toLowerCase().includes(searchValue.toLowerCase()) ||
-             row.email.toLowerCase().includes(searchValue.toLowerCase());
-    });
-    setRows(filteredRows);
-  };
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Ошибка: {error}
+        </Alert>
+        <Button 
+          variant="contained" 
+          onClick={handleRetry}
+          sx={{ mt: 2 }}
+        >
+          Попробовать снова
+        </Button>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ height: '80vh', width: '75vw'}}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Tooltip title={currentUser ? "" : "Требуется авторизация"} arrow>
+    <Box sx={{ height: '80vh', width: '75vw', p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
+        <Tooltip title={isAuthorized ? '' : 'Войдите в систему, чтобы использовать эту функцию'}>
           <span>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={handleFindMe}
-              disabled={!currentUser}
+              disabled={!isAuthorized} // Неактивна, если пользователь не авторизован
               sx={{
-                backgroundColor: !currentUser ? '#f5f5f5' : '#752021',
-                color: !currentUser ? '#bdbdbd' : '#ffffff',
-                '&:hover': {
-                  backgroundColor: !currentUser ? '#f5f5f5' : '#c23639'
-                },
-                py: 1.5,
-                borderRadius: 1,
-                boxShadow: 'none',
-                border: !currentUser ? '1px solid #e0e0e0' : 'none',
-                textTransform: 'none',
-                fontWeight: 500
+                backgroundColor: isAuthorized ? 'primary.main' : 'gray',
+                color: isAuthorized ? '#fff' : '#aaa',
+                cursor: isAuthorized ? 'pointer' : 'not-allowed',
               }}
             >
               Найти меня
             </Button>
           </span>
         </Tooltip>
-
         <TextField
+          label="Поиск"
           variant="outlined"
           size="small"
-          placeholder="Поиск по имени или email"
           value={searchText}
-          onChange={(e) => requestSearch(e.target.value)}
-          sx={{ width: '300px' }} 
+          onChange={(e) => setSearchText(e.target.value)}
+          sx={{ width: 300 }}
         />
       </Box>
 
       <DataGrid
-        rows={rows}
-        columns={[
-          { 
-            field: 'id', 
-            headerName: 'ID', 
-            flex: 0.7,
-            renderCell: (params) => (
-              <MuiLink 
-                component="button" 
-                variant="body2" 
-                onClick={() => handleRowClick(params)} 
-                sx={{ 
-                  color: visited[params.id] ? 'grey' : 'white', 
-                  textDecoration: 'underline', 
-                  cursor: 'pointer',
-                  '&:hover': {
-                    textDecoration: 'underline',
-                  }
-                }}
-              >
-                {params.value}
-              </MuiLink>
-            )
-          },
-          { field: 'username', headerName: 'Имя пользователя', flex: 2 },
-          { field: 'email', headerName: 'Email', flex: 2 },
-          { field: 'bio', headerName: 'Биография', flex: 3 },
-          { field: 'date_joined', headerName: 'Дата регистрации', flex: 2 },
-        ]}
-        pageSize={5}
-        rowsPerPageOptions={[5, 10, 20]}
-        autoHeight
-        sx={{ 
-          boxShadow: 2, 
-          border: 1, 
-          borderColor: 'grey.300',
-          '& .MuiDataGrid-columnHeader': {
-            backgroundColor: 'transparent',
-            color: 'text.primary',
-          },
-          '& .MuiDataGrid-columnHeaderTitle': {
-            fontWeight: 'bold',
-          },
-          '& .MuiDataGrid-columnHeaders': {
-            borderBottom: '1px solid rgba(224, 224, 224, 1)',
-          },
-          '& .visited-row': {
-            color: 'grey',
-          },
-        }}
-        getRowClassName={(params) => visited[params.id] ? 'visited-row' : ''}
-        onRowClick={handleRowClick}
-      />
+          rows={rows}
+          columns={[
+            { 
+              field: 'id', 
+              headerName: 'ID', 
+              width: 80, 
+              renderCell: (params) => (
+                <MuiLink 
+                  href={`/user/${params.value}`} 
+                  underline="hover"
+                  sx={{ cursor: 'pointer' }}
+                >
+                  {params.value}
+                </MuiLink>
+              ),
+            },
+            { field: 'username', headerName: 'Имя', flex: 1 },
+            { field: 'email', headerName: 'Email', flex: 1.5 },
+            { field: 'bio', headerName: 'О себе', flex: 2 },
+            { field: 'date_joined', headerName: 'Дата регистрации', width: 150 },
+          ]}
+          pageSize={10} // Начальное отображение 10 строк
+          rowsPerPageOptions={[10, 20, 50]} // Добавляем только 10, 20, 50
+          disableSelectionOnClick
+          apiRef={apiRef}
+          sx={{
+            '& .MuiDataGrid-cell:focus': { outline: 'none' },
+            '& .MuiDataGrid-columnHeader:focus': { outline: 'none' },
+          }}
+        />
+
     </Box>
   );
 };

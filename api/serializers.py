@@ -10,7 +10,7 @@ from django.core.validators import FileExtensionValidator
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'password', 'bio')
+        fields = ('id', 'username', 'email', 'password', 'bio', 'date_joined')
         extra_kwargs = {"password": {"write_only": True}}
     
     def to_internal_value(self, data):

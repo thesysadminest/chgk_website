@@ -54,10 +54,10 @@ const Questions = () => {
     <Box sx={{ height: '80vh', width: '75vw' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="contained" color="secondary" onClick={handleToPacks}>
+          <Button variant="main_button" color="secondary" onClick={handleToPacks}>
             Перейти к пакам
           </Button>
-          <Button variant="contained" color="primary" onClick={handleAddQuestion}>
+          <Button variant="main_button" color="primary" onClick={handleAddQuestion}>
             Добавить вопрос
           </Button>
         </Box>
@@ -104,7 +104,7 @@ const Questions = () => {
         sx={{ 
           boxShadow: 2, 
           border: 1, 
-          borderColor: 'grey.300',
+          inactiveBorderColor: 'grey.300',
           '& .MuiDataGrid-columnHeader .MuiButtonBase-root': {
             backgroundColor: 'inherit',
             color: 'inherit',

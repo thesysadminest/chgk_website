@@ -44,20 +44,6 @@ const closedMixin = (theme) => ({
   },
 });
 
-const DrawerHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  padding: theme.spacing(0, 1),
-  ...theme.mixins.toolbar,
-  backgroundColor: '#d4d4d4',
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  cursor: 'pointer',
-  '&:hover': {
-    backgroundColor: '#c4c4c4',
-  },
-}));
-
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
@@ -99,17 +85,11 @@ const Item = styled(ButtonBase)(({ theme }) => ({
   height: 30,
   width: 30,
   display: 'flex',
-  alignItems: 'center',
   justifyContent: 'center',
-  fontFamily: 'Roboto, sans-serif',
   position: 'absolute',
-  top: '50%',
+  top: '15%',
   right: 20,
-  transform: 'translateY(-70%)',
-  zIndex: 2,
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
+  zIndex: 3,
 }));
 
 
@@ -150,7 +130,6 @@ export default function NavBar({ children }) {
     event.stopPropagation();
     navigate('/add-question');
   };
-
   const handleAddPackClick = (event) => {
     event.stopPropagation();
     navigate('/add-pack');
@@ -189,8 +168,10 @@ export default function NavBar({ children }) {
   switch (path) {
     case '/':
       return 'Главная';
-    case '/authorization':
-      return 'Авторизация';
+    case '/registration':
+      return 'Регистрация';
+    case '/login':
+      return 'Вход';
     case '/questions':
       return 'Вопросы';
     case '/packs':
@@ -225,14 +206,10 @@ export default function NavBar({ children }) {
             width: drawerWidth,
             height: '63.8px',
             backgroundColor: 'background.gray',
-            zIndex: theme.zIndex.drawer + 2,
+            zIndex: theme.zIndex.drawer + 3,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             cursor: 'pointer',
-            '&:hover': {
-              backgroundColor: '#c4c4c4',
-            },
+         
           ...(open && {
               ...openedMixin(theme),
               '& .MuiDrawer-paper': openedMixin(theme),
@@ -247,9 +224,9 @@ export default function NavBar({ children }) {
         >
         </Box>
 
-        <Drawer variant="permanent" open={open} sx={{ mt: '6vh' }}>
+        <Drawer variant="permanent" open={open}>
           <Divider />
-          <List sx={{ mt: '11vh' }}>
+          <List sx={{ mt: '11vh', zIndex: theme.zIndex.drawer }}>
             {[
               ['Вопросы', '/questions'],
               ['Пакеты', '/packs'],
@@ -266,9 +243,9 @@ export default function NavBar({ children }) {
                       justifyContent: open ? 'initial' : 'center',
                       px: 2.5,
                       minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
-                      backgroundColor: isActive ? '#cd5c5c' : theme.palette.primary.main,
+                      backgroundColor: isActive ? theme.palette.primary.main : 'transparent',
                       '&:hover': {
-                        backgroundColor: isActive ? '#cd5c5c' : theme.palette.primary.dark,
+                        backgroundColor: isActive ? theme.palette.primary.main : theme.palette.primary.dark,
                       },
                     }}
                   >
@@ -287,34 +264,17 @@ export default function NavBar({ children }) {
                         ml: 1.2,
                         opacity: open ? 1 : 0,
                         whiteSpace: 'nowrap',
-                        fontSize: fontSize,
-                        color: '#FFFFFF',
                       }}
                     />
                   </ListItemButton>
                   {open && index === 0 && (
                     <Item onClick={handleAddQuestionClick} sx={{ ml: 1.2 }}>
-                      <AddCircle sx={{ 
-                        color: '#FFFFFF',
-                        //opacity: '0',
-                        //'pointer-events': 'none',
-                        //transition: theme.transitions.create('opacity', {
-                        //   easing: theme.transitions.easing.sharp,
-                        //   duration: theme.transitions.duration.leavingScreen,
-                        // }),
-                        // ...(open && {
-                        //   opacity: '1',
-                        //   transition: theme.transitions.create('opacity', {
-                        //     easing: theme.transitions.easing.sharp,
-                        //     duration: theme.transitions.duration.enteringScreen,
-                        //   }),
-                        // }),
-                      }} />
+                      <AddCircle/>
                     </Item>
                   )}
                   {open && index === 1 && (
                     <Item onClick={handleAddPackClick} sx={{ ml: 1.2 }}>
-                      <AddCircle sx={{ color: '#FFFFFF' }} />
+                      <AddCircle/>
                     </Item>
                   )}
                 </ListItem>
@@ -330,73 +290,62 @@ export default function NavBar({ children }) {
                     px: 2.5,
                     minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
                     border: '0.5px solid grey',
-                    backgroundColor: 'transparent',
                     '&:hover': {
-                      backgroundColor: '#c0c0c0',
+                      variant: 'hover',
+                      backgroundColor: theme.palette.chevron,
                     },
                   }}
                 >
-                  {open ? (
-                    <ChevronLeft sx={{ color: 'inherit' }} />
-                  ) : (
-                    <ChevronRight sx={{ color: 'inherit' }} />
-                  )}
+                  {open ? (<ChevronLeft/>) : (<ChevronRight/>)}
                 </ListItemButton>
               </ListItem>
             )}
-            
           </List>
-          <Divider />
 
-        </Drawer>
+        <Divider />
+      </Drawer>
 
-        <AppBar position="fixed" open={open}>
-          <Toolbar id="toolbar">
-            <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
-              {resolvePageName()}
-            </Typography>
+      <AppBar 
+  position="fixed" 
+  open={open} 
+  sx={{ 
+    zIndex: theme.zIndex.drawer + 1, // Устанавливаем AppBar выше Drawer
+  }}
+>
+  <Toolbar id="toolbar">
+    <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
+      {resolvePageName()}
+    </Typography>
 
-            <UserMenu />
-          </Toolbar>
-        </AppBar>
+    <UserMenu />
+  </Toolbar>
+</AppBar>
+    <Box
+      id="mainbox"
+      component="main"
+      sx={{
+        flexGrow: 1,
+        pt: 2.5,
+        justifyContent: 'center',
+        display: 'flex',
+        //position: 'relative',
+        zIndex: theme.zIndex.drawer - 1, // Устанавливаем ниже Drawer/AppBar
+        marginBottom: 0,
+        pb: 0,
+      }}
+    >
+      <Box 
+        sx={{
+          width: '100%',
+          pt: 2,
+          pl: 5.2,
+          position: 'relative',
+        }}
+      >
+        {children}
+      </Box>
+    </Box>
 
-        <Box
-          id='mainbox'
-          component="main"
-          sx={{
-            flexGrow: 1,
-            pt: 2.5,
-            justifyContent: 'center',
-            display: 'flex',
-            minHeight: 'calc(100vh - 64px)',
-            boxShadow: 'inset 0 0 30px 30px rgba(5, 5, 5, 0.2)',
-            position: 'relative', 
-            overflow: 'visible', 
-            marginBottom: 0, 
-            pb: 0, 
-            transition: theme.transitions.create('margin', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
-            ...(open && {
-              transition: theme.transitions.create('margin', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-            }),
-          }}
-        >
-         
-            <Box sx={{
-              width: '100%',
-              pt: 2, 
-              pl: 5.2,
-              position: 'relative',
-              zIndex: 1
-            }}>
-              {children}
-            </Box>
-         </Box>
       </Box>
     </div>
   );

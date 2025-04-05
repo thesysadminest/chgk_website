@@ -128,7 +128,7 @@ const UserMenu = () => {
           </Popover>
         </Item>
       ) : (
-        <Item component={Link} to="/authorization">
+        <Item component={Link} to="/login">
           <Typography variant="h6" noWrap component="div" sx={{ mr: 1 }}>
             Авторизоваться
           </Typography>

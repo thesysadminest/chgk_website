@@ -1,68 +1,99 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import { ThemeProvider } from '@mui/material/styles';
-import { useTheme } from '@mui/material/styles';
-
-const sheet = new CSSStyleSheet();
-sheet.replaceSync(`
-  .blur-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    box-shadow: inset 0 0 50px 50px rgba(0, 255, 0, 0.3);
-    pointer-events: none;
-    z-index: 1000;
-  }
-`);
-
-// document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-
-//const overlay = document.createElement('div');
-//overlay.className = 'blur-overlay';
-//document.body.appendChild(overlay);
+import { useTheme } from "@mui/material/styles";
 
 const Lobby = () => {
   const theme = useTheme();
+
   return (
+    <Box 
+      sx={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+        overflow: "hidden",
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
       <Box 
         sx={{
-          display: 'flex-height',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          height: '80vh',
-          
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100vw", 
+          height: "100vh", 
+          mt: 1,
+          overflow: "hidden", 
+          backgroundColor: theme.palette.background.default,
         }}
       >
-        
-        <Typography
-          variant="h2"
-          component="div"
+        <Box
           sx={{
-            fontWeight: 'bold',
-            fontSize: '4rem',
-            color: theme.palette.primary.contrastText,
-            textAlign: 'center',
-            pr: 5
+            width: "75vw",
+            height: "80vh",
+            backgroundImage: "url(/big_owl.jpg)", 
+            backgroundSize: "100%", // масштаб изображения
+            backgroundPosition: "center", 
+            borderRadius: "40px",
+            boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.5)",
+          }}
+        ></Box>
+
+        <Box
+          sx={{
+            textAlign: "left",
+            color: theme.palette.primary.contrastText, 
+            position: "absolute",
+            left: theme.spacing(27), 
+            top: theme.spacing(37),
           }}
         >
-          Новости
-
-        </Typography>
-
-        <Typography
-          variant="h7"
-          sx={{
-            fontSize: '1.3rem',
-            color: theme.palette.primary.contrastText,
-            pr: 5,
-            pl: 0
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "4rem",
+            }}
+          >
+            Ваш сайт
+          </Typography>
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "4rem",
+              ml: theme.spacing(24),
+            }}
+          >
+            для соревнований
+          </Typography>
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "4rem",
+              ml: theme.spacing(80), 
           }}
-        >
-          Введена примерная цветовая гамма сайта. Изменены (возможно непреднамеренно) некоторые кнопки. В качестве кнопки "домой" советуем использовать серый прямоугольник в левом верхнем углу. Enjoy!
-        </Typography>
+          >
+            по <span style={{ color: theme.palette.primary.main }}>ЧГК</span>
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: "1.3rem",
+              mt: 2,
+            }}
+          >
+            Последние обновления доступны прямо здесь. Узнайте больше!
+          </Typography>
+        </Box>
       </Box>
+    </Box>
   );
 };
 

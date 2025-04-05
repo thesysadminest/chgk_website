@@ -1,21 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Typography, 
-  Avatar, 
-  Divider, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  ListItemAvatar,
-  Chip,
-  Tabs,
-  Tab,
-  Paper,
-  CircularProgress,
-  Alert
-} from '@mui/material';
+import { Box, Typography, Avatar, Divider, List, ListItem, ListItemText, 
+ListItemAvatar,Chip, Tabs, Tab, Paper, CircularProgress, Alert} from '@mui/material';
 import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import EmailIcon from '@mui/icons-material/Email';

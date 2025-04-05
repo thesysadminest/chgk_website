@@ -10,6 +10,8 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'username'
     email = models.EmailField(unique=True, blank=True, null=True)
     REQUIRED_FIELDS = ['email']
+    date_joined = models.DateTimeField(auto_now_add=True) 
+
 
 
 class Team(models.Model):
@@ -29,7 +31,7 @@ class Team(models.Model):
 class Question(models.Model):
     question_text = models.TextField(default="")
     answer_text = models.TextField(default="")
-    question_note = models.TextField(default="")
+    question_note = models.TextField(blank=True, null=True)
 
     author_q = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
 

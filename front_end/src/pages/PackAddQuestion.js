@@ -64,7 +64,7 @@ const PackAddQuestion = () => {
           Назад к созданию пакета
         </Button>
         <Button
-          variant="contained"
+          variant="main_button"
           onClick={handleAddToPack}
           disabled={!questionText || !correctAnswer}
           sx={{ flex: 1 }}

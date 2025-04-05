@@ -10,8 +10,11 @@ import {
   Tooltip
 } from '@mui/material';
 import axios from 'axios';
+import { checkAuth } from '../utils/authCheck';
+import { useTheme } from '@mui/material/styles';
 
 const AddQuestion = () => {
+  const theme = useTheme(); 
   const [questionText, setQuestionText] = useState('');
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [authorComment, setAuthorComment] = useState('');
@@ -22,25 +25,18 @@ const AddQuestion = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const initializeAuth = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-          await axios.get('http://127.0.0.1:8000/api/user/me/', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          setIsAuthenticated(true);
-        }
+        const { isAuthorized } = await checkAuth();
+        setIsAuthenticated(isAuthorized);
       } catch (error) {
         console.error('Ошибка проверки авторизации:', error);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
       } finally {
         setLoading(false);
       }
     };
-    checkAuth();
+
+    initializeAuth();
   }, []);
 
   const handleAddQuestion = async (packType) => {
@@ -48,7 +44,7 @@ const AddQuestion = () => {
     try {
       setSubmitting(true);
       setError(null);
-      
+
       const token = localStorage.getItem('access_token');
       const user = JSON.parse(localStorage.getItem('user'));
 
@@ -58,35 +54,18 @@ const AddQuestion = () => {
           question_text: questionText.trim(),
           answer_text: correctAnswer.trim(),
           question_note: authorComment.trim(),
-          author_q: user.id
+          author_q: user.id,
         },
         {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         }
       );
 
       if (questionResponse.status === 201) {
         const questionId = questionResponse.data.id;
-        
-        
-      // потом раскомментировать
-       /*
-        if (packType === 'open') {
-          await axios.post(
-            'http://127.0.0.1:8000/api/pack/open/add_question/',
-            { question_id: questionId },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          );
-          await axios.post(
-            'http://127.0.0.1:8000/api/pack/my/add_question/',
-            { question_id: questionId },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          );
-        }*/
-
         alert(`Вопрос успешно добавлен в ${packType === 'open' ? 'открытый' : 'ваш'} пак!`);
         setQuestionText('');
         setCorrectAnswer('');
@@ -116,15 +95,15 @@ const AddQuestion = () => {
           Для добавления вопросов необходимо авторизоваться
         </Typography>
         <Button 
-          variant="contained" 
-          onClick={() => navigate('/login')}
+          variant="main_button" 
+          onClick={() => navigate('/registration')}
           sx={{ 
             mt: 2,
-            backgroundColor: '#752021',
-            color: '#ffffff',
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             '&:hover': {
-              backgroundColor: '#c23639'
-            }
+              backgroundColor: theme.palette.primary.hover,
+            },
           }}
         >
           Войти в аккаунт
@@ -141,7 +120,7 @@ const AddQuestion = () => {
       <Typography variant="h4" sx={{ mb: 3 }}>
         Создание нового вопроса
       </Typography>
-      
+
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
       <Alert severity="warning" sx={{ mb: 3 }}>
@@ -173,15 +152,16 @@ const AddQuestion = () => {
       />
 
       <TextField
-        label="Авторский комментарий (необязательно)"
-        fullWidth
-        value={authorComment}
-        onChange={(e) => setAuthorComment(e.target.value)}
-        margin="normal"
-        multiline
-        rows={2}
-        sx={{ mb: 4 }}
+          label="Авторский комментарий (необязательно)"
+          fullWidth
+          value={authorComment}
+          onChange={(e) => setAuthorComment(e.target.value)}
+          margin="normal"
+          multiline
+          rows={2}
+          sx={{ mb: 4 }}
       />
+
 
       <Box sx={{ display: 'flex', gap: 2 }}>
         <Tooltip 
@@ -190,17 +170,17 @@ const AddQuestion = () => {
         >
           <span>
             <Button
-              variant="contained"
+              variant="main_button"
               onClick={() => handleAddQuestion('open')}
               disabled={isButtonDisabled}
               sx={{
                 flex: 1,
                 py: 1.5,
-                backgroundColor: isButtonDisabled ? '#f5f5f5' : '#752021',
-                color: isButtonDisabled ? '#bdbdbd' : '#ffffff',
+                backgroundColor: isButtonDisabled ? theme.palette.background.disabled : theme.palette.primary.main,
+                color: isButtonDisabled ? theme.palette.text.disabled : theme.palette.primary.contrastText,
                 '&:hover': {
-                  backgroundColor: isButtonDisabled ? '#f5f5f5' : '#c23639'
-                }
+                  backgroundColor: isButtonDisabled ? theme.palette.background.disabled : theme.palette.primary.hover,
+                },
               }}
             >
               {submitting ? <CircularProgress size={24} color="inherit" /> : 'Добавить в открытый пак'}
@@ -214,17 +194,17 @@ const AddQuestion = () => {
         >
           <span>
             <Button
-              variant="contained"
+              variant="main_button"
               onClick={() => handleAddQuestion('my')}
               disabled={isButtonDisabled}
               sx={{
                 flex: 1,
                 py: 1.5,
-                backgroundColor: isButtonDisabled ? '#f5f5f5' : '#752021',
-                color: isButtonDisabled ? '#bdbdbd' : '#ffffff',
+                backgroundColor: isButtonDisabled ? theme.palette.background.disabled : theme.palette.primary.main,
+                color: isButtonDisabled ? theme.palette.text.disabled : theme.palette.primary.contrastText,
                 '&:hover': {
-                  backgroundColor: isButtonDisabled ? '#f5f5f5' : '#c23639'
-                }
+                  backgroundColor: isButtonDisabled ? theme.palette.background.disabled : theme.palette.primary.hover,
+                },
               }}
             >
               {submitting ? <CircularProgress size={24} color="inherit" /> : 'Добавить в мой пак'}

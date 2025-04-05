@@ -92,7 +92,7 @@ const PackDetail = () => {
           rowsPerPageOptions={[5, 10, 20]}
           autoHeight
           getRowId={(row) => row.questionIndex}
-          sx={{ boxShadow: 2, border: 1, borderColor: 'grey.300' }}
+          sx={{ boxShadow: 2, border: 1, inactiveBorderColor: 'grey.300' }}
           onRowClick={handleRowClick}
         />
       </Box>

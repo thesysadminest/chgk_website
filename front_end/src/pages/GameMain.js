@@ -54,7 +54,7 @@ const GameMain = () => {
       const token = localStorage.getItem('access_token');
       if (!token) {
         console.error("Токен отсутствует. Перенаправляем на авторизацию.");
-        navigate("/authorization");
+        navigate("/login");
       }
 
       axiosInstance.post(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/submit`, { answer },
@@ -78,7 +78,7 @@ const GameMain = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
       console.error("Токен отсутствует. Перенаправляем на авторизацию.");
-      navigate("/authorization");
+      navigate("/login");
     }
 
     axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/next`)
@@ -117,10 +117,10 @@ const GameMain = () => {
             style={{ backgroundColor: answerColor }}
           />
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button variant="contained" color="primary" onClick={handleSubmit}>
+            <Button variant="main_button" color="primary" onClick={handleSubmit}>
               Check
             </Button>
-            <Button variant="contained" color="secondary" sx={{ ml: 2 }} onClick={handleNextQuestion}>
+            <Button variant="main_button" color="secondary" sx={{ ml: 2 }} onClick={handleNextQuestion}>
               Next
             </Button>
           </Box>

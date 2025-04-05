@@ -1,52 +1,103 @@
 import { alpha, getContrastRatio, createTheme } from '@mui/material/styles';
 
-const burgundyBase = '#7E0001';
-const burgundyLight = '#CD2626';
-const graphiteBackground = '#2A2A2A';
-const grryBackground = '#c0c0c0';
-const graphiteText = '#FFFFFF';
-const lightGray = '#4A4A4A';
+const burgundyBase = '#9A0E0E';
+const burgundyHover = '#CD2626';
 
-const burgundyTheme = createTheme({
+const graphiteBackground = '#29232A';
+const mainLogoBackground = '#c0c0c0';
+const inactiveTableBackground = '#4A4A4A';
+
+const graphiteText = '#FFFFFF';
+const disabledText = '#bdbdbd';
+const disabledBackground = '#f5f5f5';
+
+const inactiveBorderColor = '#e0e0e0';
+const activeBorderColor = '#FF0000';
+
+const activeChevronColor = '#c0c0c0';
+
+const darkTheme = createTheme({
   palette: {
     primary: {
       main: burgundyBase,
       light: alpha(burgundyBase, 0.5),
-      dark: alpha(burgundyBase, 0.9),
+      dark: burgundyBase,
+      hover: burgundyHover,
       contrastText: getContrastRatio(burgundyBase, graphiteText) > 4.5 ? graphiteText : '#000',
     },
     secondary: {
-      main: burgundyLight,
-      light: alpha(burgundyLight, 0.5),
-      dark: alpha(burgundyLight, 0.9),
+      main: burgundyHover,
+      light: alpha(burgundyHover, 0.5),
+      dark: alpha(burgundyHover, 0.9),
     },
     background: {
       default: graphiteBackground,
       paper: alpha(graphiteBackground, 0.9),
-      gray: grryBackground,
-    },
-    typography: {
-      fontFamily: [
-        '"Roboto"', 
-        '"Arial"',
-        'sans-serif',
-      ].join(","),
+      gray: mainLogoBackground,
+      disabled: disabledBackground,
     },
     text: {
       primary: graphiteText,
-      gray: lightGray,
       secondary: alpha(graphiteText, 0.7),
+      gray: inactiveTableBackground,
+      visited: 'grey',
+      disabled: disabledText,
     },
+    border: {
+      default: activeBorderColor,
+      disabled: inactiveBorderColor,
+    },
+    chevron:{
+      default: 'transparent',
+      hover: activeChevronColor,
+    }
+  },
+  typography: {
+    fontFamily: [
+      '"Roboto"', 
+      '"Arial"',
+      'sans-serif',
+    ].join(","),
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        html: {
+          margin: 0,
+          padding: 0,
+          overflow: "hidden",
+        },
+        body: {
+          margin: 0,
+          padding: 0,
+          overflow: "hidden",
+        },
+        "*": {
+          margin: 0,
+          padding: 0,
+          boxSizing: "border-box",
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
-          backgroundColor: burgundyBase,
           borderRadius: 10,
+          textTransform: 'none',
+          fontWeight: 500,
+          boxShadow: 'none',
+          py: 1.5,
+        },
+        main_button: {
+          backgroundColor: burgundyBase,
           color: graphiteText,
           '&:hover': {
             backgroundColor: alpha(burgundyBase, 0.8),
+          },
+          '&.Mui-disabled': {
+            backgroundColor: disabledBackground,
+            color: disabledText,
+            border: `1px solid ${inactiveBorderColor}`,
           },
         },
       },
@@ -76,15 +127,22 @@ const burgundyTheme = createTheme({
           },
           '& .MuiDataGrid-row': {
             '&:not(.visited-row)': {
-              backgroundColor: lightGray,
+              backgroundColor: inactiveTableBackground,
             },
             '&.visited-row': {
               backgroundColor: graphiteBackground,
+              color: 'grey',
             },
             '&:hover': {
               backgroundColor: alpha(burgundyBase, 0.1),
             },
           },
+          '& .MuiDataGrid-columnHeaders': {
+            borderBottom: `1px solid ${activeBorderColor}`,
+          },
+        },
+        columnHeaderTitle: {
+          fontWeight: 'bold',
         },
       },
     },
@@ -126,7 +184,31 @@ const burgundyTheme = createTheme({
         },
       },
     },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            textDecoration: 'underline',
+          }
+        }
+      }
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            color: graphiteText,
+            '& fieldset': {
+              activeBorderColor: activeBorderColor,
+            },
+            '&:hover fieldset': {
+              activeBorderColor: graphiteText,
+            },
+          },
+        },
+      },
+    },
   },
 });
 
-export default burgundyTheme;
+export default darkTheme;
