@@ -309,7 +309,7 @@ export default function NavBar({ children }) {
   position="fixed" 
   open={open} 
   sx={{ 
-    zIndex: theme.zIndex.drawer + 1, // Устанавливаем AppBar выше Drawer
+    zIndex: theme.zIndex.drawer + 1, 
   }}
 >
   <Toolbar id="toolbar">

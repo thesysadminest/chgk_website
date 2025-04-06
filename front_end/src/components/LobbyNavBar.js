@@ -17,7 +17,8 @@ const LobbyNavBar = () => {
       sx={{ 
         backgroundColor: theme.palette.background.default, 
         boxShadow: 'none', 
-        zIndex: theme.zIndex.drawer + 1, 
+        zIndex: theme.zIndex.drawer + 1,
+        overflow: "hidden",
       }}
     >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>

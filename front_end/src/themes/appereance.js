@@ -6,6 +6,7 @@ const burgundyHover = '#CD2626';
 const graphiteBackground = '#29232A';
 const mainLogoBackground = '#c0c0c0';
 const inactiveTableBackground = '#4A4A4A';
+const advertisementBackground = '#382E3A';
 
 const graphiteText = '#FFFFFF';
 const disabledText = '#bdbdbd';
@@ -35,6 +36,7 @@ const darkTheme = createTheme({
       paper: alpha(graphiteBackground, 0.9),
       gray: mainLogoBackground,
       disabled: disabledBackground,
+      light: advertisementBackground,
     },
     text: {
       primary: graphiteText,
@@ -47,10 +49,10 @@ const darkTheme = createTheme({
       default: activeBorderColor,
       disabled: inactiveBorderColor,
     },
-    chevron:{
+    chevron: {
       default: 'transparent',
       hover: activeChevronColor,
-    }
+    },
   },
   typography: {
     fontFamily: [
@@ -65,17 +67,18 @@ const darkTheme = createTheme({
         html: {
           margin: 0,
           padding: 0,
-          overflow: "hidden",
+          overflowX: 'hidden',
         },
         body: {
           margin: 0,
           padding: 0,
-          overflow: "hidden",
+          overflowX: 'hidden',
         },
         "*": {
           margin: 0,
           padding: 0,
           boxSizing: "border-box",
+          overflowX: 'hidden',
         },
       },
     },
@@ -191,7 +194,7 @@ const darkTheme = createTheme({
             textDecoration: 'underline',
           }
         }
-      }
+      },
     },
     MuiTextField: {
       styleOverrides: {
@@ -199,10 +202,10 @@ const darkTheme = createTheme({
           '& .MuiOutlinedInput-root': {
             color: graphiteText,
             '& fieldset': {
-              activeBorderColor: activeBorderColor,
+              borderColor: activeBorderColor, // Corrected property
             },
             '&:hover fieldset': {
-              activeBorderColor: graphiteText,
+              borderColor: graphiteText, // Corrected property
             },
           },
         },

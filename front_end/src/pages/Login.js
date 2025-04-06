@@ -22,12 +22,12 @@ const Login = () => {
         password: password.trim(),
       });
 
-      // Сохраняем токены в LocalStorage
+     
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
 
       alert('Вход выполнен успешно!');
-      navigate('/news'); // Перенаправление на страницу /news
+      navigate('/news'); 
     } catch (error) {
       setError(error.response?.data?.errors || error.message || 'Ошибка при входе');
     } finally {
