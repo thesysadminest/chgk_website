@@ -40,7 +40,7 @@ const Registration = () => {
   const isFormValid = username.trim() && email.trim() && password.trim() && confirmPassword.trim();
 
   return (
-    <Box sx={{ maxWidth: 400, mx: 'auto', p: 3 }}>
+    <Box sx={{ maxWidth: 400, mx: 'auto', flex: 1, minHeight: 0, overflow: 'auto', }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Регистрация
       </Typography>

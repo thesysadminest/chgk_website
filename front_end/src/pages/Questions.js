@@ -51,8 +51,8 @@ const Questions = () => {
   };
 
   return (
-    <Box sx={{ height: '80vh', width: '75vw' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+    <>
+      <Box sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button variant="main_button" color="secondary" onClick={handleToPacks}>
             Перейти к пакам
@@ -60,17 +60,19 @@ const Questions = () => {
           <Button variant="main_button" color="primary" onClick={handleAddQuestion}>
             Добавить вопрос
           </Button>
-        </Box>
+        
 
-        <TextField
-          variant="outlined"
-          size="small"
-          placeholder="Поиск по вопросу"
-          value={searchText}
-          onChange={(e) => requestSearch(e.target.value)}
-          sx={{ width: '300px' }} 
-        />
+          <TextField
+            variant="outlined"
+            size="small"
+            placeholder="Поиск по вопросу"
+            value={searchText}
+            onChange={(e) => requestSearch(e.target.value)}
+            sx={{ width: '300px', ml: 'auto' }} 
+          />
+        </Box>
       </Box>
+
 
       <DataGrid
         rows={rows}
@@ -100,7 +102,7 @@ const Questions = () => {
         ]}
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
-        autoHeight
+        
         sx={{ 
           boxShadow: 2, 
           border: 1, 
@@ -120,7 +122,7 @@ const Questions = () => {
         getRowClassName={(params) => visited[params.id] ? 'visited-row' : ''} 
         onRowClick={handleRowClick}
       />
-    </Box>
+    </>
   );
 };
 

@@ -29,9 +29,19 @@ function MainContent() {
     const location = useLocation();
     const isLobby = location.pathname === '/';
 
+    if (isLobby) 
+        return (
+            <>
+            <LobbyNavBar />
+                <Routes>
+                    <Route path="/" element={<Lobby />} />
+                    <Route path="/" element={<NewsPage />} />
+                </Routes>
+            </>
+        );
+    else
     return (
-        <>
-            {isLobby ? <LobbyNavBar /> : <NavBar selected={location.pathname} />}
+        <NavBar selected={location.pathname}>
 
             <Routes>
                 <Route path="/" element={<Lobby />} />
@@ -51,7 +61,7 @@ function MainContent() {
                 <Route path="/game/:id" element={<GameRedirect />} />
                 <Route path="/game/:id/:firstQuestionId" element={<GameMain />} />
             </Routes>
-        </>
+        </NavBar>
     );
 }
 

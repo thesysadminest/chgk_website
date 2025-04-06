@@ -116,7 +116,7 @@ const AddQuestion = () => {
   const isButtonDisabled = submitting || !isFormValid;
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
+    <Box sx={{ maxWidth: 800, mx: 'auto', flex: 1, minHeight: 0, overflow: 'auto', }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Создание нового вопроса
       </Typography>

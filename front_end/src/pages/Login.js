@@ -17,7 +17,7 @@ const Login = () => {
       setSubmitting(true);
       setError(null);
 
-      const response = await axios.post('http://127.0.0.1:8000/api/login/', {
+      const response = await axios.post('http://127.0.0.1:8000/api/user/login/', {
         username: username.trim(),
         password: password.trim(),
       });
@@ -38,7 +38,7 @@ const Login = () => {
   const isFormValid = username.trim() && password.trim();
 
   return (
-    <Box sx={{ maxWidth: 400, mx: 'auto', p: 3 }}>
+    <Box sx={{ maxWidth: 400, mx: 'auto', flex: 1, minHeight: 0, overflow: 'auto', }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Вход в аккаунт
       </Typography>

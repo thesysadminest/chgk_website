@@ -106,7 +106,7 @@ const Users = () => {
   }
 
   return (
-    <Box sx={{ height: '80vh', width: '75vw', p: 3 }}>
+    <Box sx={{ height: '80vh', width: '75vw' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
         <Tooltip title={isAuthorized ? '' : 'Войдите в систему, чтобы использовать эту функцию'}>
           <span>

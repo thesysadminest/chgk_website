@@ -321,30 +321,22 @@ export default function NavBar({ children }) {
   </Toolbar>
 </AppBar>
     <Box
-      id="mainbox"
-      component="main"
-      sx={{
-        flexGrow: 1,
-        pt: 2.5,
-        justifyContent: 'center',
-        display: 'flex',
-        //position: 'relative',
-        zIndex: theme.zIndex.drawer - 1, // Устанавливаем ниже Drawer/AppBar
-        marginBottom: 0,
-        pb: 0,
-      }}
-    >
-      <Box 
+        id="mainbox"
+        component="main"
         sx={{
-          width: '100%',
-          pt: 2,
-          pl: 5.2,
-          position: 'relative',
+          flexGrow: 1,
+          p: 10,
+          pt: 6,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          overflow: 'hidden',
         }}
       >
-        {children}
+        
+          {children}
+        
       </Box>
-    </Box>
 
       </Box>
     </div>
