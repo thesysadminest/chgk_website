@@ -10,7 +10,6 @@ const NewsPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Получение новостей с сервера
     const fetchNews = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:8000/api/news");

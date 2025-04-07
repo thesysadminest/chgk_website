@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { useNavigate } from "react-router-dom";
 
 const Lobby = () => {
@@ -231,10 +231,10 @@ const Lobby = () => {
                     theme.palette.background.light,
                   cursor: "pointer",
                   transition: "background-color 0.3s ease",
-                  '&:hover': {
+                  "&:hover": {
                     boxShadow: "-4px 7px 0px 0px rgba(154, 14, 14, 1)",
                   },
-                  '&:active': {
+                  "&:active": {
                     backgroundColor: theme.palette.primary.light,
                   },
                 }}>
@@ -297,17 +297,17 @@ const Lobby = () => {
               Найдите себя и своих друзей в нашем коммьюнити сегодня!
           </Typography>
           <Button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate("/login")}
             sx={{
               backgroundColor: theme.palette.primary.main,
               color: theme.palette.primary.contrastText,
               fontSize: "2.4rem",
-              width: '450px',
-              height: '80px',
+              width: "450px",
+              height: "80px",
               borderRadius: "50px",
               marginBottom: 8,
               zIndex: 4,
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: theme.palette.primary.hover,
               },
               borderRadius: theme.components?.MuiButton?.styleOverrides?.root?.borderRadius || 10,

@@ -8,18 +8,18 @@ const GameRedirect = () => {
 
   useEffect(() => {
     const startGame = async () => {
-      const access_token = localStorage.getItem('access_token');
+      const access_token = localStorage.getItem("access_token");
       if (!access_token) {
         navigate("/login");
         return;
       }
   
       try {
-        const response = await axiosInstance.get(`/game/${id}/start/`);
+        const response = await axiosInstance.get("/game/${id}/start/");
         const firstQuestionId = response.data?.first_question_id;
         
         if (firstQuestionId) {
-          navigate(`/game/${id}/${firstQuestionId}`);
+          navigate("/game/${id}/${firstQuestionId}");
         } else {
           navigate("/packs");
         }

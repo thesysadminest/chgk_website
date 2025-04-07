@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { 
   Box, 
   Typography, 
@@ -13,15 +13,15 @@ import {
   Chip,
   Paper,
   styled
-} from '@mui/material';
+} from "@mui/material";
 import { 
   Add, 
   Quiz, 
   Group, 
   People 
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -38,27 +38,27 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        const userData = JSON.parse(localStorage.getItem('user'));
+        const token = localStorage.getItem("access_token");
+        const userData = JSON.parse(localStorage.getItem("user"));
         
         if (!token || !userData) {
-          navigate('/login');
+          navigate("/login");
           return;
         }
 
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userData.id}`,
+          "http://127.0.0.1:8000/api/user/${userData.id}",
           {
             headers: {
-              'Authorization': `Bearer ${token}`
+              "Authorization": "Bearer ${token}"
             }
           }
         );
         
         setUser(response.data[0]);
       } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        navigate('/login');
+        console.error("Ошибка загрузки данных:", error);
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -78,14 +78,14 @@ const MyProfile = () => {
   const handleCreateItem = (type) => {
     handleCreateClose();
     switch(type) {
-      case 'question':
-        navigate('/add-question');
+      case "question":
+        navigate("/add-question");
         break;
-      case 'pack':
-        navigate('/add-pack');
+      case "pack":
+        navigate("/add-pack");
         break;
-      case 'team':
-        navigate('/create-team');
+      case "team":
+        navigate("/create-team");
         break;
       default:
         break;
@@ -102,9 +102,9 @@ const MyProfile = () => {
   
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
+    <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
       <StyledPaper>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Avatar sx={{ width: 100, height: 100, mr: 3 }}>
             {user.username.charAt(0).toUpperCase()}
           </Avatar>
@@ -123,7 +123,7 @@ const MyProfile = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Button 
             variant="main_button" 
             startIcon={<Add />}
@@ -138,20 +138,20 @@ const MyProfile = () => {
             anchorEl={anchorEl}
             onClose={handleCreateClose}
             anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
+              vertical: "bottom",
+              horizontal: "left",
             }}
           >
             <List>
-              <ListItemButton onClick={() => handleCreateItem('question')}>
+              <ListItemButton onClick={() => handleCreateItem("question")}>
                 <ListItemText primary="Вопрос" />
                 <Quiz sx={{ ml: 2 }} />
               </ListItemButton>
-              <ListItemButton onClick={() => handleCreateItem('pack')}>
+              <ListItemButton onClick={() => handleCreateItem("pack")}>
                 <ListItemText primary="Пакет" />
                 <Group sx={{ ml: 2 }} />
               </ListItemButton>
-              <ListItemButton onClick={() => handleCreateItem('team')}>
+              <ListItemButton onClick={() => handleCreateItem("team")}>
                 <ListItemText primary="Команду" />
                 <People sx={{ ml: 2 }} />
               </ListItemButton>
@@ -160,7 +160,7 @@ const MyProfile = () => {
 
           <Button 
             variant="outlined" 
-            onClick={() => navigate(`/user/${user.id}/edit`)}
+            onClick={() => navigate("/user/${user.id}/edit")}
           >
             Редактировать профиль
           </Button>
@@ -169,23 +169,23 @@ const MyProfile = () => {
 
       <StyledPaper>
         <Typography variant="h5" gutterBottom>Моя активность</Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <Chip 
-            label={`Вопросов: ${user.questions_count || 0}`} 
+            label={"Вопросов: ${user.questions_count || 0}"} 
             variant="outlined" 
-            onClick={() => navigate('/my-questions')}
+            onClick={() => navigate("/my-questions")}
             clickable
           />
           <Chip 
-            label={`Пакетов: ${user.packs_count || 0}`} 
+            label={"Пакетов: ${user.packs_count || 0}"} 
             variant="outlined" 
-            onClick={() => navigate('/my-packs')}
+            onClick={() => navigate("/my-packs")}
             clickable
           />
           <Chip 
-            label={`Команд: ${user.teams_count || 0}`} 
+            label={"Команд: ${user.teams_count || 0}"} 
             variant="outlined" 
-            onClick={() => navigate('/my-teams')}
+            onClick={() => navigate("/my-teams")}
             clickable
           />
         </Box>
