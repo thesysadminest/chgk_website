@@ -102,12 +102,6 @@ export default function NavBar({ children }) {
   const isLobby = location.pathname === '/';
 
   React.useEffect(() => {
-    if (isLobby) {
-      setOpen(true);
-    }
-  }, [isLobby]);
-  
-  React.useEffect(() => {
     const toolbar = document.getElementById('toolbar');
     const mainbox = document.getElementById('mainbox');
     if (toolbar && mainbox) {
@@ -120,9 +114,7 @@ export default function NavBar({ children }) {
   };
 
   const handleDrawerClose = () => {
-    if (!isLobby) {
-      setOpen(false);
-    }
+    setOpen(false);
     
   };
 
@@ -166,12 +158,8 @@ export default function NavBar({ children }) {
   }
 
   switch (path) {
-    case '/':
+    case '/news':
       return 'Главная';
-    case '/registration':
-      return 'Регистрация';
-    case '/login':
-      return 'Вход';
     case '/questions':
       return 'Вопросы';
     case '/packs':
@@ -205,7 +193,7 @@ export default function NavBar({ children }) {
             left: 0,
             width: drawerWidth,
             height: '63.8px',
-            backgroundColor: 'background.gray',
+            backgroundColor: 'background.window',
             zIndex: theme.zIndex.drawer + 3,
             display: 'flex',
             cursor: 'pointer',

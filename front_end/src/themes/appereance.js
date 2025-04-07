@@ -2,26 +2,27 @@ import { alpha, getContrastRatio, createTheme } from '@mui/material/styles';
 
 const burgundyBase = '#9A0E0E';
 const burgundyHover = '#CD2626';
+const burgundyClicked = "#F5EAEA";
 
 const graphiteBackground = '#29232A';
-const mainLogoBackground = '#c0c0c0';
+const windowBackground = '#D9D9D9';   //to be deleted later
 const inactiveTableBackground = '#4A4A4A';
 const advertisementBackground = '#382E3A';
 
 const graphiteText = '#FFFFFF';
-const disabledText = '#bdbdbd';
-const disabledBackground = '#f5f5f5';
+const disabledText = '#BDBDBD';
+const disabledBackground = '#F5F5F5';
 
-const inactiveBorderColor = '#e0e0e0';
+const inactiveBorderColor = '#E0E0E0';
 const activeBorderColor = '#FF0000';
 
-const activeChevronColor = '#c0c0c0';
+const activeChevronColor = '#C0C0C0';
 
 const darkTheme = createTheme({
   palette: {
     primary: {
       main: burgundyBase,
-      light: alpha(burgundyBase, 0.5),
+      light: burgundyClicked,
       dark: burgundyBase,
       hover: burgundyHover,
       contrastText: getContrastRatio(burgundyBase, graphiteText) > 4.5 ? graphiteText : '#000',
@@ -34,7 +35,7 @@ const darkTheme = createTheme({
     background: {
       default: graphiteBackground,
       paper: alpha(graphiteBackground, 0.9),
-      gray: mainLogoBackground,
+      window: windowBackground,
       disabled: disabledBackground,
       light: advertisementBackground,
     },

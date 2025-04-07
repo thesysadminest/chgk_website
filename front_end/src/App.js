@@ -5,10 +5,12 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import darkTheme from "./themes/appereance.js";
 
-import NewsPage from './pages/NewsPage';
 import LobbyNavBar from './components/LobbyNavBar';
+import AuthorizationNavBar from './components/AuthorizationNavBar';
 import NavBar from './components/NavBar';
+
 import Lobby from './pages/Lobby';
+import NewsPage from './pages/NewsPage';
 import Question from './pages/Questions';
 import Packs from './pages/Packs';
 import Users from './pages/Users';
@@ -28,19 +30,29 @@ import GameRedirect from './components/GameRedirect';
 function MainContent() {
     const location = useLocation();
     const isLobby = location.pathname === '/';
-
+    const isAuthorization = (location.pathname === '/registration' || location.pathname === '/login');
+    
     if (isLobby) 
         return (
             <>
             <LobbyNavBar />
                 <Routes>
                     <Route path="/" element={<Lobby />} />
-                    <Route path="/" element={<NewsPage />} />
                 </Routes>
             </>
         );
-    else
-    return (
+    else if (isAuthorization)
+        return (
+            <>
+            <AuthorizationNavBar>
+                <Routes>
+                    <Route path='/registration' element={<Registration />} />
+                    <Route path='/login' element={<Login />} />
+                </Routes>
+            </AuthorizationNavBar>
+            </>
+        );
+    else return (
         <NavBar selected={location.pathname}>
 
             <Routes>

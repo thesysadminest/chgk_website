@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Popover, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Popover, 
+  List, 
+  ListItem, 
+  ListItemButton, 
+  ListItemText 
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate, Link } from 'react-router-dom';
 import { Person, PersonAdd } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 
-const Item = styled(Button)(({ theme }) => ({
-  height: '100',
+const UserMenuItem = styled(Button)(({ theme }) => ({
+  height: '100px',
   textAlign: 'center',
-  fontFamily: 'Roboto, sans-serif',
+  fontFamily: theme.typography.fontFamily,
 }));
 
 const UserMenu = () => {
+  const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const fontSize = '2vh';
@@ -31,17 +42,24 @@ const UserMenu = () => {
     setAnchorEl(null);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    navigate('/');
+    window.location.reload();
+  };
+
   const openPopover = Boolean(anchorEl);
   const id = openPopover ? 'simple-popover' : undefined;
 
   return (
     <>
       {user.username ? (
-        <Item onClick={handleClick}>
-          <Typography variant="h6" sx={{ mr: 1, color: '#FFFFFF' }}>
+        <UserMenuItem onClick={handleClick}>
+          <Typography variant="h6" sx={{ mr: 1, color: theme.palette.text.primary }}>
             {user.username}
           </Typography>
-          <Person sx={{ color: '#FFFFFF' }} />
+          <Person sx={{ color: theme.palette.text.primary }} />
 
           <Popover
             sx={{ 
@@ -49,9 +67,9 @@ const UserMenu = () => {
               ml: 2, 
               mr: 3,
               '& .MuiPaper-root': {
-                backgroundColor: '#424242', 
-                opacity: 1, 
-                color: '#FFFFFF',
+                backgroundColor: theme.palette.background.default, // Изменено на непрозрачный фон
+                color: theme.palette.text.primary,
+                opacity: 1, // Явно указываем непрозрачность
               }
             }}
             id={id}
@@ -80,27 +98,27 @@ const UserMenu = () => {
                   ['Настройки', '/settings'],
                   ['Мой рейтинг', '/myrating'],
                   ['Моя команда', '/myteam'],
-                ].map((text, index) => (
-                  <ListItem disablePadding key={text[0]} sx={{ display: 'block', pb: 2 }}>
+                ].map(([text, path]) => (
+                  <ListItem disablePadding key={text} sx={{ display: 'block', pb: 2 }}>
                     <ListItemButton
                       component={Link}
-                      to={text[1]}
+                      to={path}
                       onClick={handleClose}
                       sx={{
                         justifyContent: 'center',
                         px: 2.5,
                         '&:hover': {
-                          backgroundColor: '#616161',
+                          backgroundColor: theme.palette.action.hover,
                         },
                       }}
                     >
                       <ListItemText
-                        primary={text[0]}
+                        primary={text}
                         sx={{
                           textAlign: 'center',
                           whiteSpace: 'nowrap',
                           fontSize: fontSize,
-                          color: '#FFFFFF',
+                          color: theme.palette.text.primary,
                         }}
                       />
                     </ListItemButton>
@@ -108,32 +126,35 @@ const UserMenu = () => {
                 ))}
               </List>
               <Button
+                fullWidth
                 sx={{
                   justifyContent: 'center',
-                  width: '100%',
-                  backgroundColor: '#d4d4d4',
+                  backgroundColor: theme.palette.primary.light, // Изменено на primary.light
+                  color: theme.palette.getContrastText(theme.palette.primary.light),
                   '&:hover': {
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: theme.palette.primary.main, // Изменение цвета при наведении
                   },
                 }}
-                onClick={() => {
-                  localStorage.removeItem('user');
-                  localStorage.removeItem('token');
-                  window.location.reload(false);
-                }}
+                onClick={handleLogout}
               >
-                <Typography variant="h6" sx={{ color: '#2A2A2A' }}>ВЫЙТИ</Typography>
+                <Typography variant="h6">
+                  ВЫЙТИ
+                </Typography>
               </Button>
             </Box>
           </Popover>
-        </Item>
+        </UserMenuItem>
       ) : (
-        <Item component={Link} to="/login">
+        <UserMenuItem 
+          component={Link} 
+          to="/login"
+          sx={{ color: theme.palette.text.primary }}
+        >
           <Typography variant="h6" noWrap component="div" sx={{ mr: 1 }}>
             Авторизоваться
           </Typography>
-          <PersonAdd sx={{ color: '#FFFFFF' }} />
-        </Item>
+          <PersonAdd sx={{ color: theme.palette.text.primary }} />
+        </UserMenuItem>
       )}
     </>
   );

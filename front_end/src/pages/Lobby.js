@@ -9,6 +9,7 @@ const Lobby = () => {
   const navigate = useNavigate(); 
   const [showButton, setShowButton] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [activeBox, setActiveBox] = useState(null);
 
   const scrollToNext = () => {
     const nextSection = document.getElementById("next-section");
@@ -42,6 +43,13 @@ const Lobby = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  const handleBoxClick = (index) => {
+    setActiveBox(index);
+    setTimeout(() => {
+      navigate("/login");
+    }, 200);
+  };
 
   return (
     <Box
@@ -190,7 +198,7 @@ const Lobby = () => {
             marginBottom: theme.spacing(1),
             color: theme.palette.text.secondary,
           }}>
-            “Что? Где? Когда?” — советская и российская интеллектуальная игра. <br />
+            "Что? Где? Когда?" — советская и российская интеллектуальная игра. <br />
             Интеллектуальный клуб телевидения «знатоков».
         </Typography>
 
@@ -208,7 +216,7 @@ const Lobby = () => {
             "ИЩИТЕ КОМАНДЫ"].map((text, idx) => (
               <Box
                 key={idx}
-                onClick={() => navigate("/login")}
+                onClick={() => handleBoxClick(idx)}
                 sx={{
                   width: "200px",
                   height: "100px",
@@ -217,9 +225,18 @@ const Lobby = () => {
                   padding: 0,
                   alignItems: "center",
                   borderRadius: "20px",
-                  boxShadow: "-4px 7px 0px 0px rgba(154, 14, 14, 1)",
-                  backgroundColor: theme.palette.background.light,
+                  boxShadow: "none",
+                  backgroundColor: activeBox === idx ? 
+                    theme.palette.primary.light : 
+                    theme.palette.background.light,
                   cursor: "pointer",
+                  transition: "background-color 0.3s ease",
+                  '&:hover': {
+                    boxShadow: "-4px 7px 0px 0px rgba(154, 14, 14, 1)",
+                  },
+                  '&:active': {
+                    backgroundColor: theme.palette.primary.light,
+                  },
                 }}>
                   <Typography
                     variant="body1"
