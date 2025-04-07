@@ -1,15 +1,21 @@
 from django.shortcuts import render
-from rest_framework import generics, viewsets, status
-from rest_framework.views import APIView
+from rest_framework import generics, viewsets
+from rest_framework import viewsets
+#from rest_framework import status
+#from rest_framework.views import APIView
 
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
 
 from rest_framework.response import Response
-from rest_framework.decorators import action, APIView, api_view, permission_classes
+#from rest_framework.decorators import action
+from rest_framework.decorators import APIView
+from rest_framework.decorators import action
+#from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
 
-from django.http import JsonResponse
+#from django.http import JsonResponse
 
 from .serializers import MyTokenObtainPairSerializer, RegisterSerializer, LoginSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
