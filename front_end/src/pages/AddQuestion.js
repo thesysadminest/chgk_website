@@ -47,7 +47,12 @@ const AddQuestion = () => {
 
       const token = localStorage.getItem('access_token');
       const user = JSON.parse(localStorage.getItem('user'));
-
+      console.log("Отправляемые данные:", {
+        question_text: questionText.trim(),
+        answer_text: correctAnswer.trim(),
+        question_note: authorComment.trim(),
+        author_q: user.id  // Уберите это, если author_q read_only!
+      });
       const questionResponse = await axios.post(
         'http://127.0.0.1:8000/api/question/create/',
         {
@@ -63,6 +68,7 @@ const AddQuestion = () => {
           },
         }
       );
+      console.log("Ответ сервера:", questionResponse.data);
 
       if (questionResponse.status === 201) {
         const questionId = questionResponse.data.id;

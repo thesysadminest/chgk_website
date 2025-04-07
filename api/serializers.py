@@ -29,12 +29,18 @@ class TeamSerializer(serializers.ModelSerializer):
         extra_kwargs = {"captain": {"write_only": True}}
 
 class QuestionSerializer(serializers.ModelSerializer):
-    author_q = serializers.StringRelatedField()  
+    author_q = serializers.SerializerMethodField()
     class Meta:
         model = Question
         fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q', 'pub_date_q')
-        extra_kwargs = {"author_q": {"read_only": True}}
+        #extra_kwargs = {"author_q": {"read_only": True}}
         depth = 1
+        
+    def get_author_q(self, obj):
+        return {
+            'id': obj.author_q.id if obj.author_q else None,
+            'username': obj.author_q.username if obj.author_q else 'Неизвестно'
+        }
 
 class PackSerializer(serializers.ModelSerializer):
     author_p = serializers.StringRelatedField()   

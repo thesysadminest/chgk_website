@@ -20,7 +20,7 @@ const GameMain = () => {
   });
 
   useEffect(() => {
-    axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}`,
+    axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/`,
       {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem('access_token')}`
@@ -57,7 +57,7 @@ const GameMain = () => {
         navigate("/login");
       }
 
-      axiosInstance.post(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/submit`, { answer },
+      axiosInstance.post(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/submit/`, { answer },
         {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem('access_token')}`
@@ -81,7 +81,7 @@ const GameMain = () => {
       navigate("/login");
     }
 
-    axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/next`)
+    axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/next/`)
       .then(response => {
         if (response.data.next_question_id) {
           navigate(`/game/${id}/${response.data.next_question_id}`);

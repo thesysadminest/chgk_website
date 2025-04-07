@@ -32,6 +32,7 @@ class Question(models.Model):
     answer_text = models.TextField(default="")
     question_note = models.TextField(blank=True, null=True)
     author_q = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
+    #author_q = models.PrimaryKeyRelatedField(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
     pub_date_q = models.DateTimeField("date published", auto_now_add=True)
     
     def get_question(self):

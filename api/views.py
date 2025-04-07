@@ -1,33 +1,28 @@
 from django.shortcuts import render
-from rest_framework import generics, viewsets
-from rest_framework import viewsets
-#from rest_framework import status
-#from rest_framework.views import APIView
+from rest_framework import generics, viewsets, status
 
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
 
 from rest_framework.response import Response
-#from rest_framework.decorators import action
-from rest_framework.decorators import APIView
-from rest_framework.decorators import action
-#from rest_framework.decorators import api_view
-from rest_framework.decorators import permission_classes
+from rest_framework.decorators import action, APIView, action, permission_classes
 
-#from django.http import JsonResponse
-
-from .serializers import MyTokenObtainPairSerializer, RegisterSerializer, LoginSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from django.contrib.auth import authenticate
 
+from .serializers import MyTokenObtainPairSerializer, RegisterSerializer, LoginSerializer
 from django.contrib.auth.models import AbstractUser
-
 from .serializers import QuestionSerializer, PackSerializer, UserSerializer, TeamSerializer, GameAttemptSerializer
 from .models import Question, Pack, Team, CustomUser, GameAttempt
+
+# will delete if no errors happen
+#from rest_framework.views import APIView
+#from rest_framework.decorators import api_view
+#from django.http import JsonResponse
 
 ###     QUESTION      ###
 
@@ -41,18 +36,33 @@ class QuestionViewList(generics.ListCreateAPIView):
       return queryset
      
 
-class QuestionView(generics.ListCreateAPIView):
+class QuestionView(generics.RetrieveAPIView):
+    queryset = Question.objects.all()  
     serializer_class = QuestionSerializer
     permission_classes = [AllowAny]
-
+    """
+    def perform_create(self, serializer):
+      serializer.save(author_q=self.request.user)
+    
     def get_queryset(self):
       queryset = Question.objects.all().filter(id=self.kwargs['pk'])
       return queryset
+    """  
     
 class QuestionCreate(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated]
     queryset = Question.objects.all()
+    
+    def perform_create(self, serializer):
+        serializer.save(author_q=self.request.user if self.request.user.is_authenticated else None)
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        if response.status_code == 201 and not response.data.get('author_q'):
+            question = Question.objects.get(id=response.data['id'])
+            response.data['author_q'] = question.author_q.username if question.author_q else None
+        return response
     
 class QuestionDelete(generics.DestroyAPIView):
     serializer_class = QuestionSerializer
@@ -73,7 +83,6 @@ class QuestionUpdate(generics.UpdateAPIView):
             return Response({"message" : "Data updated successfully!"})
         else:
             return Response({"message" : "Data update failed."})
-
 
 ###     PACK      ###
 
@@ -120,15 +129,13 @@ class AddQuestionToPack(viewsets.ModelViewSet):
     serializer_class = PackSerializer
     permission_classes = [IsAuthenticated]
   
-    @action(detail=True,
-              methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def update(self, request):
         #q = get_object_or_404(klass=Question, question=kwargs.get('question'))
         q = get_object_or_404(klass=Question, id=request.data.get('question_id'))
         pack = self.get_object()
         pack.questions.add(q)
         return Response({"message": "question added successfully"})
-  
 
 ###     TEAM      ###
 
@@ -255,14 +262,10 @@ class UserDelete(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = CustomUser.objects.all()
 
-
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
-    
+   
     def get(self, request):
-        """
-        Получение данных текущего авторизованного пользователя
-        """
         try:
             user = request.user
             serializer = UserSerializer(user)
@@ -341,8 +344,6 @@ class NextQuestionView(APIView):
         if next_question:
             return Response({"next_question_id": next_question.id})
         return Response({"message": "Game over"})
-
-
 
 
 class QuizResultsView(APIView):

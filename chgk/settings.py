@@ -116,7 +116,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -149,6 +148,8 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'api.CustomUser'
 
+DEFAULT_CHARSET = 'utf-8'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -164,5 +165,3 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',  
     'http://localhost:3000',
 ]
-
-DEFAULT_CHARSET = 'utf-8'

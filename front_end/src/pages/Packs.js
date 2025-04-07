@@ -12,7 +12,7 @@ const Packs = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/api/pack/list')
+    axios.get('http://127.0.0.1:8000/api/pack/list/')
       .then(response => {
         const data = response.data.map((item) => ({
           id: item.id,

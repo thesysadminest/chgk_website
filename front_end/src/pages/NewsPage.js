@@ -13,7 +13,7 @@ const NewsPage = () => {
     // Получение новостей с сервера
     const fetchNews = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/news");
+        const response = await axios.get("http://127.0.0.1:8000/api/news/");
         setNews(response.data);
       } catch (err) {
         setError("Ошибка при загрузке новостей.");

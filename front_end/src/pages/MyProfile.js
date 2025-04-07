@@ -47,7 +47,7 @@ const MyProfile = () => {
         }
 
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userData.id}`,
+          `http://127.0.0.1:8000/api/user/${userData.id}/`,
           {
             headers: {
               'Authorization': `Bearer ${token}`
