@@ -25,14 +25,14 @@ const QuestionDetail = () => {
   });
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/question/${id}")
+    axios.get("http://127.0.0.1:8000/api/question/${id}/")
       .then(response => {
         const data = Array.isArray(response.data) ? response.data[0] : response.data;
         setQuestion({
           id: data.id,
           question_text: data.question_text || "Неизвестно",
           answer_text: data.answer_text || "",
-          author_q: data.author_q || "Неизвестно",
+          author_q: data.author_q?.username || "Неизвестно",
           pub_date_q: data.pub_date_q || "Неизвестно"
         });
       })

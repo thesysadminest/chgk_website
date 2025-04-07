@@ -12,13 +12,13 @@ const Questions = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/question/list")
+    axios.get("http://127.0.0.1:8000/api/question/list/")
       .then(response => {
         const data = response.data.map((item) => ({
           id: item.id,
           question_text: item.question_text,
           answer_text: item.answer_text,
-          author_q: item.author_q || "Неизвестно",
+          author_q: item.author_q?.username || "Неизвестно",
           pub_date_q: (item.pub_date_q ? new Date(item.pub_date_q).toLocaleDateString("ru-RU") : "Неизвестно")
         }));
         setRows(data);

@@ -32,7 +32,7 @@ const UserDetail = () => {
       try {
        
         const userResponse = await axios.get(
-          "http://127.0.0.1:8000/api/user/${userId}"
+          "http://127.0.0.1:8000/api/user/${userId}/"
         );
         
         setUserData(userResponse.data[0]);

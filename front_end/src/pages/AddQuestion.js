@@ -63,6 +63,7 @@ const AddQuestion = () => {
           },
         }
       );
+      console.log("Ответ сервера:", questionResponse.data);
 
       if (questionResponse.status === 201) {
         const questionId = questionResponse.data.id;
