@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Box, 
   Button, 
@@ -8,16 +8,16 @@ import {
   Alert, 
   CircularProgress,
   Tooltip
-} from '@mui/material';
-import axios from 'axios';
-import { checkAuth } from '../utils/authCheck';
-import { useTheme } from '@mui/material/styles';
+} from "@mui/material";
+import axios from "axios";
+import { checkAuth } from "../utils/authCheck";
+import { useTheme } from "@mui/material/styles";
 
 const AddQuestion = () => {
   const theme = useTheme(); 
-  const [questionText, setQuestionText] = useState('');
-  const [correctAnswer, setCorrectAnswer] = useState('');
-  const [authorComment, setAuthorComment] = useState('');
+  const [questionText, setQuestionText] = useState("");
+  const [correctAnswer, setCorrectAnswer] = useState("");
+  const [authorComment, setAuthorComment] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -30,7 +30,7 @@ const AddQuestion = () => {
         const { isAuthorized } = await checkAuth();
         setIsAuthenticated(isAuthorized);
       } catch (error) {
-        console.error('Ошибка проверки авторизации:', error);
+        console.error("Ошибка проверки авторизации:", error);
       } finally {
         setLoading(false);
       }
@@ -45,16 +45,11 @@ const AddQuestion = () => {
       setSubmitting(true);
       setError(null);
 
-      const token = localStorage.getItem('access_token');
-      const user = JSON.parse(localStorage.getItem('user'));
-      console.log("Отправляемые данные:", {
-        question_text: questionText.trim(),
-        answer_text: correctAnswer.trim(),
-        question_note: authorComment.trim(),
-        author_q: user.id  // Уберите это, если author_q read_only!
-      });
+      const token = localStorage.getItem("access_token");
+      const user = JSON.parse(localStorage.getItem("user"));
+
       const questionResponse = await axios.post(
-        'http://127.0.0.1:8000/api/question/create/',
+        "http://127.0.0.1:8000/api/question/create/",
         {
           question_text: questionText.trim(),
           answer_text: correctAnswer.trim(),
@@ -63,8 +58,8 @@ const AddQuestion = () => {
         },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            "Authorization": "Bearer ${token}",
+            "Content-Type": "application/json",
           },
         }
       );
@@ -72,15 +67,15 @@ const AddQuestion = () => {
 
       if (questionResponse.status === 201) {
         const questionId = questionResponse.data.id;
-        alert(`Вопрос успешно добавлен в ${packType === 'open' ? 'открытый' : 'ваш'} пак!`);
-        setQuestionText('');
-        setCorrectAnswer('');
-        setAuthorComment('');
-        navigate('/questions');
+        alert("Вопрос успешно добавлен в ${packType === 'open' ? 'открытый' : 'ваш'} пак!");
+        setQuestionText("");
+        setCorrectAnswer("");
+        setAuthorComment("");
+        navigate("/questions");
       }
     } catch (error) {
-      console.error('Ошибка:', error);
-      setError(error.response?.data?.detail || error.message || 'Ошибка при добавлении');
+      console.error("Ошибка:", error);
+      setError(error.response?.data?.detail || error.message || "Ошибка при добавлении");
     } finally {
       setSubmitting(false);
     }
@@ -88,7 +83,7 @@ const AddQuestion = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -96,18 +91,18 @@ const AddQuestion = () => {
 
   if (!isAuthenticated) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
+      <Box sx={{ p: 4, textAlign: "center" }}>
         <Typography variant="h5" gutterBottom>
           Для добавления вопросов необходимо авторизоваться
         </Typography>
         <Button 
           variant="main_button" 
-          onClick={() => navigate('/registration')}
+          onClick={() => navigate("/registration")}
           sx={{ 
             mt: 2,
             backgroundColor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,
-            '&:hover': {
+            "&:hover": {
               backgroundColor: theme.palette.primary.hover,
             },
           }}
@@ -122,7 +117,7 @@ const AddQuestion = () => {
   const isButtonDisabled = submitting || !isFormValid;
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', flex: 1, minHeight: 0, overflow: 'auto', }}>
+    <Box sx={{ maxWidth: 800, mx: "auto", flex: 1, minHeight: 0, overflow: "auto", }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Создание нового вопроса
       </Typography>
@@ -169,7 +164,7 @@ const AddQuestion = () => {
       />
 
 
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: "flex", gap: 2 }}>
         <Tooltip 
           title={!isFormValid ? "Заполните текст вопроса и правильный ответ" : ""} 
           arrow
@@ -177,19 +172,19 @@ const AddQuestion = () => {
           <span>
             <Button
               variant="main_button"
-              onClick={() => handleAddQuestion('open')}
+              onClick={() => handleAddQuestion("open")}
               disabled={isButtonDisabled}
               sx={{
                 flex: 1,
                 py: 1.5,
                 backgroundColor: isButtonDisabled ? theme.palette.background.disabled : theme.palette.primary.main,
                 color: isButtonDisabled ? theme.palette.text.disabled : theme.palette.primary.contrastText,
-                '&:hover': {
+                "&:hover": {
                   backgroundColor: isButtonDisabled ? theme.palette.background.disabled : theme.palette.primary.hover,
                 },
               }}
             >
-              {submitting ? <CircularProgress size={24} color="inherit" /> : 'Добавить в открытый пак'}
+              {submitting ? <CircularProgress size={24} color="inherit" /> : "Добавить в открытый пак"}
             </Button>
           </span>
         </Tooltip>
@@ -201,19 +196,19 @@ const AddQuestion = () => {
           <span>
             <Button
               variant="main_button"
-              onClick={() => handleAddQuestion('my')}
+              onClick={() => handleAddQuestion("my")}
               disabled={isButtonDisabled}
               sx={{
                 flex: 1,
                 py: 1.5,
                 backgroundColor: isButtonDisabled ? theme.palette.background.disabled : theme.palette.primary.main,
                 color: isButtonDisabled ? theme.palette.text.disabled : theme.palette.primary.contrastText,
-                '&:hover': {
+                "&:hover": {
                   backgroundColor: isButtonDisabled ? theme.palette.background.disabled : theme.palette.primary.hover,
                 },
               }}
             >
-              {submitting ? <CircularProgress size={24} color="inherit" /> : 'Добавить в мой пак'}
+              {submitting ? <CircularProgress size={24} color="inherit" /> : "Добавить в мой пак"}
             </Button>
           </span>
         </Tooltip>

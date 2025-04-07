@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Box, Typography, Avatar, Divider, List, ListItem, ListItemText, 
-ListItemAvatar,Chip, Tabs, Tab, Paper, CircularProgress, Alert} from '@mui/material';
-import axios from 'axios';
-import { styled } from '@mui/material/styles';
-import EmailIcon from '@mui/icons-material/Email';
-import QuizIcon from '@mui/icons-material/Quiz';
-import GroupIcon from '@mui/icons-material/Group';
-import HistoryIcon from '@mui/icons-material/History';
+ListItemAvatar,Chip, Tabs, Tab, Paper, CircularProgress, Alert} from "@mui/material";
+import axios from "axios";
+import { styled } from "@mui/material/styles";
+import EmailIcon from "@mui/icons-material/Email";
+import QuizIcon from "@mui/icons-material/Quiz";
+import GroupIcon from "@mui/icons-material/Group";
+import HistoryIcon from "@mui/icons-material/History";
 
 const StyledProfileBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -32,7 +32,7 @@ const UserDetail = () => {
       try {
        
         const userResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/`
+          "http://127.0.0.1:8000/api/user/${userId}/"
         );
         
         setUserData(userResponse.data[0]);
@@ -41,25 +41,25 @@ const UserDetail = () => {
         
         // Получаем публичные вопросы пользователя
         /*const questionsResponse = await axios.get(
-          `http://127.0.0.1:8000/user/${userId}/questions/public/`
+          "http://127.0.0.1:8000/user/${userId}/questions/public/"
         );
         setUserQuestions(questionsResponse.data);
 
         // Получаем публичные пакеты пользователя
         const packsResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/packs/public/`
+          "http://127.0.0.1:8000/api/user/${userId}/packs/public/"
         );
         setUserPacks(packsResponse.data);
 
         // Получаем публичную историю игр
         const gameHistoryResponse = await axios.get(
-          `http://127.0.0.1:8000/user/${userId}/game_attempts/public/`
+          "http://127.0.0.1:8000/user/${userId}/game_attempts/public/"
         );
         setGameHistory(gameHistoryResponse.data);*/
 
       } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        setError(error.response?.data?.detail || error.message || 'Ошибка загрузки данных');
+        console.error("Ошибка загрузки данных:", error);
+        setError(error.response?.data?.detail || error.message || "Ошибка загрузки данных");
       } finally {
         setLoading(false);
       }
@@ -74,7 +74,7 @@ const UserDetail = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -82,7 +82,7 @@ const UserDetail = () => {
 
   if (error) {
     return (
-      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
         <Alert severity="error">{error}</Alert>
       </Box>
     );
@@ -90,23 +90,23 @@ const UserDetail = () => {
 
   if (!userData) {
     return (
-      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
         <Alert severity="warning">Пользователь не найден</Alert>
       </Box>
     );
   }
   
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+    <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
       <StyledProfileBox>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Avatar sx={{ width: 100, height: 100, mr: 3 }}>
             {userData.username.charAt(0).toUpperCase()}
           </Avatar>
           <Box>
             <Typography variant="h4">{userData.username}</Typography>
             {userData.email && (
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
                 <EmailIcon color="action" sx={{ mr: 1 }} />
                 <Typography variant="body1" color="text.secondary">
                   {userData.email}
@@ -122,15 +122,15 @@ const UserDetail = () => {
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', mt: 3, gap: 2 }}>
+        <Box sx={{ display: "flex", mt: 3, gap: 2 }}>
           <Chip 
             icon={<QuizIcon />} 
-            label={`Вопросов: ${userQuestions.length}`} 
+            label={"Вопросов: ${userQuestions.length}"} 
             variant="outlined" 
           />
           <Chip 
             icon={<GroupIcon />} 
-            label={`Пакетов: ${userPacks.length}`} 
+            label={"Пакетов: ${userPacks.length}"} 
             variant="outlined" 
           />
         </Box>
@@ -151,11 +151,11 @@ const UserDetail = () => {
                 <ListItem 
                   key={question.id} 
                   button
-                  onClick={() => navigate(`/question/${question.id}`)}
+                  onClick={() => navigate("/question/${question.id}")}
                 >
                   <ListItemText
                     primary={question.question_text}
-                    secondary={`Опубликовано: ${new Date(question.pub_date_q).toLocaleDateString()}`}
+                    secondary={"Опубликовано: ${new Date(question.pub_date_q).toLocaleDateString()}"}
                   />
                 </ListItem>
               ))}
@@ -175,7 +175,7 @@ const UserDetail = () => {
                 <ListItem 
                   key={pack.id}
                   button
-                  onClick={() => navigate(`/pack/${pack.id}`)}
+                  onClick={() => navigate("/pack/${pack.id}")}
                 >
                   <ListItemAvatar>
                     <Avatar>
@@ -184,7 +184,7 @@ const UserDetail = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={pack.name}
-                    secondary={'${pack.questions?.length || 0} вопросов'}
+                    secondary={"${pack.questions?.length || 0} вопросов"}
                   />
                 </ListItem>
               ))}
@@ -203,7 +203,7 @@ const UserDetail = () => {
               {gameHistory.map((attempt) => (
                 <ListItem key={attempt.id}>
                   <ListItemText
-                    primary={`Пакет: ${attempt.pack?.name || 'Неизвестно'}`}
+                    primary={"Пакет: ${attempt.pack?.name || 'Неизвестно'}"}
                     secondary={
                       <>
                         <span>{new Date(attempt.timestamp).toLocaleString()}</span>

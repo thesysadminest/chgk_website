@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { DataGrid, useGridApiRef } from '@mui/x-data-grid'; // Импорт apiRef
-import { Box, Link as MuiLink, Button, TextField, CircularProgress, Typography, Alert, Tooltip } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { checkAuth } from '../utils/authCheck';
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { DataGrid, useGridApiRef } from "@mui/x-data-grid"; // Импорт apiRef
+import { Box, Link as MuiLink, Button, TextField, CircularProgress, Typography, Alert, Tooltip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { checkAuth } from "../utils/authCheck";
 
 const Users = () => {
   const [rows, setRows] = useState([]);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -30,29 +30,29 @@ const Users = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        const response = await axios.get('http://127.0.0.1:8000/api/user/list/', {
+        const token = localStorage.getItem("access_token");
+        const response = await axios.get("http://127.0.0.1:8000/api/user/list/", {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            "Authorization": "Bearer ${token}",
+            "Content-Type": "application/json",
           },
         });
 
         const formattedData = response.data.map(user => ({
           id: user.id,
-          username: user.username || 'Неизвестно',
-          email: user.email || 'Не указан',
-          bio: user.bio || 'Не указана',
+          username: user.username || "Неизвестно",
+          email: user.email || "Не указан",
+          bio: user.bio || "Не указана",
           date_joined: user.date_joined 
-            ? new Date(user.date_joined).toLocaleDateString('ru-RU') 
-            : 'Неизвестно',
+            ? new Date(user.date_joined).toLocaleDateString("ru-RU") 
+            : "Неизвестно",
         }));
 
         setRows(formattedData);
       } catch (err) {
-        console.error('Error fetching users:', err);
-        setError(err.message || 'Ошибка загрузки данных');
-        if (err.response?.status === 401) navigate('/authorization');
+        console.error("Error fetching users:", err);
+        setError(err.message || "Ошибка загрузки данных");
+        if (err.response?.status === 401) navigate("/authorization");
       } finally {
         setLoading(false);
       }
@@ -77,12 +77,12 @@ const Users = () => {
   };
 
   const handleRowClick = (params) => {
-    navigate(`/user/${params.id}`, { state: { user: params.row } });
+    navigate("/user/${params.id}", { state: { user: params.row } });
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -90,7 +90,7 @@ const Users = () => {
 
   if (error) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
+      <Box sx={{ p: 3, textAlign: "center" }}>
         <Alert severity="error" sx={{ mb: 2 }}>
           Ошибка: {error}
         </Alert>
@@ -106,18 +106,18 @@ const Users = () => {
   }
 
   return (
-    <Box sx={{ height: '80vh', width: '75vw' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
-        <Tooltip title={isAuthorized ? '' : 'Войдите в систему, чтобы использовать эту функцию'}>
+    <Box sx={{ height: "80vh", width: "75vw" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3, alignItems: "center" }}>
+        <Tooltip title={isAuthorized ? "" : "Войдите в систему, чтобы использовать эту функцию"}>
           <span>
             <Button
               variant="contained"
               onClick={handleFindMe}
               disabled={!isAuthorized} // Неактивна, если пользователь не авторизован
               sx={{
-                backgroundColor: isAuthorized ? 'primary.main' : 'gray',
-                color: isAuthorized ? '#fff' : '#aaa',
-                cursor: isAuthorized ? 'pointer' : 'not-allowed',
+                backgroundColor: isAuthorized ? "primary.main" : "gray",
+                color: isAuthorized ? "#fff" : "#aaa",
+                cursor: isAuthorized ? "pointer" : "not-allowed",
               }}
             >
               Найти меня
@@ -138,31 +138,31 @@ const Users = () => {
           rows={rows}
           columns={[
             { 
-              field: 'id', 
-              headerName: 'ID', 
+              field: "id", 
+              headerName: "ID", 
               width: 80, 
               renderCell: (params) => (
                 <MuiLink 
-                  href={`/user/${params.value}`} 
+                  href={"/user/${params.value}"} 
                   underline="hover"
-                  sx={{ cursor: 'pointer' }}
+                  sx={{ cursor: "pointer" }}
                 >
                   {params.value}
                 </MuiLink>
               ),
             },
-            { field: 'username', headerName: 'Имя', flex: 1 },
-            { field: 'email', headerName: 'Email', flex: 1.5 },
-            { field: 'bio', headerName: 'О себе', flex: 2 },
-            { field: 'date_joined', headerName: 'Дата регистрации', width: 150 },
+            { field: "username", headerName: "Имя", flex: 1 },
+            { field: "email", headerName: "Email", flex: 1.5 },
+            { field: "bio", headerName: "О себе", flex: 2 },
+            { field: "date_joined", headerName: "Дата регистрации", width: 150 },
           ]}
           pageSize={10} // Начальное отображение 10 строк
           rowsPerPageOptions={[10, 20, 50]} // Добавляем только 10, 20, 50
           disableSelectionOnClick
           apiRef={apiRef}
           sx={{
-            '& .MuiDataGrid-cell:focus': { outline: 'none' },
-            '& .MuiDataGrid-columnHeader:focus': { outline: 'none' },
+            "& .MuiDataGrid-cell:focus": { outline: "none" },
+            "& .MuiDataGrid-columnHeader:focus": { outline: "none" },
           }}
         />
 
