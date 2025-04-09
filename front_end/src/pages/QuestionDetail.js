@@ -25,7 +25,7 @@ const QuestionDetail = () => {
   });
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/question/${id}/")
+    axios.get(`http://127.0.0.1:8000/api/question/${id}/`)
       .then(response => {
         const data = Array.isArray(response.data) ? response.data[0] : response.data;
         setQuestion({
@@ -60,7 +60,7 @@ const QuestionDetail = () => {
   };
 
   const handleRetry = () => {
-    navigate("/question/${id}");
+    navigate(`/question/${id}`);
     setAnswer("");
     setFeedback("");
     setAnswerColor("");

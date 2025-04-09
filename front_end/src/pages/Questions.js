@@ -30,7 +30,7 @@ const Questions = () => {
   }, []);
 
   const handleRowClick = (params) => {
-    navigate("/question/${params.id}", { state: { question: params.row } });
+    navigate(`/question/${params.id}`, { state: { question: params.row } });
     setVisited({ ...visited, [params.id]: true });
   };
 

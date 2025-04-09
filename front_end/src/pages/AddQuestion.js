@@ -58,7 +58,7 @@ const AddQuestion = () => {
         },
         {
           headers: {
-            "Authorization": "Bearer ${token}",
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -67,7 +67,7 @@ const AddQuestion = () => {
 
       if (questionResponse.status === 201) {
         const questionId = questionResponse.data.id;
-        alert("Вопрос успешно добавлен в ${packType === 'open' ? 'открытый' : 'ваш'} пак!");
+        alert(`Вопрос успешно добавлен в ${packType === 'open' ? 'открытый' : 'ваш'} пак!`);
         setQuestionText("");
         setCorrectAnswer("");
         setAuthorComment("");

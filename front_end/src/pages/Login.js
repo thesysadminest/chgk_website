@@ -106,7 +106,7 @@ const Login = () => {
                 borderRadius: "10px",
               }}
             >
-              {submitting ? <CircularProgress size={24} color="inherit"/> : "Зарегистрироваться"}
+              {submitting ? <CircularProgress size={24} color="inherit"/> : "Войти"}
             </Button>
           </span>
         </Tooltip>

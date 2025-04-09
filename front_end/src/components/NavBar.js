@@ -38,9 +38,9 @@ const closedMixin = (theme) => ({
   }),
   overflowY: "hidden",
   overflowX: "hidden",
-  width: "calc(${theme.spacing(7)} + 1px)",
+  width: `calc(${theme.spacing(7)} + 1px)`,
   [theme.breakpoints.up("sm")]: {
-    width: "calc(${theme.spacing(8)} + 1px)",
+    width: `calc(${theme.spacing(8)} + 1px)`,
   },
 });
 
@@ -48,15 +48,15 @@ const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
-  marginLeft: "calc(${theme.spacing(8)} + 1px)",
-  width: "calc(100% - ${theme.spacing(8)} - 1px)",
+  marginLeft: `calc(${theme.spacing(8)} + 1px)`,
+  width: `calc(100% - ${theme.spacing(8)} - 1px)`,
   transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
     marginLeft: drawerWidth,
-    width: "calc(100% - ${drawerWidth}px)",
+    width: `calc(100% - ${drawerWidth}px)`,
     transition: theme.transitions.create(["width", "margin"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -229,7 +229,7 @@ export default function NavBar({ children }) {
                     sx={{
                       justifyContent: open ? "initial" : "center",
                       px: 2.5,
-                      minWidth: open ? drawerWidth - 30 : "calc(${theme.spacing(4)} + 1px)",
+                      minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
                       backgroundColor: isActive ? theme.palette.primary.main : "transparent",
                       "&:hover": {
                         backgroundColor: isActive ? theme.palette.primary.main : theme.palette.primary.dark,
@@ -239,7 +239,7 @@ export default function NavBar({ children }) {
                     <ListItemIcon
                       sx={{
                         ml: 1,
-                        minWidth: open ? "auto" : "calc(100% - 8px)",
+                        minWidth: open ? "auto" : `calc(100% - 8px)`,
                         justifyContent: "left",
                       }}
                     >
@@ -275,7 +275,7 @@ export default function NavBar({ children }) {
                   sx={{
                     justifyContent: "center",
                     px: 2.5,
-                    minWidth: open ? drawerWidth - 30 : "calc(${theme.spacing(4)} + 1px)",
+                    minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
                     border: "0.5px solid grey",
                     "&:hover": {
                       variant: "hover",
@@ -297,6 +297,7 @@ export default function NavBar({ children }) {
         open={open} 
         sx={{ 
           zIndex: theme.zIndex.drawer + 1, 
+          height: "63.8px",
         }}>
           <Toolbar id="toolbar">
             <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>

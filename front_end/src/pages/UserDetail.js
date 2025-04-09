@@ -32,7 +32,7 @@ const UserDetail = () => {
       try {
        
         const userResponse = await axios.get(
-          "http://127.0.0.1:8000/api/user/${userId}/"
+          `http://127.0.0.1:8000/api/user/${userId}/`
         );
         
         setUserData(userResponse.data[0]);
@@ -41,19 +41,19 @@ const UserDetail = () => {
         
         // Получаем публичные вопросы пользователя
         /*const questionsResponse = await axios.get(
-          "http://127.0.0.1:8000/user/${userId}/questions/public/"
+          `http://127.0.0.1:8000/user/${userId}/questions/public/`
         );
         setUserQuestions(questionsResponse.data);
 
         // Получаем публичные пакеты пользователя
         const packsResponse = await axios.get(
-          "http://127.0.0.1:8000/api/user/${userId}/packs/public/"
+          `http://127.0.0.1:8000/api/user/${userId}/packs/public/`
         );
         setUserPacks(packsResponse.data);
 
         // Получаем публичную историю игр
         const gameHistoryResponse = await axios.get(
-          "http://127.0.0.1:8000/user/${userId}/game_attempts/public/"
+          `http://127.0.0.1:8000/user/${userId}/game_attempts/public/`
         );
         setGameHistory(gameHistoryResponse.data);*/
 
@@ -107,7 +107,7 @@ const UserDetail = () => {
             <Typography variant="h4">{userData.username}</Typography>
             {userData.email && (
               <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-                <EmailIcon color="action" sx={{ mr: 1 }} />
+                <EmailIcon sx={{ mr: 1 }} />
                 <Typography variant="body1" color="text.secondary">
                   {userData.email}
                 </Typography>
@@ -125,12 +125,12 @@ const UserDetail = () => {
         <Box sx={{ display: "flex", mt: 3, gap: 2 }}>
           <Chip 
             icon={<QuizIcon />} 
-            label={"Вопросов: ${userQuestions.length}"} 
+            label={`Вопросов: ${userQuestions.length}`} 
             variant="outlined" 
           />
           <Chip 
             icon={<GroupIcon />} 
-            label={"Пакетов: ${userPacks.length}"} 
+            label={`Пакетов: ${userPacks.length}`} 
             variant="outlined" 
           />
         </Box>
@@ -151,11 +151,11 @@ const UserDetail = () => {
                 <ListItem 
                   key={question.id} 
                   button
-                  onClick={() => navigate("/question/${question.id}")}
+                  onClick={() => navigate(`/question/${question.id}`)}
                 >
                   <ListItemText
                     primary={question.question_text}
-                    secondary={"Опубликовано: ${new Date(question.pub_date_q).toLocaleDateString()}"}
+                    secondary={`Опубликовано: ${new Date(question.pub_date_q).toLocaleDateString()}`}
                   />
                 </ListItem>
               ))}
@@ -175,7 +175,7 @@ const UserDetail = () => {
                 <ListItem 
                   key={pack.id}
                   button
-                  onClick={() => navigate("/pack/${pack.id}")}
+                  onClick={() => navigate(`/pack/${pack.id}`)}
                 >
                   <ListItemAvatar>
                     <Avatar>
@@ -184,7 +184,7 @@ const UserDetail = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={pack.name}
-                    secondary={"${pack.questions?.length || 0} вопросов"}
+                    secondary={`${pack.questions?.length || 0} вопросов`}
                   />
                 </ListItem>
               ))}
@@ -203,7 +203,7 @@ const UserDetail = () => {
               {gameHistory.map((attempt) => (
                 <ListItem key={attempt.id}>
                   <ListItemText
-                    primary={"Пакет: ${attempt.pack?.name || 'Неизвестно'}"}
+                    primary={`Пакет: ${attempt.pack?.name || 'Неизвестно'}`}
                     secondary={
                       <>
                         <span>{new Date(attempt.timestamp).toLocaleString()}</span>

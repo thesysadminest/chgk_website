@@ -33,7 +33,7 @@ const Users = () => {
         const token = localStorage.getItem("access_token");
         const response = await axios.get("http://127.0.0.1:8000/api/user/list/", {
           headers: {
-            "Authorization": "Bearer ${token}",
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
@@ -77,7 +77,7 @@ const Users = () => {
   };
 
   const handleRowClick = (params) => {
-    navigate("/user/${params.id}", { state: { user: params.row } });
+    navigate(`/user/${params.id}`, { state: { user: params.row } });
   };
 
   if (loading) {
@@ -143,7 +143,7 @@ const Users = () => {
               width: 80, 
               renderCell: (params) => (
                 <MuiLink 
-                  href={"/user/${params.value}"} 
+                  href={`/user/${params.value}`} 
                   underline="hover"
                   sx={{ cursor: "pointer" }}
                 >

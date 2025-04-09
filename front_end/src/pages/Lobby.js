@@ -215,6 +215,7 @@ const Lobby = () => {
             "СОРЕВНУЙТЕСЬ", 
             "ИЩИТЕ КОМАНДЫ"].map((text, idx) => (
               <Box
+                className = {`lobbybtn${idx}`}
                 key={idx}
                 onClick={() => handleBoxClick(idx)}
                 sx={{
@@ -230,7 +231,12 @@ const Lobby = () => {
                     theme.palette.primary.light : 
                     theme.palette.background.light,
                   cursor: "pointer",
-                  transition: "background-color 0.3s ease",
+                  
+                  boxShadow: "0px 0px 0px 0px rgba(154, 14, 14, 1)",
+                  transition: theme => `
+                    background-color 0.3s ease,
+                    box-shadow ${theme.transitions.duration.shortest}ms ease-in-out
+                  `,
                   "&:hover": {
                     boxShadow: "-4px 7px 0px 0px rgba(154, 14, 14, 1)",
                   },
@@ -245,6 +251,9 @@ const Lobby = () => {
                       textAlign: "center",
                       color: theme.palette.text.primary,
                       fontWeight: "bold",
+                      [`.lobbybtn${idx}:active &`]: {
+                        color: theme.palette.text.gray,
+                      },
                     }}>
                       {text}
                   </Typography>

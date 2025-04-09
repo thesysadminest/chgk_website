@@ -15,11 +15,11 @@ const GameRedirect = () => {
       }
   
       try {
-        const response = await axiosInstance.get("/game/${id}/start/");
+        const response = await axiosInstance.get(`/game/${id}/start/`);
         const firstQuestionId = response.data?.first_question_id;
         
         if (firstQuestionId) {
-          navigate("/game/${id}/${firstQuestionId}");
+          navigate(`/game/${id}/${firstQuestionId}`);
         } else {
           navigate("/packs");
         }

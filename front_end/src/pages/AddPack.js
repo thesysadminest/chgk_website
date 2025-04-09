@@ -39,7 +39,7 @@ const AddPack = () => {
           const questionsResponse = await axios.get(
             "http://127.0.0.1:8000/api/question/list/",
             {
-              headers: { "Authorization": "Bearer ${token}" },
+              headers: { "Authorization": `Bearer ${token}` },
             }
           );
 
@@ -86,7 +86,7 @@ const AddPack = () => {
         },
         {
           headers: {
-            "Authorization": "Bearer ${token}",
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -98,9 +98,9 @@ const AddPack = () => {
         await Promise.all(
           selectedQuestions.map((questionId) =>
             axios.post(
-              "http://127.0.0.1:8000/api/pack/question/${packId}/",
+              `http://127.0.0.1:8000/api/pack/question/${packId}/`,
               { question_id: questionId },
-              { headers: { "Authorization": "Bearer ${token}" } }
+              { headers: { "Authorization": `Bearer ${token}` } }
             )
           )
         );
@@ -211,7 +211,7 @@ const AddPack = () => {
               <ListItemButton>
                 <ListItemText
                   primary={question.question_text}
-                  secondary={"Ответ: ${question.answer_text}"}
+                  secondary={`Ответ: ${question.answer_text}`}
                 />
               </ListItemButton>
             </ListItem>

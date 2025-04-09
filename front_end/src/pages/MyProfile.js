@@ -47,10 +47,10 @@ const MyProfile = () => {
         }
 
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/user/${userData.id}/",
+          `http://127.0.0.1:8000/api/user/${userData.id}/`,
           {
             headers: {
-              "Authorization": "Bearer ${token}"
+              "Authorization": `Bearer ${token}`
             }
           }
         );
@@ -160,7 +160,7 @@ const MyProfile = () => {
 
           <Button 
             variant="outlined" 
-            onClick={() => navigate("/user/${user.id}/edit")}
+            onClick={() => navigate(`/user/${user.id}/edit`)}
           >
             Редактировать профиль
           </Button>
@@ -171,19 +171,19 @@ const MyProfile = () => {
         <Typography variant="h5" gutterBottom>Моя активность</Typography>
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <Chip 
-            label={"Вопросов: ${user.questions_count || 0}"} 
+            label={`Вопросов: ${user.questions_count || 0}`} 
             variant="outlined" 
             onClick={() => navigate("/my-questions")}
             clickable
           />
           <Chip 
-            label={"Пакетов: ${user.packs_count || 0}"} 
+            label={`Пакетов: ${user.packs_count || 0}`} 
             variant="outlined" 
             onClick={() => navigate("/my-packs")}
             clickable
           />
           <Chip 
-            label={"Команд: ${user.teams_count || 0}"} 
+            label={`Команд: ${user.teams_count || 0}`} 
             variant="outlined" 
             onClick={() => navigate("/my-teams")}
             clickable

@@ -31,7 +31,7 @@ export async function checkAuth() {
     
     return { isAuthorized: true, user: userData };
   } catch (error) {
-    // Если токен невалидный, очищаем хранилище
+    // если токен невалидный, очищаем хранилище
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');

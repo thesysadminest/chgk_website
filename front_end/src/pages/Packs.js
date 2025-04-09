@@ -31,7 +31,7 @@ const Packs = () => {
   }, []);
 
   const handleRowClick = (params) => {
-    navigate("/pack/${params.row.id}", { state: { pack: params.row } });
+    navigate(`/pack/${params.row.id}`, { state: { pack: params.row } });
     setVisited({ ...visited, [params.row.id]: true });
   };
 

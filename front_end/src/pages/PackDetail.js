@@ -18,7 +18,7 @@ const PackDetail = () => {
   });
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/pack/${packId}/") 
+    axios.get(`http://127.0.0.1:8000/api/pack/${packId}/`) 
       .then(response => {
         const data = response.data;
         console.log("Полученные данные:", data);  
@@ -47,7 +47,7 @@ const PackDetail = () => {
   }, [packId]);
 
   const handleRowClick = (params) => {
-    navigate("/question/${params.row.id}");
+    navigate(`/question/${params.row.id}`);
     setVisited({ ...visited, [params.row.id]: true });
   };
 
