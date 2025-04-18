@@ -15,9 +15,9 @@ import ListItemText from "@mui/material/ListItemText";
 import ButtonBase from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { AddCircle, ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { AddCircle, ChevronLeft, ChevronRight, HelpOutline } from "@mui/icons-material";
 import UserMenu from "../components/UserMenu";
-
+import Button from "@mui/material/Button";
 
 const drawerWidth = 240;
 
@@ -92,11 +92,40 @@ const Item = styled(ButtonBase)(({ theme }) => ({
   zIndex: 3,
 }));
 
+const PlayButtonContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(1),
+}));
+
+const PlayButton = styled(Button)(({ theme }) => ({
+  width: "100%",
+  fontSize: "1.4rem",
+  fontWeight: "bold",
+}));
+
+const BottomButtonsContainer = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  bottom: theme.spacing(2),
+  right: theme.spacing(2),
+  display: 'flex',
+  gap: theme.spacing(1),
+}));
+
+const RoundIconButton = styled(IconButton)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.menu,
+  color: theme.palette.text.light,
+  '&:hover': {
+    backgroundColor: theme.palette.primary.dark,
+  },
+}));
 
 export default function NavBar({ children }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
-  const fontSize = "2vh";
   const navigate = useNavigate();
   const location = useLocation();
   const isLobby = location.pathname === "/";
@@ -109,157 +138,146 @@ export default function NavBar({ children }) {
     }
   }, []);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false); 
+  const handleDrawerToggle = () => {
+    setOpen(!open);
   };
 
   const handleAddQuestionClick = (event) => {
     event.stopPropagation();
     navigate("/add-question");
   };
+
   const handleAddPackClick = (event) => {
     event.stopPropagation();
     navigate("/add-pack");
   };
 
+  const handlePlayClick = () => {
+    navigate("/game");
+  };
+
+  const handleHelpClick = () => {
+    navigate("/help");
+  };
+
   const renderIcon = (index) => {
     const size = 28;
     switch (index) {
-      case 0:
-        return <img src="/question_w.ico" alt="question" style={{ width: size, height: size }} />;
-      case 1:
-        return <img src="/bag_w.ico" alt="bag" style={{ width: size, height: size }} />;
-      case 2:
-        return <img src="/user_w.ico" alt="user" style={{ width: size, height: size }} />;
-      default:
-        return <img src="/team_w.ico" alt="user" style={{ width: size, height: size }} />;
+      case 0: return <img src="/question_w.ico" alt="question" style={{ width: size, height: size }} />;
+      case 1: return <img src="/bag_w.ico" alt="bag" style={{ width: size, height: size }} />;
+      case 2: return <img src="/user_w.ico" alt="user" style={{ width: size, height: size }} />;
+      case 3: return <img src="/team_w.ico" alt="team" style={{ width: size, height: size }} />;
+      case 4: return <img src="/home_w.ico" alt="home" style={{ width: size, height: size }} />;
+      default: return null;
     }
   };
 
   const resolvePageName = () => {
-  const path = location.pathname;
+    const path = location.pathname;
+    if (/^\/question\/\d+$/.test(path)) return "Внимание, вопрос";
+    if (/^\/pack\/\d+$/.test(path)) return "Внимание, пакет";
+    if (/^\/user\/\d+$/.test(path)) return "Информация о пользователе";
+    if (/^\/team\/\d+$/.test(path)) return "Информация о команде";
 
-  if (/^\/question\/\d+$/.test(path)) {
-    return "Внимание, вопрос";
-  }
-  else if (/^\/pack\/\d+$/.test(path)) {
-    return "Внимание, пакет";
-  }
-  else if (/^\/user\/\d+$/.test(path)) {
-    return "Информация о пользователе";
-  }
-  else if (/^\/team\/\d+$/.test(path)) {
-    return "Информация о команде";
-  }
-
-  switch (path) {
-    case "/news":
-      return "Главная";
-    case "/questions":
-      return "Вопросы";
-    case "/packs":
-      return "Пакеты";
-    case "/users":
-      return "Пользователи";
-    case "/teams":
-      return "Команды";
-    case "/add-question":
-      return "Добавить вопрос";
-    case "/add-pack":
-      return "Добавить пак";
-    case "/add-pack/add-question":
-      return "Добавить пак";
-    case "/myprofile":
-      return "Мой профиль";
-    default:
-      return "";
-  }
-};
+    switch (path) {
+      case "/news": return "Главная";
+      case "/questions": return "Вопросы";
+      case "/packs": return "Пакеты";
+      case "/users": return "Пользователи";
+      case "/teams": return "Команды";
+      case "/add-question": return "Добавить вопрос";
+      case "/add-pack": return "Добавить пак";
+      case "/add-pack/add-question": return "Добавить пак";
+      case "/myprofile": return "Мой профиль";
+      default: return "";
+    }
+  };
 
   return (
     <div>
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
 
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: drawerWidth,
-            height: "63.8px",
-            backgroundColor: "background.window",
-            zIndex: theme.zIndex.drawer + 3,
-            display: "flex",
-            cursor: "pointer",
-         
-          ...(open && {
-              ...openedMixin(theme),
-              "& .MuiDrawer-paper": openedMixin(theme),
-            }),
-            ...(!open && {
-              ...closedMixin(theme),
-              "& .MuiDrawer-paper": closedMixin(theme),
-            }),
-          }}
-          component={Link}
-          to="/"
-        >
-        </Box>
-
         <Drawer variant="permanent" open={open}>
+          <PlayButtonContainer>
+            <img 
+              src="/arrow.png" 
+              alt="Логотип" 
+              style={{ 
+                width: "80%", 
+                maxWidth: "180px",
+                marginBottom: "16px" 
+              }} 
+            />
+            <PlayButton 
+              variant="contained" 
+              color="secondary"
+              onClick={handlePlayClick}
+            >
+              Играть
+            </PlayButton>
+          </PlayButtonContainer>
+
           <Divider />
-          <List sx={{ mt: "11vh", zIndex: theme.zIndex.drawer }}>
+
+          <List sx={{ zIndex: theme.zIndex.drawer }}>
             {[
-              ["Вопросы", "/questions"],
-              ["Пакеты", "/packs"],
-              ["Пользователи", "/users"],
-              ["Команды", "/teams"],
-            ].map((text, index) => {
-              const isActive = location.pathname === text[1];
+              ["Главная", "/news", 4],
+              ["Вопросы", "/questions", 0],
+              ["Пакеты", "/packs", 1],
+              ["Пользователи", "/users", 2],
+              ["Команды", "/teams", 3],
+            ].map(([text, path, iconIndex]) => {
+              const isActive = location.pathname === path;
               return (
-                <ListItem disablePadding key={text[0]} sx={{ display: "block", position: "relative", pt: 0, pb: 2, pr: 1, pl: 1 }}>
+                <ListItem disablePadding key={text} sx={{ 
+                  display: "block", 
+                  position: "relative", 
+                  pt: 0, 
+                  pb: 0.5, 
+                  pr: 1, 
+                  pl: 1 
+                }}>
                   <ListItemButton
-                    component={Link}
-                    to={text[1]}
-                    sx={{
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
-                      minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
-                      backgroundColor: isActive ? theme.palette.primary.main : "transparent",
-                      "&:hover": {
-                        backgroundColor: isActive ? theme.palette.primary.main : theme.palette.primary.dark,
-                      },
-                    }}
+                      component={Link}
+                      to={path}
+                      className={isActive ? "MuiListItemButton-red" : "MuiListItemButton-grey"}
+                      sx={{
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
+                        minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
+                        '&.MuiListItemButton-red': {
+                          color: theme.palette.text.primary,
+                        },
+                        '&.MuiListItemButton-grey': {
+                          color: theme.palette.primary.contrastText,
+                        },
+                      }}
                   >
-                    <ListItemIcon
-                      sx={{
-                        ml: 1,
-                        minWidth: open ? "auto" : `calc(100% - 8px)`,
-                        justifyContent: "left",
-                      }}
-                    >
-                      {renderIcon(index)}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={text[0]}
-                      sx={{
-                        ml: 1.2,
-                        opacity: open ? 1 : 0,
-                        whiteSpace: "nowrap",
-                      }}
-                    />
+                        <ListItemIcon
+                          sx={{
+                            ml: 1,
+                            minWidth: open ? "auto" : `calc(100% - 8px)`,
+                            justifyContent: "left",
+                          }}
+                        >
+                          {renderIcon(iconIndex)}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={text}
+                          sx={{
+                            ml: 1.2,
+                            opacity: open ? 1 : 0,
+                            whiteSpace: "nowrap",
+                          }}
+                        />
                   </ListItemButton>
-                  {open && index === 0 && (
+                  {open && text === "Вопросы" && (
                     <Item onClick={handleAddQuestionClick} sx={{ ml: 1.2 }}>
                       <AddCircle/>
                     </Item>
                   )}
-                  {open && index === 1 && (
+                  {open && text === "Пакеты" && (
                     <Item onClick={handleAddPackClick} sx={{ ml: 1.2 }}>
                       <AddCircle/>
                     </Item>
@@ -267,59 +285,55 @@ export default function NavBar({ children }) {
                 </ListItem>
               );
             })}
-          
-          {!isLobby && (
-              <ListItem disablePadding sx={{ display: "block", position: "relative", pt: 0, pb: 2, pr: 1, pl: 1 }}>
-                <ListItemButton
-                  onClick={open ? handleDrawerClose : handleDrawerOpen}
-                  sx={{
-                    justifyContent: "center",
-                    px: 2.5,
-                    minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
-                    border: "0.5px solid grey",
-                    "&:hover": {
-                      variant: "hover",
-                      backgroundColor: theme.palette.chevron,
-                    },
-                  }}
-                >
-                  {open ? (<ChevronLeft/>) : (<ChevronRight/>)}
-                </ListItemButton>
-              </ListItem>
-            )}
           </List>
 
-        <Divider />
-      </Drawer>
+          <BottomButtonsContainer>
+            {open && (
+              <>
+                <RoundIconButton onClick={handleHelpClick}>
+                  <HelpOutline />
+                </RoundIconButton>
+                <RoundIconButton onClick={handleDrawerToggle}>
+                  <ChevronLeft />
+                </RoundIconButton>
+              </>
+            )}
+            {!open && (
+              <RoundIconButton onClick={handleDrawerToggle}>
+                <ChevronRight />
+              </RoundIconButton>
+            )}
+          </BottomButtonsContainer>
+        </Drawer>
 
-      <AppBar 
-        position="fixed" 
-        open={open} 
-        sx={{ 
-          zIndex: theme.zIndex.drawer + 1, 
-          height: "63.8px",
-        }}>
-          <Toolbar id="toolbar">
-            <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
-              {resolvePageName()}
-            </Typography>
-            <UserMenu />
-          </Toolbar>
-       </AppBar>
-       <Box
-         id="mainbox"
-         component="main"
-         sx={{
-           flexGrow: 1,
-           p: 10,
-           pt: 6,
-           display: "flex",
-           flexDirection: "column",
-           height: "100vh",
-           overflow: "hidden",
-       }}>
-          {children}
-       </Box>
+        <AppBar 
+          position="fixed" 
+          open={open} 
+          sx={{ 
+            zIndex: theme.zIndex.drawer + 1, 
+            height: "63.8px",
+          }}>
+            <Toolbar id="toolbar">
+              <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
+                {resolvePageName()}
+              </Typography>
+              <UserMenu />
+            </Toolbar>
+         </AppBar>
+         <Box
+           id="mainbox"
+           component="main"
+           sx={{
+             flexGrow: 1,
+             p: 10,
+             pt: 6,
+             display: "flex",
+             flexDirection: "column",
+             height: "100vh",
+             overflow: "hidden",
+         }}>
+            {children}
+         </Box>
       </Box>
     </div>
   );

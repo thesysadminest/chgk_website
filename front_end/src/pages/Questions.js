@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
-import { Box, Link as MuiLink, Button, TextField } from "@mui/material";
+import { Box, Link as MuiLink, Button, TextField, Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const Questions = () => {
@@ -51,78 +51,117 @@ const Questions = () => {
   };
 
   return (
-    <>
-      <Box sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="main_button" color="secondary" onClick={handleToPacks}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Stack 
+        direction="row" 
+        spacing={2} 
+        sx={{ 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          mb: 2,
+          flexWrap: 'wrap',
+          gap: 2
+        }}
+      >
+        <Stack direction="row" spacing={2}>
+          <Button 
+            variant="contained" 
+            color="red" 
+            onClick={handleToPacks}
+            sx={{
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.light',
+                color: 'primary.main'
+              }
+            }}
+          >
             Перейти к пакам
           </Button>
-          <Button variant="main_button" color="primary" onClick={handleAddQuestion}>
+          <Button 
+            variant="contained" 
+            color="red" 
+            onClick={handleAddQuestion}
+            sx={{
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.light',
+                color: 'primary.main'
+              }
+            }}
+          >
             Добавить вопрос
           </Button>
-        
+        </Stack>
 
-          <TextField
-            variant="outlined"
-            size="small"
-            placeholder="Поиск по вопросу"
-            value={searchText}
-            onChange={(e) => requestSearch(e.target.value)}
-            sx={{ width: "300px", ml: "auto" }} 
-          />
-        </Box>
-      </Box>
+        <TextField
+          variant="outlined"
+          size="small"
+          placeholder="Поиск по вопросу"
+          value={searchText}
+          onChange={(e) => requestSearch(e.target.value)}
+          sx={{ width: "300px" }} 
+        />
+      </Stack>
 
-
-      <DataGrid
-        rows={rows}
-        columns={[
-          { field: "id", 
-            headerName: "ID", 
-            flex: 0.7,
-            renderCell: (params) => (
-              <MuiLink 
-                component="button" 
-                variant="body2" 
-                className="datagrid-button"
-                onClick={() => handleRowClick(params)} 
-                sx={{ 
-                  color: visited[params.id] ? "grey" : "white", // Серый для посещённых, белый для непосещённых
-                  textDecoration: "underline", 
-                  cursor: "pointer" 
-                }}
-              >
-                {params.value}
-              </MuiLink>
-            )
-          },
-          { field: "question_text", headerName: "Question Text", flex: 3 },
-          { field: "author_q", headerName: "Author", flex: 2 },
-          { field: "pub_date_q", headerName: "Date", flex: 2},
-        ]}
-        pageSize={5}
-        rowsPerPageOptions={[5, 10, 20]}
-        
-        sx={{ 
-          boxShadow: 2, 
-          border: 1, 
-          inactiveBorderColor: "grey.300",
-          "& .MuiDataGrid-columnHeader .MuiButtonBase-root": {
-            backgroundColor: "inherit",
-            color: "inherit",
-            "&:active": {
-              backgroundColor: "inherit",
-              color: "white",
+      <Box sx={{ flexGrow: 1 }}>
+        <DataGrid
+          rows={rows}
+          columns={[
+            { 
+              field: "id", 
+              headerName: "ID", 
+              flex: 0.7,
+              renderCell: (params) => (
+                <MuiLink 
+                  component="button" 
+                  variant="body2" 
+                  onClick={() => handleRowClick(params)} 
+                  sx={{ 
+                    color: visited[params.id] ? "grey" : "white",
+                    textDecoration: "underline", 
+                    cursor: "pointer",
+                    '&:hover': {
+                      color: visited[params.id] ? 'darkgrey' : 'primary.light'
+                    }
+                  }}
+                >
+                  {params.value}
+                </MuiLink>
+              )
             },
-          },
-          "& .visited-row": {
-            color: "grey", 
-          },
-        }}
-        getRowClassName={(params) => visited[params.id] ? "visited-row" : ""} 
-        onRowClick={handleRowClick}
-      />
-    </>
+            { field: "question_text", headerName: "Question Text", flex: 3 },
+            { field: "author_q", headerName: "Author", flex: 2 },
+            { field: "pub_date_q", headerName: "Date", flex: 2 },
+          ]}
+          pageSize={5}
+          rowsPerPageOptions={[5, 10, 20]}
+          sx={{ 
+            boxShadow: 2, 
+            border: 1, 
+            borderColor: 'grey.300',
+            '& .MuiDataGrid-columnHeaders': {
+              backgroundColor: 'background.paper',
+              color: 'text.primary',
+              borderBottom: '1px solid',
+              borderColor: 'primary.main'
+            },
+            '& .MuiDataGrid-columnHeaderTitle': {
+              fontWeight: 'bold'
+            },
+            '& .MuiDataGrid-cell': {
+              borderBottom: '1px solid',
+              borderColor: 'grey.800'
+            },
+            '& .visited-row': {
+              color: 'grey'
+            }
+          }}
+          getRowClassName={(params) => visited[params.id] ? "visited-row" : ""}
+          onRowClick={handleRowClick}
+        />
+      </Box>
+    </Box>
   );
 };
 

@@ -48,7 +48,21 @@ const Registration = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.detail || result.message || "Ошибка регистрации");
+        let errorMessage = result.detail || result.message || "Ошибка регистрации";
+        
+        if (result.username && result.username[0] == "A user with that username already exists.") {
+          errorMessage = "Такой пользователь уже есть";
+        }
+        else if (result.email && result.email[0] == "This field must be unique.") {
+          errorMessage = "Такая почта уже есть";
+        }
+        else if (result.password && result.password[0] == "This password is too short. It must contain at least 8 characters.") {
+          errorMessage = "Пароль не должен быть короче 8 символов";
+        }
+        else if (result.password && result.password[0] == "This password is too common.") {
+          errorMessage = "Пароль слишком простой";
+        }
+        throw new Error(errorMessage);
       }
 
       localStorage.setItem("access_token", result.access);

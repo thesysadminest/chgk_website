@@ -26,7 +26,12 @@ const Login = () => {
       localStorage.setItem("refresh_token", response.data.refresh);
       navigate("/news"); 
     } catch (error) {
-      setError(error.response?.data?.errors || error.message || "Ошибка при входе");
+      if (error.status && error.status == 400) {
+        setError("Неверный логин или пароль");
+      }
+      else {
+       setError(error.message || "Ошибка при входе");
+      }
     } finally {
       setSubmitting(false);
     }
