@@ -60,6 +60,7 @@ const darkTheme = createTheme({
       window: windowBackground,
       disabled: disabledBackground,
       light: advertisementBackground,
+      white: white4,
     },
     text: {
       primary: graphiteText,
@@ -78,6 +79,7 @@ const darkTheme = createTheme({
       red: {
         main: burgundyBase,
         light: burgundyClicked,
+        hover: burgundyHover,
         contrastText: graphiteText,
       }
     },

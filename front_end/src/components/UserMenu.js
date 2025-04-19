@@ -13,6 +13,7 @@ import { styled } from "@mui/material/styles";
 import { useNavigate, Link } from "react-router-dom";
 import { Person, PersonAdd } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
+import { clearAuthTokens, getUserData } from "../utils/AuthUtils"; // Импортируем нужные функции
 
 const UserMenuItem = styled(Button)(({ theme }) => ({
   height: "100px",
@@ -20,19 +21,14 @@ const UserMenuItem = styled(Button)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
 }));
 
-const UserMenu = () => {
+const UserMenu = ({ onLogout }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const fontSize = "2vh";
 
-  let user;
-  try {
-    user = JSON.parse(localStorage.getItem("user")) || { username: null, id: null };
-  } catch (e) {
-    console.error("Error parsing user data from localStorage:", e);
-    user = { username: null, id: null };
-  }
+  // Получаем данные пользователя через AuthUtils
+  const user = getUserData() || { username: null, id: null };
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -43,8 +39,16 @@ const UserMenu = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    // Очищаем токены через AuthUtils
+    clearAuthTokens();
+    handleClose();
+    
+    // Вызываем колбэк onLogout, если он передан
+    if (onLogout) {
+      onLogout();
+    }
+    
+    // Перенаправляем на главную и обновляем страницу
     navigate("/");
     window.location.reload();
   };
@@ -54,7 +58,7 @@ const UserMenu = () => {
 
   return (
     <>
-      {user.username ? (
+      {user?.username ? (
         <UserMenuItem onClick={handleClick}>
           <Typography variant="h6" sx={{ mr: 1, color: theme.palette.text.primary }}>
             Вы зашли как {user.username}

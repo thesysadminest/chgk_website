@@ -1,36 +1,54 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { DataGrid, useGridApiRef } from "@mui/x-data-grid"; // Импорт apiRef
+import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import { Box, Link as MuiLink, Button, TextField, CircularProgress, Typography, Alert, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { checkAuth } from "../utils/authCheck";
+import { checkAuth, getAccessToken, clearAuthTokens } from "../utils/AuthUtils";
 
 const Users = () => {
   const [rows, setRows] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [authState, setAuthState] = useState({
+    isAuthenticated: false,
+    user: null,
+    isLoading: true
+  });
   const navigate = useNavigate();
-  const apiRef = useGridApiRef(); // Ссылка на API таблицы
+  const apiRef = useGridApiRef();
 
   useEffect(() => {
-    const fetchAuthStatus = async () => {
-      const { isAuthorized, user } = await checkAuth();
-      setIsAuthorized(isAuthorized);
-      if (isAuthorized) {
-        setCurrentUser(user); // Сохраняем данные текущего пользователя
+    const verifyAuthentication = async () => {
+      try {
+        const { isAuthorized, user } = await checkAuth();
+        setAuthState({
+          isAuthenticated: isAuthorized,
+          user: isAuthorized ? user : null,
+          isLoading: false
+        });
+      } catch (error) {
+        console.error("Authentication check failed:", error);
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          isLoading: false
+        });
+        clearAuthTokens();
       }
     };
 
-    fetchAuthStatus();
+    verifyAuthentication();
   }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem("access_token");
+        const token = getAccessToken();
+        if (!token) {
+          throw new Error("Требуется авторизация");
+        }
+
         const response = await axios.get("http://127.0.0.1:8000/api/user/list/", {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -51,22 +69,30 @@ const Users = () => {
         setRows(formattedData);
       } catch (err) {
         console.error("Error fetching users:", err);
-        setError(err.message || "Ошибка загрузки данных");
-        if (err.response?.status === 401) navigate("/authorization");
+        if (err.response?.status === 401) {
+          clearAuthTokens();
+          setError("Сессия истекла. Пожалуйста, войдите снова.");
+        } else {
+          setError(err.message || "Ошибка загрузки данных");
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsers();
-  }, [navigate]);
+    if (authState.isAuthenticated) {
+      fetchUsers();
+    } else if (!authState.isLoading) {
+      setLoading(false);
+    }
+  }, [authState.isAuthenticated, authState.isLoading]);
 
   const handleFindMe = () => {
-    if (currentUser) {
-      // Используем API таблицы для прокрутки к строке
-      apiRef.current.scrollToIndexes({
-        rowIndex: rows.findIndex(row => row.id === currentUser.id),
-      });
+    if (authState.user) {
+      const userIndex = rows.findIndex(row => row.id === authState.user.id);
+      if (userIndex !== -1) {
+        apiRef.current.scrollToIndexes({ rowIndex: userIndex });
+      }
     }
   };
 
@@ -80,7 +106,7 @@ const Users = () => {
     navigate(`/user/${params.id}`, { state: { user: params.row } });
   };
 
-  if (loading) {
+  if (authState.isLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress />
@@ -92,7 +118,7 @@ const Users = () => {
     return (
       <Box sx={{ p: 3, textAlign: "center" }}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          Ошибка: {error}
+          {error}
         </Alert>
         <Button 
           variant="contained" 
@@ -101,23 +127,34 @@ const Users = () => {
         >
           Попробовать снова
         </Button>
+        {error.includes("Сессия истекла") && (
+          <Button 
+            variant="outlined" 
+            onClick={() => navigate("/login")}
+            sx={{ mt: 2, ml: 2 }}
+          >
+            Войти
+          </Button>
+        )}
       </Box>
     );
   }
 
   return (
-    <Box sx={{ height: "80vh", width: "75vw" }}>
+    <Box sx={{ height: "80vh", width: "75vw", p: 2 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3, alignItems: "center" }}>
-        <Tooltip title={isAuthorized ? "" : "Войдите в систему, чтобы использовать эту функцию"}>
+        <Tooltip title={authState.isAuthenticated ? "" : "Войдите в систему, чтобы использовать эту функцию"}>
           <span>
             <Button
               variant="contained"
               onClick={handleFindMe}
-              disabled={!isAuthorized} // Неактивна, если пользователь не авторизован
+              disabled={!authState.isAuthenticated}
               sx={{
-                backgroundColor: isAuthorized ? "primary.main" : "gray",
-                color: isAuthorized ? "#fff" : "#aaa",
-                cursor: isAuthorized ? "pointer" : "not-allowed",
+                backgroundColor: authState.isAuthenticated ? "primary.main" : "grey.300",
+                color: authState.isAuthenticated ? "#fff" : "grey.500",
+                "&:hover": {
+                  backgroundColor: authState.isAuthenticated ? "primary.dark" : "grey.300",
+                },
               }}
             >
               Найти меня
@@ -135,37 +172,49 @@ const Users = () => {
       </Box>
 
       <DataGrid
-          rows={rows}
-          columns={[
-            { 
-              field: "id", 
-              headerName: "ID", 
-              width: 80, 
-              renderCell: (params) => (
-                <MuiLink 
-                  href={`/user/${params.value}`} 
-                  underline="hover"
-                  sx={{ cursor: "pointer" }}
-                >
-                  {params.value}
-                </MuiLink>
-              ),
-            },
-            { field: "username", headerName: "Имя", flex: 1 },
-            { field: "email", headerName: "Email", flex: 1.5 },
-            { field: "bio", headerName: "О себе", flex: 2 },
-            { field: "date_joined", headerName: "Дата регистрации", width: 150 },
-          ]}
-          pageSize={10} // Начальное отображение 10 строк
-          rowsPerPageOptions={[10, 20, 50]} // Добавляем только 10, 20, 50
-          disableSelectionOnClick
-          apiRef={apiRef}
-          sx={{
-            "& .MuiDataGrid-cell:focus": { outline: "none" },
-            "& .MuiDataGrid-columnHeader:focus": { outline: "none" },
-          }}
-        />
-
+        rows={rows}
+        columns={[
+          { 
+            field: "id", 
+            headerName: "ID", 
+            width: 80, 
+            renderCell: (params) => (
+              <MuiLink 
+                onClick={() => handleRowClick(params)}
+                underline="hover"
+                sx={{ cursor: "pointer" }}
+              >
+                {params.value}
+              </MuiLink>
+            ),
+          },
+          { 
+            field: "username", 
+            headerName: "Имя", 
+            flex: 1,
+            renderCell: (params) => (
+              <MuiLink 
+                onClick={() => handleRowClick(params)}
+                underline="hover"
+                sx={{ cursor: "pointer" }}
+              >
+                {params.value}
+              </MuiLink>
+            ),
+          },
+          { field: "email", headerName: "Email", flex: 1.5 },
+          { field: "bio", headerName: "О себе", flex: 2 },
+          { field: "date_joined", headerName: "Дата регистрации", width: 150 },
+        ]}
+        pageSize={10}
+        rowsPerPageOptions={[10, 20, 50]}
+        disableSelectionOnClick
+        apiRef={apiRef}
+        sx={{
+          "& .MuiDataGrid-cell:focus": { outline: "none" },
+          "& .MuiDataGrid-columnHeader:focus": { outline: "none" },
+        }}
+      />
     </Box>
   );
 };

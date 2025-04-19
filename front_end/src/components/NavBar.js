@@ -16,8 +16,12 @@ import ButtonBase from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { AddCircle, ChevronLeft, ChevronRight, HelpOutline } from "@mui/icons-material";
-import UserMenu from "../components/UserMenu";
 import Button from "@mui/material/Button";
+import Modal from "@mui/material/Modal";
+import { checkAuth } from "../utils/AuthUtils";
+
+const NewGame = React.lazy(() => import ("../components/NewGame"));
+const UserMenu = React.lazy(() => import ("../components/UserMenu"));
 
 const drawerWidth = 240;
 
@@ -123,19 +127,47 @@ const RoundIconButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
+const UserGreeting = styled(Typography)(({ theme }) => ({
+  marginLeft: theme.spacing(2),
+  color: theme.palette.text.secondary,
+  fontSize: '0.875rem',
+  [theme.breakpoints.down('sm')]: {
+    display: 'none',
+  },
+}));
+
 export default function NavBar({ children }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
+  const [gameModalOpen, setGameModalOpen] = React.useState(false);
+  const [authState, setAuthState] = React.useState({
+    isAuthenticated: false,
+    user: null,
+    isLoading: true
+  });
   const navigate = useNavigate();
   const location = useLocation();
-  const isLobby = location.pathname === "/";
 
   React.useEffect(() => {
-    const toolbar = document.getElementById("toolbar");
-    const mainbox = document.getElementById("mainbox");
-    if (toolbar && mainbox) {
-      mainbox.style.marginTop = window.getComputedStyle(toolbar).height;
-    }
+    const verifyAuth = async () => {
+      try {
+        const { isAuthorized, user } = await checkAuth();
+        setAuthState({
+          isAuthenticated: isAuthorized,
+          user: isAuthorized ? user : null,
+          isLoading: false
+        });
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          isLoading: false
+        });
+      }
+    };
+
+    verifyAuth();
   }, []);
 
   const handleDrawerToggle = () => {
@@ -153,7 +185,11 @@ export default function NavBar({ children }) {
   };
 
   const handlePlayClick = () => {
-    navigate("/game");
+    setGameModalOpen(true); 
+  };
+
+  const handleCloseGameModal = () => {
+    setGameModalOpen(false);
   };
 
   const handleHelpClick = () => {
@@ -197,6 +233,23 @@ export default function NavBar({ children }) {
     <div>
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
+
+        <Modal
+          open={gameModalOpen}
+          onClose={handleCloseGameModal}
+          aria-labelledby="new-game-modal"
+          aria-describedby="new-game-modal-description"
+        >
+         <React.Suspense fallback={<div>Loading...</div>}>
+            <NewGame onClose={handleCloseGameModal} />
+          </React.Suspense>
+        </Modal>
+
+        {gameModalOpen && (
+          <Box sx={{
+            zIndex: theme.zIndex.modal - 1
+          }} />
+        )}
 
         <Drawer variant="permanent" open={open}>
           <PlayButtonContainer>
@@ -313,13 +366,19 @@ export default function NavBar({ children }) {
             zIndex: theme.zIndex.drawer + 1, 
             height: "63.8px",
           }}>
-            <Toolbar id="toolbar">
-              <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
-                {resolvePageName()}
-              </Typography>
-              <UserMenu />
-            </Toolbar>
-         </AppBar>
+          <Toolbar id="toolbar">
+            <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
+              {resolvePageName()}
+              
+            </Typography>
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <UserMenu 
+                user={authState.user} 
+                onLogout={() => setAuthState(prev => ({...prev, user: null}))} 
+              />
+            </React.Suspense>
+          </Toolbar>
+        </AppBar>
          <Box
            id="mainbox"
            component="main"
@@ -331,6 +390,8 @@ export default function NavBar({ children }) {
              flexDirection: "column",
              height: "100vh",
              overflow: "hidden",
+             filter: gameModalOpen ? 'blur(2px)' : 'none',
+             transition: 'filter 0.3s ease'
          }}>
             {children}
          </Box>

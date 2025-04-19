@@ -10,79 +10,101 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  CircularProgress
+  CircularProgress,
+  useTheme
 } from "@mui/material";
 import axios from "axios";
-import { checkAuth } from "../utils/authCheck"; // Импорт authCheck
+import { checkAuth, getAccessToken, clearAuthTokens } from "../utils/AuthUtils";
 
 const AddPack = () => {
+  const theme = useTheme ();
   const [packName, setPackName] = useState("");
   const [packDescription, setPackDescription] = useState("");
   const [userQuestions, setUserQuestions] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null); // Хранение текущего пользователя
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [authState, setAuthState] = useState({
+    isAuthenticated: false,
+    user: null,
+    isLoading: true,
+    error: null
+  });
+  
   const navigate = useNavigate();
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuthAndData = async () => {
       try {
-        const { isAuthorized, user } = await checkAuth(); // Проверяем авторизацию через authCheck
-        setIsAuthenticated(isAuthorized);
-        if (isAuthorized) {
-          setUser(user); // Сохраняем данные текущего пользователя
-
-          // Загружаем вопросы пользователя
-          const token = localStorage.getItem("access_token");
-          const questionsResponse = await axios.get(
-            "http://127.0.0.1:8000/api/question/list/",
-            {
-              headers: { "Authorization": `Bearer ${token}` },
-            }
-          );
-
-          const filteredQuestions = questionsResponse.data.filter(
-            (q) => q.author_q?.id === user.id
-          );
-          setUserQuestions(filteredQuestions);
+        const { isAuthorized, user } = await checkAuth();
+        
+        if (!isAuthorized) {
+          setAuthState({
+            isAuthenticated: false,
+            user: null,
+            isLoading: false,
+            error: "Для создания пакетов необходимо авторизоваться"
+          });
+          return;
         }
+
+        const token = getAccessToken();
+        if (!token) {
+          throw new Error("Токен доступа не найден");
+        }
+
+        const questionsResponse = await axios.get(
+          "http://127.0.0.1:8000/api/question/list/",
+          { headers: { "Authorization": `Bearer ${token}` } }
+        );
+
+        const filteredQuestions = questionsResponse.data.filter(
+          q => q.author_q?.id === user.id
+        );
+
+        setAuthState({
+          isAuthenticated: true,
+          user,
+          isLoading: false,
+          error: null
+        });
+        setUserQuestions(filteredQuestions);
       } catch (error) {
-        console.error("Ошибка авторизации:", error);
-        setError("Ошибка авторизации. Пожалуйста, войдите снова.");
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
-      } finally {
-        setLoading(false);
+        console.error("Ошибка при загрузке данных:", error);
+        clearAuthTokens(); 
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          isLoading: false,
+          error: error.message || "Произошла ошибка при загрузке данных"
+        });
       }
     };
 
-    initializeAuth(); // Запускаем проверку авторизации и загрузку данных
+    initializeAuthAndData();
   }, []);
 
   const handleToggleQuestion = (questionId) => {
-    setSelectedQuestions((prev) =>
+    setSelectedQuestions(prev =>
       prev.includes(questionId)
-        ? prev.filter((id) => id !== questionId)
+        ? prev.filter(id => id !== questionId)
         : [...prev, questionId]
     );
   };
 
   const handleCreatePack = async () => {
-    if (!isAuthenticated || !packName || selectedQuestions.length === 0) return;
+    if (!authState.isAuthenticated || !packName || selectedQuestions.length === 0) return;
 
     try {
-      const token = localStorage.getItem("access_token");
+      const token = getAccessToken();
+      if (!token) {
+        throw new Error("Токен доступа не найден");
+      }
 
-      // Создаем пак
       const packResponse = await axios.post(
         "http://127.0.0.1:8000/api/pack/create/",
         {
           name: packName,
           description: packDescription,
-          author_p: user.id,
+          author_p: authState.user.id,
         },
         {
           headers: {
@@ -95,8 +117,9 @@ const AddPack = () => {
       if (packResponse.status === 201) {
         const packId = packResponse.data.id;
 
+
         await Promise.all(
-          selectedQuestions.map((questionId) =>
+          selectedQuestions.map(questionId =>
             axios.post(
               `http://127.0.0.1:8000/api/pack/question/${packId}/`,
               { question_id: questionId },
@@ -110,11 +133,23 @@ const AddPack = () => {
       }
     } catch (error) {
       console.error("Ошибка при создании пакета:", error);
-      setError("Ошибка при создании пакета. Пожалуйста, попробуйте снова.");
+      if (error.response?.status === 401) {
+        clearAuthTokens();
+        setAuthState({
+          ...authState,
+          isAuthenticated: false,
+          error: "Сессия истекла. Пожалуйста, войдите снова."
+        });
+      } else {
+        setAuthState({
+          ...authState,
+          error: error.response?.data?.message || "Ошибка при создании пакета"
+        });
+      }
     }
   };
 
-  if (loading) {
+  if (authState.isLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress />
@@ -122,22 +157,20 @@ const AddPack = () => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!authState.isAuthenticated) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
         <Typography variant="h5" gutterBottom>
-          Для создания пакетов необходимо авторизоваться
+          {authState.error || "Для создания пакетов необходимо авторизоваться"}
         </Typography>
         <Button
-          variant="main_button"
+          variant="contained"
           onClick={() => navigate("/login")}
           sx={{
             mt: 2,
             backgroundColor: "#752021",
             color: "#ffffff",
-            "&:hover": {
-              backgroundColor: "#c23639",
-            },
+            "&:hover": { backgroundColor: "#c23639" },
           }}
         >
           Войти в аккаунт
@@ -152,9 +185,9 @@ const AddPack = () => {
         Создание нового пакета
       </Typography>
 
-      {error && (
+      {authState.error && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+          {authState.error}
         </Alert>
       )}
 
@@ -203,9 +236,7 @@ const AddPack = () => {
                 backgroundColor: selectedQuestions.includes(question.id)
                   ? "rgba(117, 32, 33, 0.1)"
                   : "inherit",
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
+                "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
               }}
             >
               <ListItemButton>
@@ -232,24 +263,21 @@ const AddPack = () => {
           Создать новый вопрос
         </Button>
         <Button
-          variant="main_button"
+          variant="contained"
           onClick={handleCreatePack}
           disabled={!packName || selectedQuestions.length === 0}
           sx={{
             flex: 1,
-            backgroundColor:
-              !packName || selectedQuestions.length === 0
-                ? "#f5f5f5"
-                : "#752021",
-            color:
-              !packName || selectedQuestions.length === 0
-                ? "#bdbdbd"
-                : "#ffffff",
+            backgroundColor: !packName || selectedQuestions.length === 0 
+              ? theme.palette.background.disabled 
+              : "#752021",
+            color: !packName || selectedQuestions.length === 0 
+              ? "#bdbdbd" 
+              : theme.palette.text.white,
             "&:hover": {
-              backgroundColor:
-                !packName || selectedQuestions.length === 0
-                  ? "#f5f5f5"
-                  : "#c23639",
+              backgroundColor: !packName || selectedQuestions.length === 0 
+                ? theme.palette.background.disabled 
+                : "#c23639",
             },
           }}
         >

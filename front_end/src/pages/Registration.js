@@ -6,25 +6,37 @@ import {
   Typography, 
   Alert, 
   CircularProgress,
-  Tooltip 
+  Tooltip,
+  Link as MuiLink
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { setAuthTokens, setUserData } from "../utils/AuthUtils";
 
 const Registration = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleRegister = async (event) => {
-    event.preventDefault();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value.trim()
+    }));
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
     
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError("Пароли не совпадают");
       return;
     }
@@ -39,9 +51,9 @@ const Registration = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          username: username.trim(),
-          email: email.trim(),
-          password: password.trim()
+          username: formData.username,
+          email: formData.email,
+          password: formData.password
         }),
       });
 
@@ -50,26 +62,28 @@ const Registration = () => {
       if (!response.ok) {
         let errorMessage = result.detail || result.message || "Ошибка регистрации";
         
-        if (result.username && result.username[0] == "A user with that username already exists.") {
+        if (result.username && result.username[0] === "A user with that username already exists.") {
           errorMessage = "Такой пользователь уже есть";
         }
-        else if (result.email && result.email[0] == "This field must be unique.") {
+        else if (result.email && result.email[0] === "This field must be unique.") {
           errorMessage = "Такая почта уже есть";
         }
-        else if (result.password && result.password[0] == "This password is too short. It must contain at least 8 characters.") {
+        else if (result.password && result.password[0] === "This password is too short. It must contain at least 8 characters.") {
           errorMessage = "Пароль не должен быть короче 8 символов";
         }
-        else if (result.password && result.password[0] == "This password is too common.") {
+        else if (result.password && result.password[0] === "This password is too common.") {
           errorMessage = "Пароль слишком простой";
         }
         throw new Error(errorMessage);
       }
 
-      localStorage.setItem("access_token", result.access);
-      localStorage.setItem("refresh_token", result.refresh);
-      localStorage.setItem("user", JSON.stringify(result.user || { username }));
+      setAuthTokens({
+        access: result.access,
+        refresh: result.refresh
+      });
+      setUserData(result.user || { username: formData.username });
       
-      navigate("/news");
+      navigate("/news", { replace: true });
       
     } catch (error) {
       console.error("Ошибка:", error);
@@ -79,121 +93,191 @@ const Registration = () => {
     }
   };
 
-  const isFormValid = username.trim() && email.trim() && password.trim() && confirmPassword.trim();
+  const isFormValid = formData.username && formData.email && 
+                    formData.password && formData.confirmPassword;
 
   return (
     <Box 
-      component="form"
-      onSubmit={handleRegister}
+      component="main"
       sx={{
-        position: "absolute",
+        position: 'fixed',
         top: 0,
         left: 0,
-        width: "100%",
-        minHeight: "100vh",
-        backgroundColor: theme.palette.background.paper,
+        right: 0,
+        bottom: 0,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        margin: 0,
-        padding: 0,
+        backgroundColor: theme.palette.background.default,
+        p: 2
       }}
     >
       <Box 
+        component="form"
+        onSubmit={handleRegister}
         sx={{ 
-          maxWidth: "400px",
-          maxHeight: "480px",
+          width: "100%",
+          maxWidth: 400,
           backgroundColor: theme.palette.background.window,
-          borderRadius: "16px",
-          mt: 2.5,
-          padding: 4,
+          borderRadius: theme.shape.borderRadius * 2,
+          p: 4,
           boxShadow: theme.shadows[3],
+          display: "flex",
+          flexDirection: "column",
+          gap: 2
         }}
       >
         <Typography 
           variant="h4" 
-          sx={{
+          component="h1"
+          sx={{ 
             textAlign: "center", 
-            color: theme.palette.primary.main, 
-            fontWeight: "bold",
+            color: theme.palette.primary.main,
+            fontWeight: theme.typography.fontWeightBold,
             mb: 1
           }}
         >
           Регистрация
         </Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 0.5 }}>{error}</Alert>}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 2,
+              backgroundColor: theme.palette.error.light,
+              color: theme.palette.error.contrastText
+            }}
+          >
+            {error}
+          </Alert>
+        )}
 
         <TextField
           name="username"
           label="Имя пользователя"
+          variant="outlined"
           fullWidth
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          margin="normal"
-          required
-          sx={{ mb: 0.5 }}
+          value={formData.username}
+          onChange={handleChange}
+          disabled={submitting}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: theme.palette.divider
+              },
+              "&:hover fieldset": {
+                borderColor: theme.palette.primary.light
+              }
+            }
+          }}
         />
 
         <TextField
           name="email"
           label="Email"
-          fullWidth
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          margin="normal"
-          required
           type="email"
-          sx={{ mb: 0.5 }}
+          variant="outlined"
+          fullWidth
+          value={formData.email}
+          onChange={handleChange}
+          disabled={submitting}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: theme.palette.divider
+              },
+              "&:hover fieldset": {
+                borderColor: theme.palette.primary.light
+              }
+            }
+          }}
         />
 
         <TextField
           name="password"
           label="Пароль"
           type="password"
+          variant="outlined"
           fullWidth
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          margin="normal"
-          required
-          sx={{ mb: 0.2 }}
+          value={formData.password}
+          onChange={handleChange}
+          disabled={submitting}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: theme.palette.divider
+              },
+              "&:hover fieldset": {
+                borderColor: theme.palette.primary.light
+              }
+            }
+          }}
         />
 
         <TextField
+          name="confirmPassword"
           label="Подтвердите пароль"
           type="password"
+          variant="outlined"
           fullWidth
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          margin="normal"
-          required
-          sx={{ mb: 0.2 }}
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          disabled={submitting}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: theme.palette.divider
+              },
+              "&:hover fieldset": {
+                borderColor: theme.palette.primary.light
+              }
+            }
+          }}
         />
 
         <Tooltip 
           title={!isFormValid ? "Заполните все обязательные поля" : ""}
           placement="top"
+          arrow
         >
-          <span>
+          <Box>
             <Button
               type="submit"
               variant="contained"
               disabled={submitting || !isFormValid}
+              fullWidth
               sx={{
-                mt: 1,
                 py: 1.5,
-                backgroundColor: submitting ? theme.palette.background.disabled : theme.palette.primary.main,
-                color: submitting ? theme.palette.text.disabled : theme.palette.primary.contrastText,
+                mt: 1,
+                backgroundColor: submitting 
+                  ? theme.palette.action.disabledBackground 
+                  : theme.palette.primary.main,
+                color: submitting 
+                  ? theme.palette.text.disabled 
+                  : theme.palette.primary.contrastText,
                 "&:hover": {
-                  backgroundColor: submitting ? theme.palette.background.disabled : theme.palette.primary.hover,
+                  backgroundColor: submitting 
+                    ? theme.palette.action.disabledBackground 
+                    : theme.palette.primary.dark,
                 },
-                width: "100%",
-                borderRadius: "10px",
+                borderRadius: theme.shape.borderRadius,
+                "&.Mui-disabled": {
+                  backgroundColor: theme.palette.action.disabledBackground,
+                  color: theme.palette.text.disabled
+                }
               }}
             >
-              {submitting ? <CircularProgress size={24} color="inherit" /> : "Зарегистрироваться"}
+              {submitting ? (
+                <CircularProgress 
+                  size={24} 
+                  sx={{ 
+                    color: theme.palette.primary.contrastText 
+                  }} 
+                />
+              ) : "Зарегистрироваться"}
             </Button>
-          </span>
+          </Box>
         </Tooltip>
 
         <Typography 
@@ -205,9 +289,20 @@ const Registration = () => {
           }}
         >
           Уже есть аккаунт?{" "}
-          <Link to="/login" style={{ color: theme.palette.primary.main, textDecoration: "none" }}>
+          <MuiLink 
+            component="button" 
+            type="button"
+            onClick={() => navigate("/login")}
+            sx={{ 
+              color: theme.palette.primary.main, 
+              fontWeight: theme.typography.fontWeightMedium,
+              "&:hover": {
+                textDecoration: "underline"
+              }
+            }}
+          >
             Войти
-          </Link>
+          </MuiLink>
         </Typography>
       </Box>
     </Box>
