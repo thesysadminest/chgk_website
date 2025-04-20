@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
-import { Box, Link as MuiLink, Button, TextField } from "@mui/material";
+import { Box, Link as MuiLink, Button, TextField, Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const Packs = () => {
@@ -54,14 +54,14 @@ const Packs = () => {
   return (
     <Box sx={{ height: "80vh", width: "75vw", pr: "5vw", mt: "2vh" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="main_button" color="secondary" onClick={handleGoToQuestions}>
+        <Stack direction="row" spacing={2}>
+          <Button variant="red" onClick={handleGoToQuestions}>
             Перейти к банку вопросов
           </Button>
-          <Button variant="main_button" color="primary" onClick={handleAddPack}>
+          <Button variant="red" onClick={handleAddPack}>
             Добавить пак
           </Button>
-        </Box>
+        </Stack>
 
         <TextField
           variant="outlined"

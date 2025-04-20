@@ -82,10 +82,6 @@ const LobbyNavBar = () => {
                 {authState.user?.username || "Профиль"}
                 <Person sx={{ ml: 1 }} />
               </Button>
-              <UserMenu 
-                user={authState.user} 
-                onLogout={() => setAuthState({ isAuthenticated: false, user: null })}
-              />
             </>
           ) : (
             <>

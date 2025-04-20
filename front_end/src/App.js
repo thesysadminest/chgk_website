@@ -34,12 +34,12 @@ function MainContent() {
     
     if (isLobby) 
         return (
-            <>
+          <>
             <LobbyNavBar />
-                <Routes>
-                    <Route path="/" element={<Lobby />} />
-                </Routes>
-            </>
+            <Routes>
+              <Route path="/" element={<Lobby />} />
+            </Routes>
+          </>
         );
     else if (isAuthorization)
         return (

@@ -62,6 +62,11 @@ const Lobby = () => {
         overflow: "hidden",
         backgroundColor: theme.palette.background.default,
         scrollBehavior: "smooth",
+        width: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
       }}>
         <Box
           sx={{
@@ -88,7 +93,7 @@ const Lobby = () => {
               textAlign: "left",
               color: theme.palette.primary.contrastText,
               position: "absolute",
-              left: theme.spacing(27),
+              // left: theme.spacing(27),
               top: theme.spacing(37),
             }}>
               <Typography

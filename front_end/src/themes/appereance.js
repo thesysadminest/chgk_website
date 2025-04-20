@@ -118,7 +118,7 @@ const darkTheme = createTheme({
             display: 'none',
           },
         },
-        "*": {
+       /* "*": {
           margin: 0,
           padding: 0,
           boxSizing: "border-box",
@@ -126,7 +126,7 @@ const darkTheme = createTheme({
           '& ::-webkit-scrollbar': {
             display: 'none',
           },
-        },
+        },*/
       },
     },
     // Стили для DataGrid
@@ -245,21 +245,34 @@ const darkTheme = createTheme({
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          '&.MuiListItemButton-grey': {
+          borderRadius: 10,
+        },
+      },
+      variants: [
+        {
+          props: { variant: 'grey' },
+          style: {
+            color: getContrastRatio(burgundyBase, graphiteText) > 4.5 ? graphiteText : '#000',
             backgroundColor: 'transparent',
             '&:hover': {
-              backgroundColor: lightGrey,
-            },
-          },
-          '&.MuiListItemButton-red': {
-            backgroundColor: burgundyBase,
-            '&:hover': {
-              backgroundColor: burgundyClicked,
-              color: burgundyBase,
+              transition: 'box-shadow 0.1s ease',
+              boxShadow: `inset 0 0 0 2px ${black5}`,
             },
           },
         },
-      },
+        {
+          props: { variant: 'red' },
+          style: {
+            color: graphiteText,
+            backgroundColor: burgundyBase,
+            '&:hover': {
+              transition: 'box-shadow 0.1s ease',
+              backgroundColor: burgundyBase,
+              boxShadow: `inset 0 0 0 2px ${red4}`,
+            },
+          },
+        }
+      ],
     },
     MuiPaper: {
       styleOverrides: {

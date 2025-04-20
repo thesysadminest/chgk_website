@@ -64,32 +64,10 @@ const Questions = () => {
         }}
       >
         <Stack direction="row" spacing={2}>
-          <Button 
-            variant="contained" 
-            color="red" 
-            onClick={handleToPacks}
-            sx={{
-              backgroundColor: 'primary.main',
-              '&:hover': {
-                backgroundColor: 'primary.light',
-                color: 'primary.main'
-              }
-            }}
-          >
+          <Button  variant="red" onClick={handleToPacks}>
             Перейти к пакам
           </Button>
-          <Button 
-            variant="contained" 
-            color="red" 
-            onClick={handleAddQuestion}
-            sx={{
-              backgroundColor: 'primary.main',
-              '&:hover': {
-                backgroundColor: 'primary.light',
-                color: 'primary.main'
-              }
-            }}
-          >
+          <Button variant="red" onClick={handleAddQuestion}>
             Добавить вопрос
           </Button>
         </Stack>

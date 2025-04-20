@@ -15,15 +15,17 @@ import ListItemText from "@mui/material/ListItemText";
 import ButtonBase from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { AddCircle, ChevronLeft, ChevronRight, HelpOutline } from "@mui/icons-material";
+import { AddCircle, ChevronLeft, ChevronRight, HelpOutline, PlayArrow } from "@mui/icons-material";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
+import Fade from '@mui/material/Fade';
 import { checkAuth } from "../utils/AuthUtils";
 
 const NewGame = React.lazy(() => import ("../components/NewGame"));
 const UserMenu = React.lazy(() => import ("../components/UserMenu"));
 
 const drawerWidth = 240;
+const drawerHeight = 63.8;
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -96,19 +98,34 @@ const Item = styled(ButtonBase)(({ theme }) => ({
   zIndex: 3,
 }));
 
-const PlayButtonContainer = styled(Box)(({ theme }) => ({
+const PlayButtonContainer = styled(Box, { shouldForwardProp: (prop) => prop !== "open" })
+(({ theme, open }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  padding: theme.spacing(2),
   marginBottom: theme.spacing(1),
-}));
+  padding: theme.spacing(2),
+  
+  transition: theme.transitions.create(['padding'], {
+    duration: theme.transitions.duration.standard,
+    easing: theme.transitions.easing.easeInOut
+  }),
+  
+  ...(open && { 
+    padding: theme.spacing(2),
+  }),
+  ...(!open && {
+    padding: theme.spacing(1),
+  }),
+}),
+);
 
 const PlayButton = styled(Button)(({ theme }) => ({
   width: "100%",
   fontSize: "1.4rem",
   fontWeight: "bold",
+  minWidth: "auto",
 }));
 
 const BottomButtonsContainer = styled(Box)(({ theme }) => ({
@@ -149,6 +166,12 @@ export default function NavBar({ children }) {
   const location = useLocation();
 
   React.useEffect(() => {
+    const toolbar = document.getElementById("toolbar");
+    const mainbox = document.getElementById("mainbox");
+    if (toolbar && mainbox) {
+      mainbox.style.marginTop = window.getComputedStyle(toolbar).height;
+    }
+    
     const verifyAuth = async () => {
       try {
         const { isAuthorized, user } = await checkAuth();
@@ -252,14 +275,15 @@ export default function NavBar({ children }) {
         )}
 
         <Drawer variant="permanent" open={open}>
-          <PlayButtonContainer>
+          <PlayButtonContainer open={open}>
             <img 
               src="/arrow.png" 
-              alt="Логотип" 
-              style={{ 
-                width: "80%", 
+              alt="Логотип"
+              style={{
+                transition: 'width 0.3s ease',
+                width: open ? "80%" : "95%", 
                 maxWidth: "180px",
-                marginBottom: "16px" 
+                marginBottom: "16px", 
               }} 
             />
             <PlayButton 
@@ -267,7 +291,28 @@ export default function NavBar({ children }) {
               color="secondary"
               onClick={handlePlayClick}
             >
-              Играть
+              <Box sx={{height: "36px", width: "0"}}/>
+              <Typography variant="h5"
+                variant="contained"
+                sx={{
+                  position: 'absolute',
+                  opacity: open ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}
+              >
+                Играть
+              </Typography>
+
+              <PlayArrow
+                sx={{
+                  position: 'absolute',
+                  opacity: !open ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}
+              />
+
+
+              
             </PlayButton>
           </PlayButtonContainer>
 
@@ -294,17 +339,11 @@ export default function NavBar({ children }) {
                   <ListItemButton
                       component={Link}
                       to={path}
-                      className={isActive ? "MuiListItemButton-red" : "MuiListItemButton-grey"}
+                      variant = {isActive ? "red" : "grey"}
                       sx={{
                         justifyContent: open ? "initial" : "center",
                         px: 2.5,
                         minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
-                        '&.MuiListItemButton-red': {
-                          color: theme.palette.text.primary,
-                        },
-                        '&.MuiListItemButton-grey': {
-                          color: theme.palette.primary.contrastText,
-                        },
                       }}
                   >
                         <ListItemIcon
@@ -364,7 +403,7 @@ export default function NavBar({ children }) {
           open={open} 
           sx={{ 
             zIndex: theme.zIndex.drawer + 1, 
-            height: "63.8px",
+            height: `${drawerHeight}px`,
           }}>
           <Toolbar id="toolbar">
             <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
