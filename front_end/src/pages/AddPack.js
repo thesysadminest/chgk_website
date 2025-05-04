@@ -6,18 +6,24 @@ import {
   TextField, 
   Typography, 
   Alert,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   CircularProgress,
-  useTheme
+  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Tooltip,
+  Container
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { checkAuth, getAccessToken, clearAuthTokens } from "../utils/AuthUtils";
 
 const AddPack = () => {
-  const theme = useTheme ();
+  const theme = useTheme();
   const [packName, setPackName] = useState("");
   const [packDescription, setPackDescription] = useState("");
   const [userQuestions, setUserQuestions] = useState([]);
@@ -28,8 +34,17 @@ const AddPack = () => {
     isLoading: true,
     error: null
   });
-  
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [searchText, setSearchText] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+
   const navigate = useNavigate();
+
+  const filteredQuestions = userQuestions.filter(question =>
+    question.question_text.toLowerCase().includes(searchText.toLowerCase()) ||
+    question.answer_text.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   useEffect(() => {
     const initializeAuthAndData = async () => {
@@ -47,9 +62,7 @@ const AddPack = () => {
         }
 
         const token = getAccessToken();
-        if (!token) {
-          throw new Error("Токен доступа не найден");
-        }
+        if (!token) throw new Error("Токен доступа не найден");
 
         const questionsResponse = await axios.get(
           "http://127.0.0.1:8000/api/question/list/",
@@ -90,20 +103,33 @@ const AddPack = () => {
     );
   };
 
-  const handleCreatePack = async () => {
-    if (!authState.isAuthenticated || !packName || selectedQuestions.length === 0) return;
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      const newSelected = filteredQuestions
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+        .map(q => q.id);
+      setSelectedQuestions(prev => [...new Set([...prev, ...newSelected])]);
+    } else {
+      const currentPageIds = filteredQuestions
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+        .map(q => q.id);
+      setSelectedQuestions(prev => prev.filter(id => !currentPageIds.includes(id)));
+    }
+  };
 
+  const handleCreatePack = async () => {
+    setIsCreating(true);
     try {
+      if (!authState.isAuthenticated || !packName) return;
+
       const token = getAccessToken();
-      if (!token) {
-        throw new Error("Токен доступа не найден");
-      }
+      if (!token) throw new Error("Токен доступа не найден");
 
       const packResponse = await axios.post(
         "http://127.0.0.1:8000/api/pack/create/",
         {
           name: packName,
-          description: packDescription,
+          description: packDescription || "",
           author_p: authState.user.id,
         },
         {
@@ -114,39 +140,43 @@ const AddPack = () => {
         }
       );
 
-      if (packResponse.status === 201) {
-        const packId = packResponse.data.id;
+      if (packResponse.status !== 201) throw new Error("Ошибка при создании пакета");
 
+      const packId = packResponse.data.id;
 
-        await Promise.all(
-          selectedQuestions.map(questionId =>
-            axios.post(
-              `http://127.0.0.1:8000/api/pack/question/${packId}/`,
-              { question_id: questionId },
-              { headers: { "Authorization": `Bearer ${token}` } }
-            )
-          )
-        );
-
-        alert("Пак успешно создан!");
-        navigate("/packs");
+      for (const questionId of selectedQuestions) {
+        try {
+          await axios.post(
+            `http://127.0.0.1:8000/api/pack/question/${packId}/`,
+            { question_id: questionId },
+            { 
+              headers: { "Authorization": `Bearer ${token}` },
+              timeout: 5000 
+            }
+          );
+        } catch (error) {
+          console.error(`Ошибка при добавлении вопроса ${questionId}:`, error);
+        }
       }
+
+      navigate("/packs");
     } catch (error) {
       console.error("Ошибка при создании пакета:", error);
-      if (error.response?.status === 401) {
-        clearAuthTokens();
-        setAuthState({
-          ...authState,
-          isAuthenticated: false,
-          error: "Сессия истекла. Пожалуйста, войдите снова."
-        });
-      } else {
-        setAuthState({
-          ...authState,
-          error: error.response?.data?.message || "Ошибка при создании пакета"
-        });
-      }
+      setAuthState({
+        ...authState,
+        error: error.response?.data?.description?.[0] || 
+              error.response?.data?.message || 
+              "Ошибка при создании пакета"
+      });
+    } finally {
+      setIsCreating(false);
     }
+  };
+
+  const handleChangePage = (event, newPage) => setPage(newPage);
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   if (authState.isLoading) {
@@ -168,9 +198,9 @@ const AddPack = () => {
           onClick={() => navigate("/login")}
           sx={{
             mt: 2,
-            backgroundColor: "#752021",
-            color: "#ffffff",
-            "&:hover": { backgroundColor: "#c23639" },
+            backgroundColor: theme.palette.button.red.main,
+            color: theme.palette.button.red.contrastText,
+            "&:hover": { backgroundColor: theme.palette.button.red.hover },
           }}
         >
           Войти в аккаунт
@@ -180,111 +210,223 @@ const AddPack = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Создание нового пакета
-      </Typography>
+    <Container  
+      sx={{ 
+        height: '100vh',
+        width: '100vw',
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: theme.palette.background.default,
+        justifyContent: 'center'
+      }}
+    >
+      <Box sx={{ 
+        maxWidth: 800,
+        mt: 4,
+        width: '100%',
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <Typography variant="h4" gutterBottom sx={{ 
+          textAlign: 'center', 
+          mb: 3,
+          color: theme.palette.text.primary
+        }}>
+          Создание нового пакета
+        </Typography>
 
-      {authState.error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {authState.error}
-        </Alert>
-      )}
+        {authState.error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {authState.error}
+          </Alert>
+        )}
 
-      <TextField
-        label="Название пакета"
-        fullWidth
-        value={packName}
-        onChange={(e) => setPackName(e.target.value)}
-        margin="normal"
-        required
-        sx={{ mb: 2 }}
-      />
+        <Box sx={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          mb: 3,
+          width: '100%',
+        }}>
+          <TextField
+            label="Название пакета"
+            fullWidth
+            value={packName}
+            onChange={(e) => setPackName(e.target.value)}
+            required
+            error={!packName}
+            sx={{ maxWidth: 800, mx: 'auto' }}
+          />
 
-      <TextField
-        label="Описание пакета"
-        fullWidth
-        value={packDescription}
-        onChange={(e) => setPackDescription(e.target.value)}
-        margin="normal"
-        multiline
-        rows={2}
-        sx={{ mb: 3 }}
-      />
+          <TextField
+            label="Описание пакета"
+            fullWidth
+            value={packDescription}
+            onChange={(e) => setPackDescription(e.target.value)}
+            required
+            multiline
+            rows={3}
+            sx={{ maxWidth: 800, mx: 'auto' }}
+          />
+        </Box>
 
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Ваши вопросы ({userQuestions.length})
-      </Typography>
+        <Typography variant="h6" sx={{ 
+          mb: 2, 
+          textAlign: 'center',
+          color: theme.palette.text.primary
+        }}>
+          Выберите вопросы для пакета
+        </Typography>
 
-      {userQuestions.length > 0 ? (
-        <List
-          dense
-          sx={{
-            border: "1px solid #e0e0e0",
+        <TextField
+          label="Поиск вопросов"
+          fullWidth
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          sx={{ mb: 3, maxWidth: 800, mx: 'auto' }}
+        />
+
+        {filteredQuestions.length > 0 ? (
+          <TableContainer sx={{ 
+            mb: 3, 
+            border: `1px solid ${theme.palette.border.default}`,
             borderRadius: 1,
-            maxHeight: 300,
-            overflow: "auto",
-            mb: 3,
-          }}
-        >
-          {userQuestions.map((question) => (
-            <ListItem
-              key={question.id}
-              disablePadding
-              onClick={() => handleToggleQuestion(question.id)}
-              sx={{
-                backgroundColor: selectedQuestions.includes(question.id)
-                  ? "rgba(117, 32, 33, 0.1)"
-                  : "inherit",
-                "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
-              }}
-            >
-              <ListItemButton>
-                <ListItemText
-                  primary={question.question_text}
-                  secondary={`Ответ: ${question.answer_text}`}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      ) : (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          У вас пока нет созданных вопросов. Сначала создайте вопросы.
-        </Alert>
-      )}
+            maxHeight: 400,
+            overflow: 'auto'
+          }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: theme.palette.background.light }}>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      indeterminate={
+                        selectedQuestions.length > 0 &&
+                        selectedQuestions.length < filteredQuestions.length
+                      }
+                      checked={
+                        filteredQuestions.length > 0 &&
+                        selectedQuestions.length === filteredQuestions.length
+                      }
+                      onChange={handleSelectAll}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ color: theme.palette.text.primary }}>Вопрос</TableCell>
+                  <TableCell sx={{ color: theme.palette.text.primary }}>Ответ</TableCell>
+                  <TableCell sx={{ color: theme.palette.text.primary }}>Дата создания</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredQuestions
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((question) => (
+                    <TableRow
+                      key={question.id}
+                      hover
+                      onClick={() => handleToggleQuestion(question.id)}
+                      sx={{
+                        cursor: 'pointer',
+                        backgroundColor: selectedQuestions.includes(question.id)
+                          ? theme.palette.primary.light
+                          : 'inherit'
+                      }}
+                    >
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={selectedQuestions.includes(question.id)}
+                          onChange={() => handleToggleQuestion(question.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ color: theme.palette.text.primary }}>
+                        {question.question_text}
+                      </TableCell>
+                      <TableCell sx={{ color: theme.palette.text.primary }}>
+                        {question.answer_text}
+                      </TableCell>
+                      <TableCell sx={{ color: theme.palette.text.primary }}>
+                        {new Date(question.pub_date_q).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredQuestions.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{ color: theme.palette.text.primary }}
+            />
+          </TableContainer>
+        ) : (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            {searchText 
+              ? "Вопросы по вашему запросу не найдены"
+              : "У вас пока нет созданных вопросов. Сначала создайте вопросы."}
+          </Alert>
+        )}
 
-      <Box sx={{ display: "flex", gap: 2 }}>
-        <Button
-          variant="outlined"
-          onClick={() => navigate("/add-question")}
-          sx={{ flex: 1 }}
-        >
-          Создать новый вопрос
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleCreatePack}
-          disabled={!packName || selectedQuestions.length === 0}
-          sx={{
-            flex: 1,
-            backgroundColor: !packName || selectedQuestions.length === 0 
-              ? theme.palette.background.disabled 
-              : "#752021",
-            color: !packName || selectedQuestions.length === 0 
-              ? "#bdbdbd" 
-              : theme.palette.text.white,
-            "&:hover": {
-              backgroundColor: !packName || selectedQuestions.length === 0 
-                ? theme.palette.background.disabled 
-                : "#c23639",
-            },
-          }}
-        >
-          Создать пак
-        </Button>
+        <Box sx={{ 
+          display: "flex", 
+          gap: 2,
+          mt: 'auto',
+          pt: 2
+        }}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/add-question")}
+            sx={{ 
+              flex: 1, 
+              maxWidth: 400, 
+              mx: 'auto',
+              color: theme.palette.text.primary,
+              borderColor: theme.palette.text.primary
+            }}
+          >
+            Создать новый вопрос
+          </Button>
+          <Tooltip 
+            title={!packName || selectedQuestions.length === 0 ? "Заполните все обязательные поля" : ""}
+            placement="top"
+          >
+          <span>
+              <Button
+                variant="contained"
+                onClick={handleCreatePack}
+                disabled={!packName || selectedQuestions.length === 0 || isCreating}
+                sx={{
+                  flex: 1,
+                  maxWidth: 400,
+                  mx: 'auto',
+                  backgroundColor: !packName || selectedQuestions.length === 0 
+                    ? theme.palette.action.disabled 
+                    : theme.palette.button.red.main,
+                  color: !packName || selectedQuestions.length === 0 
+                    ? theme.palette.text.disabled 
+                    : theme.palette.button.red.contrastText,
+                  "&:hover": {
+                    backgroundColor: !packName || selectedQuestions.length === 0 
+                      ? theme.palette.action.disabled 
+                      : theme.palette.button.red.hover,
+                  },
+                }}
+              >
+                {isCreating ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  `Создать пак (${selectedQuestions.length} вопросов)`
+                )}
+              </Button>
+            </span>
+          </Tooltip>
+        </Box>
       </Box>
-    </Box>
+    </Container>
   );
 };
 

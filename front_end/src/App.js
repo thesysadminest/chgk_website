@@ -22,10 +22,8 @@ import PackDetail from './pages/PackDetail';
 import AddQuestion from './pages/AddQuestion';
 import AddPack from './pages/AddPack';
 import UserDetail from './pages/UserDetail';
-import PackAddQuestion from './pages/PackAddQuestion';
-
-import GameMain from './pages/GameMain';
-import GameRedirect from './components/GameRedirect';
+import GamePage from './pages/GamePage';
+import GameResults from './pages/GameResults';
 
 function MainContent() {
     const location = useLocation();
@@ -68,10 +66,10 @@ function MainContent() {
                 <Route path="/add-pack" element={<AddPack />} />
                 <Route path="/registration" element={<Registration />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/add-pack/add-question" element={<PackAddQuestion />} />
                 <Route path="/myprofile" element={<MyProfile />} />
-                <Route path="/game/:id" element={<GameRedirect />} />
-                <Route path="/game/:id/:firstQuestionId" element={<GameMain />} />
+                <Route path="/game" element={<GamePage />} />
+                <Route path="/game/results" element={<GameResults />} />
+                
             </Routes>
         </NavBar>
     );

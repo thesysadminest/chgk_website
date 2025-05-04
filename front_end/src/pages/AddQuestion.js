@@ -8,8 +8,8 @@ import {
   Alert, 
   CircularProgress,
   Tooltip,
-  useTheme
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { checkAuth, getAccessToken, getUserData, clearAuthTokens } from "../utils/AuthUtils";
 

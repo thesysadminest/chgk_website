@@ -19,7 +19,7 @@ const Packs = () => {
           name: item.name,
           questions: item.questions,
           author_p: item.author_p || "Неизвестно",
-          description: item.description || "Нет",
+          description: item.description || "",
           pub_date_p: (item.pub_date_p ? new Date(item.pub_date_p).toLocaleDateString("ru-RU") : "Неизвестно")
         }));
         setRows(data);

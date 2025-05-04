@@ -20,7 +20,12 @@ const white5 = '#D9D9D9'; // grey    // windowBackground
 
 const burgundyBase = '#9A0E0E';
 const burgundyHover = '#CD2626';
-const burgundyClicked = "#F5EAEA";
+const burgundyClicked = '#F5EAEA';
+
+const lightBurgundyBase = '#CD2626';
+const lightBurgundyHover = '#FFCCCC';
+const lightBurgundyClicked = '#F5EAEA';
+
 const lightGrey = '#D3D3D3';
 
 const graphiteBackground = '#29232A';
@@ -81,6 +86,12 @@ const darkTheme = createTheme({
         light: burgundyClicked,
         hover: burgundyHover,
         contrastText: graphiteText,
+      },
+      lightRed: {  
+        main: lightBurgundyBase, 
+        light: white3,        
+        hover: lightBurgundyHover,  
+        contrastText: graphiteText,  
       }
     },
     border: {

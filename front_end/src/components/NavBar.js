@@ -263,7 +263,7 @@ export default function NavBar({ children }) {
           aria-labelledby="new-game-modal"
           aria-describedby="new-game-modal-description"
         >
-         <React.Suspense fallback={<div>Loading...</div>}>
+         <React.Suspense fallback={<div>Загрузка...</div>}>
             <NewGame onClose={handleCloseGameModal} />
           </React.Suspense>
         </Modal>
@@ -410,7 +410,7 @@ export default function NavBar({ children }) {
               {resolvePageName()}
               
             </Typography>
-            <React.Suspense fallback={<div>Loading...</div>}>
+            <React.Suspense fallback={<div>Загрузка...</div>}>
               <UserMenu 
                 user={authState.user} 
                 onLogout={() => setAuthState(prev => ({...prev, user: null}))} 

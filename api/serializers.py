@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from .models import Question, Pack, Team, CustomUser, GameAttempt
+from .models import Question, Pack, Team, CustomUser, GameSession, Answer
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -122,7 +122,7 @@ class LoginSerializer(serializers.Serializer):
         
         return data
 
-class GameAttemptSerializer(serializers.ModelSerializer):
+"""class GameAttemptSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameAttempt
         fields = ['id', 'user', 'pack', 'question', 'is_correct', 'timestamp', 'correct_answers']
@@ -131,3 +131,36 @@ class GameAttemptSerializer(serializers.ModelSerializer):
             'pack': {'queryset': Pack.objects.all()},
             'question': {'queryset': Question.objects.all()},
         }
+"""
+
+class AnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = ['id', 'question', 'user_answer', 'is_correct', 'timestamp']
+        read_only_fields = ['is_correct', 'timestamp']
+
+class GameSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameSession
+        fields = [
+            'user', 'pack_id', 'attempt_id', 
+            'current_question_index', 'start_time', 'end_time',
+            'score', 'is_completed'
+        ]
+
+class StartGameSerializer(serializers.Serializer):
+    pack_id = serializers.IntegerField(required=False)
+    question_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False
+    )
+
+    def validate(self, data):
+        if not data.get('pack_id') and not data.get('question_ids'):
+            raise serializers.ValidationError(
+                "Either pack_id or question_ids must be provided"
+            )
+        return data
+
+class SubmitAnswerSerializer(serializers.Serializer):
+    answer = serializers.CharField(required=True, max_length=500)
