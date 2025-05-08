@@ -24,7 +24,7 @@ export const selectQuestions = async (mode, packId = null) => {
     }
     else if (mode === 'select' && packId) {
       console.debug(`Fetching pack ${packId} questions...`);
-      const response = await axiosInstance.get(`/game/packs/${packId}/`);
+      const response = await axiosInstance.get(`/game/${packId}/`);
       
       return {
         packId: packId,
@@ -136,7 +136,7 @@ export const fetchAllQuestions = async (page = 1, pageSize = 50) => {
 
 export const startGame = async ({ packId, questionIds }) => {
   try {
-    let endpoint = '/game/start/';
+    let endpoint = `/game/${packId}/start/`;
     let data = {};
 
     if (packId) {

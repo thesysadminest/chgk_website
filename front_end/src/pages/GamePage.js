@@ -13,7 +13,7 @@ import { startGame } from '../utils/GameUtils';
 import { useTheme } from '@mui/material/styles';
 import GamePackDetail from '../components/GamePackDetail';
 import GameQuestionDetail from '../components/GameQuestionDetail';
-import SelectQuestions from '../components/SelectQuestions';
+import SelectQuestionsWindow from '../components/SelectQuestionsWindow';
 
 const GamePage = () => {
   const theme = useTheme();
@@ -23,11 +23,12 @@ const GamePage = () => {
   const [gameState, setGameState] = useState({
     loading: true,
     error: null,
-    mode: null, // 'pack', 'question' или 'select'
+    mode: null, // 'pack', 'questions' или 'select'
     score: { correct: 0, total: 0, score: 0 }
   });
 
   const [selectQuestionsOpen, setSelectQuestionsOpen] = useState(false);
+  const [selectPackOpen, setSelectPackOpen] = useState(false);
 
   // Инициализация игры
   useEffect(() => {
@@ -138,66 +139,11 @@ const GamePage = () => {
   }
 
   return (
-    <Box sx={{ position: 'relative' }}>
-      {/* Компонент выбора вопросов */}
-      <SelectQuestions
-        open={selectQuestionsOpen}
-        onClose={() => setSelectQuestionsOpen(false)}
-        onStartGame={handleStartGame}
-      />
-
-      {/* Основной интерфейс игры */}
-      {gameState.mode === 'pack' && (
-        <GamePackDetail 
-          packId={packId}
-          userId={userId}
-          attemptId={attemptId}
-          score={gameState.score}
-          onBack={() => navigate('/')}
-          onQuestionSelect={(questionId) => 
-            navigate(`/game/${packId}/questions/${questionId}`)
-          }
-        />
-      )}
-
-      {gameState.mode === 'question' && (
-        <GameQuestionDetail 
-          packId={packId}
-          questionId={questionId}
-          userId={userId}
-          attemptId={attemptId}
-          score={gameState.score}
-          onComplete={handleGameComplete}
-          onBack={() => navigate(`/game/${packId}`)}
-        />
-      )}
-
-      {gameState.mode === 'select' && (
-        <Container maxWidth="md" sx={{ mt: 4, textAlign: 'center' }}>
-          <Typography variant="h4" gutterBottom>
-            Выберите режим игры
-          </Typography>
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 3 }}>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => setSelectQuestionsOpen(true)}
-              sx={{ px: 4, py: 2 }}
-            >
-              Выбрать вопросы
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => navigate('/packs')}
-              sx={{ px: 4, py: 2 }}
-            >
-              Выбрать пакет
-            </Button>
-          </Box>
-        </Container>
-      )}
-    </Box>
+    <SelectQuestionsWindow
+      open={selectQuestionsOpen}
+      onClose={() => setSelectQuestionsOpen(false)}
+      onStartGame={handleStartGame}
+    />
   );
 };
 

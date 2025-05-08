@@ -31,7 +31,7 @@ urlpatterns = [
     path('user/delete/<int:pk>/', views.UserDelete.as_view(), name="delete-user"),
     path('user/me/', views.CurrentUserView.as_view(), name='current-user'),
     
-    path('game/start/', views.StartGameView.as_view(), name='start-game'),
+    path('game/<int:pack_id>/start/', views.StartGameView.as_view(), name='start-game'),
 
     path('game/packs/', views.PackViewList.as_view(), name='pack-list'), 
     path('game/random/', views.RandomPackView.as_view(), name='random-pack'), 

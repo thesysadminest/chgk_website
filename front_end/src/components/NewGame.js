@@ -4,7 +4,6 @@ import {
   Typography, 
   Button, 
   Paper,
-  useTheme,
   Stack,
   Link,
   Container,
@@ -12,7 +11,9 @@ import {
 } from '@mui/material';
 import { checkAuth, getUserData } from '../utils/AuthUtils';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from "@mui/material/styles";
 import { selectQuestions, startSelectedQuestionsGame } from '../utils/GameUtils';
+import SelectQuestionsWindow from './SelectQuestionsWindow';
 
 const NewGame = ({ onClose }) => {
   const theme = useTheme();
@@ -23,6 +24,7 @@ const NewGame = ({ onClose }) => {
     user: null
   });
   const [gameLoading, setGameLoading] = useState(false);
+  const [selectQuestionsOpen, setSelectQuestionsOpen] = useState(false);
 
   useEffect(() => {
     const verifyAuthentication = async () => {
@@ -58,16 +60,11 @@ const NewGame = ({ onClose }) => {
     }
   };
 
-  const handleSelectQuestions = async () => {
-    try {
-      setGameLoading(true);
-      const gameData = await selectQuestions('select');
-      navigate('/game', { state: { questions: gameData.questions } });
-      onClose();
-    } catch (error) {
-      console.error('Error starting select questions game:', error);
-      setGameLoading(false);
-    }
+  const handleStartSelectedQuestions = (selectedQuestions) => {
+    // Логика для начала игры с выбранными вопросами
+    console.log('Starting game with questions:', selectedQuestions);
+    // Здесь можно добавить навигацию или другую логику
+    onClose();
   };
 
   const handleLoginRedirect = () => {
@@ -191,164 +188,172 @@ const NewGame = ({ onClose }) => {
   }
 
   return (
-    <Container>
-      <Box
-        sx={{
-          backgroundColor: theme.palette.background.window,
-          p: 5,
-          borderRadius: 8,
-          width: '750px',
-          mt: '70px',
-          mx: 'auto'
-        }}
-      >
-        <Typography 
-          variant="h4" 
-          align="center"
-          sx={{ 
-            mt: 1,
-            mb: 3,
-            fontWeight: 'bold',
-            color: theme.palette.text.gray,
-          }}
-        >
-          ВЫБЕРИТЕ РЕЖИМ ИГРЫ
-        </Typography>
-
-        <Paper
+    <>
+      <Container>
+        <Box
           sx={{
-            backgroundColor: theme.palette.background.white,
-            p: 3,
-            mb: 5,
-            borderRadius: 2,
+            backgroundColor: theme.palette.background.window,
+            p: 5,
+            borderRadius: 8,
+            width: '750px',
+            mt: '70px',
+            mx: 'auto'
           }}
         >
-          <Stack spacing={2}>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: theme.palette.text.gray,
-                fontWeight: 'bold',
-              }}
-            >
-              Добро пожаловать, {authState.user?.username || 'игрок'}!
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: theme.palette.text.gray,
-                fontWeight: 'bold',
-              }}
-            >
-              ЧГК рейтинг предоставляет несколько режимов игры, предлагая возможность попробовать себя в ЧГК как новичкам, так и старожилам и ветеранам телевизионной игры
-            </Typography>
-          </Stack>
-        </Paper>
-
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          spacing={5}
-          justifyContent="center"
-          sx={{ width: '100%' }}
-        >
-          <Box sx={{ 
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            flex: 1,
-            maxWidth: 280
-          }}>
-            <Button
-              fullWidth
-              variant="lightRed"
-              onClick={handleRandomPack}
-              sx={{
-                backgroundColor: theme.palette.button.lightRed.main,
-                py: 2,
-                '&:hover': {
-                  backgroundColor: theme.palette.button.lightRed.hover,
-                  color: theme.palette.button.lightRed.activeText, 
-                },
-                '&:active': {
-                  backgroundColor:  theme.palette.button.lightRed.active,
-                  color: theme.palette.button.lightRed.activeText, 
-                }
-              }}
-            >
-              <Typography variant="h6">
-                СЛУЧАЙНЫЙ ПАК
-              </Typography>
-            </Button>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                mt: 1.5,
-                color: theme.palette.text.gray,
-                textAlign: 'center'
-              }}
-            >
-              Случайный пак - прямо как в игре
-            </Typography>
-          </Box>
-
-          <Box sx={{ 
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            flex: 1,
-            maxWidth: 280
-          }}>
-            <Button
-              fullWidth
-              variant="lightRed"
-              onClick={handleSelectQuestions}
-              sx={{
-                backgroundColor: theme.palette.button.lightRed.main,
-                py: 2,
-                '&:hover': {
-                  backgroundColor: theme.palette.button.lightRed.hover,
-                  color: theme.palette.button.lightRed.activeText, 
-                },
-                '&:active': {
-                  backgroundColor:  theme.palette.button.lightRed.active,
-                  color: theme.palette.button.lightRed.activeText, 
-                }
-              }}
-            >
-              <Typography variant="h6">
-                ВЫБРАТЬ ВОПРОСЫ
-              </Typography>
-            </Button>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                mt: 1.5,
-                color: theme.palette.text.gray,
-                textAlign: 'center'
-              }}
-            >
-              Тренируйтесь на конкретные темы
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Box sx={{ mt: 4, textAlign: 'center'}}>
-          <Button 
-            variant="outlined"
-            onClick={onClose}
-            sx={{
-              color: theme.palette.text.primary,
-              borderColor: theme.palette.text.primary,
-              '&:hover': {
-                borderColor: theme.palette.primary.main,
-              }
+          <Typography 
+            variant="h4" 
+            align="center"
+            sx={{ 
+              mt: 1,
+              mb: 3,
+              fontWeight: 'bold',
+              color: theme.palette.text.gray,
             }}
           >
-            Закрыть
-          </Button>
+            ВЫБЕРИТЕ РЕЖИМ ИГРЫ
+          </Typography>
+
+          <Paper
+            sx={{
+              backgroundColor: theme.palette.background.white,
+              p: 3,
+              mb: 5,
+              borderRadius: 2,
+            }}
+          >
+            <Stack spacing={2}>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: theme.palette.text.gray,
+                  fontWeight: 'bold',
+                }}
+              >
+                Добро пожаловать, {authState.user?.username || 'игрок'}!
+              </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: theme.palette.text.gray,
+                  fontWeight: 'bold',
+                }}
+              >
+                ЧГК рейтинг предоставляет несколько режимов игры, предлагая возможность попробовать себя в ЧГК как новичкам, так и старожилам и ветеранам телевизионной игры
+              </Typography>
+            </Stack>
+          </Paper>
+
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={5}
+            justifyContent="center"
+            sx={{ width: '100%' }}
+          >
+            <Box sx={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flex: 1,
+              maxWidth: 280
+            }}>
+              <Button
+                fullWidth
+                variant="lightRed"
+                onClick={handleRandomPack}
+                sx={{
+                  backgroundColor: theme.palette.button.lightRed.main,
+                  py: 2,
+                  '&:hover': {
+                    backgroundColor: theme.palette.button.lightRed.hover,
+                    color: theme.palette.button.lightRed.activeText, 
+                  },
+                  '&:active': {
+                    backgroundColor:  theme.palette.button.lightRed.active,
+                    color: theme.palette.button.lightRed.activeText, 
+                  }
+                }}
+              >
+                <Typography variant="h6">
+                  СЛУЧАЙНЫЙ ПАК
+                </Typography>
+              </Button>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mt: 1.5,
+                  color: theme.palette.text.gray,
+                  textAlign: 'center'
+                }}
+              >
+                Случайный пак - прямо как в игре
+              </Typography>
+            </Box>
+
+            <Box sx={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flex: 1,
+              maxWidth: 280
+            }}>
+              <Button
+                fullWidth
+                variant="lightRed"
+                onClick={() => setSelectQuestionsOpen(true)}
+                sx={{
+                  backgroundColor: theme.palette.button.lightRed.main,
+                  py: 2,
+                  '&:hover': {
+                    backgroundColor: theme.palette.button.lightRed.hover,
+                    color: theme.palette.button.lightRed.activeText, 
+                  },
+                  '&:active': {
+                    backgroundColor:  theme.palette.button.lightRed.active,
+                    color: theme.palette.button.lightRed.activeText, 
+                  }
+                }}
+              >
+                <Typography variant="h6">
+                  ВЫБРАТЬ ВОПРОСЫ
+                </Typography>
+              </Button>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mt: 1.5,
+                  color: theme.palette.text.gray,
+                  textAlign: 'center'
+                }}
+              >
+                Тренируйтесь на конкретные темы
+              </Typography>
+            </Box>
+          </Stack>
+
+          <Box sx={{ mt: 4, textAlign: 'center'}}>
+            <Button 
+              variant="outlined"
+              onClick={onClose}
+              sx={{
+                color: theme.palette.text.primary,
+                borderColor: theme.palette.text.primary,
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                }
+              }}
+            >
+              Закрыть
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Container>
+      </Container>
+
+      <SelectQuestionsWindow
+        open={selectQuestionsOpen}
+        onClose={() => setSelectQuestionsOpen(false)}
+        onStartGame={handleStartSelectedQuestions}
+      />
+    </>
   );
 };
 
