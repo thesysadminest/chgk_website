@@ -52,8 +52,18 @@ const Packs = () => {
   };
 
   return (
-    <Box sx={{ height: "80vh", width: "75vw", pr: "5vw", mt: "2vh" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+    <Box sx={{ display: "flex", justifyContent: "space-between", flexDirection: 'column', mb: 2 }}>
+      <Stack 
+        direction="row" 
+        spacing={2} 
+        sx={{ 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          mb: 2,
+          flexWrap: 'wrap',
+          gap: 2
+        }}
+      >
         <Stack direction="row" spacing={2}>
           <Button variant="red" onClick={handleGoToQuestions}>
             Перейти к банку вопросов
@@ -64,37 +74,20 @@ const Packs = () => {
         </Stack>
 
         <TextField
-          variant="outlined"
+          variant_tf="dark"
           size="small"
           placeholder="Поиск по названию пакета"
           value={searchText}
           onChange={(e) => requestSearch(e.target.value)}
           sx={{ width: "300px" }} 
         />
-      </Box>
+
+      </Stack>
 
       <DataGrid
         rows={rows}
         columns={[
-          { 
-            field: "id", 
-            headerName: "ID", 
-            flex: 0.5,
-            renderCell: (params) => (
-              <MuiLink 
-                component="button" 
-                variant="body2" 
-                onClick={() => handleRowClick(params)} 
-                sx={{ 
-                  color: "white",
-                  textDecoration: "underline", 
-                  cursor: "pointer" 
-                }}
-              >
-                {params.value}
-              </MuiLink>
-            )
-          },
+          { field: "id", headerName: "ID", flex: 0.5 },
           { field: "name", headerName: "Название", flex: 2 },
           { field: "description", headerName: "Описание", flex: 4 },
           { field: "author_p", headerName: "Автор", flex: 2 },
@@ -103,17 +96,7 @@ const Packs = () => {
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
         autoHeight
-        sx={{ 
-          boxShadow: 2, 
-          border: 1, 
-          inactiveBorderColor: "grey.300",
-          "& .MuiDataGrid-cell": {
-            color: "white",
-          },
-          "& .MuiDataGrid-columnHeader": {
-            color: "white", 
-          },
-        }}
+        disableSelectionOnClick
         onRowClick={handleRowClick}
       />
     </Box>

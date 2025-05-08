@@ -107,9 +107,9 @@ const AddQuestion = () => {
       } else {
         setSubmitError(
           error.response?.data?.detail || 
-          error.response?.data?.message || 
-          error.message || 
-          "Ошибка при добавлении вопроса"
+            error.response?.data?.message || 
+            error.message || 
+            "Ошибка при добавлении вопроса"
         );
       }
     } finally {
@@ -161,13 +161,13 @@ const AddQuestion = () => {
 
   return (
     <Box sx={{ 
-      maxWidth: 800, 
-      mx: "auto", 
-      p: 3,
-      backgroundColor: theme.palette.background.paper,
-      borderRadius: 2,
-      boxShadow: theme.shadows[1]
-    }}>
+           maxWidth: 800, 
+           mx: "auto", 
+           p: 3,
+           backgroundColor: theme.palette.background.paper,
+           borderRadius: 2,
+           boxShadow: theme.shadows[1]
+         }}>
       <Typography variant="h4" sx={{ mb: 3, color: theme.palette.text.primary }}>
         Создание нового вопроса
       </Typography>
@@ -222,20 +222,11 @@ const AddQuestion = () => {
         >
           <span>
             <Button
-              variant="contained"
-              onClick={() => handleAddQuestion("open")}
+              variant={isButtonDisabled ? "disabled-dark" : "red"}
               disabled={isButtonDisabled}
+              onClick={() => handleAddQuestion("open")}
               sx={{
-                flex: 1,
                 py: 1.5,
-                backgroundColor: isButtonDisabled 
-                  ? theme.palette.action.disabled 
-                  : theme.palette.primary.main,
-                "&:hover": {
-                  backgroundColor: isButtonDisabled 
-                    ? theme.palette.action.disabled 
-                    : theme.palette.primary.dark,
-                },
               }}
             >
               {submitting ? (
@@ -253,20 +244,11 @@ const AddQuestion = () => {
         >
           <span>
             <Button
-              variant="contained"
-              onClick={() => handleAddQuestion("my")}
+              variant={isButtonDisabled ? "disabled-dark" : "red"}
               disabled={isButtonDisabled}
+              onClick={() => handleAddQuestion("my")}
               sx={{
-                flex: 1,
                 py: 1.5,
-                backgroundColor: isButtonDisabled 
-                  ? theme.palette.action.disabled 
-                  : theme.palette.secondary.main,
-                "&:hover": {
-                  backgroundColor: isButtonDisabled 
-                    ? theme.palette.action.disabled 
-                    : theme.palette.secondary.dark,
-                },
               }}
             >
               {submitting ? (

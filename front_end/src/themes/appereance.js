@@ -8,32 +8,20 @@ const black5 = '#4E4450';
 
 const red1 = '#450911';
 const red2 = '#780C1B';
-const red3 = '#9A0E0E'; // burgundyBase
+const red3 = '#9A0E0E';
 const red4 = '#E62727';
 const red5 = '#F88E81';
 
 const white1 = '#DBB8BB';
 const white2 = '#EDD9DB';
-const white3 = '#F5EAEA'; // burgundyClicked
-const white4 = '#FFFFFF'; // pure white  // graphiteText
-const white5 = '#D9D9D9'; // grey    // windowBackground
-
-const burgundyBase = '#9A0E0E';
-const burgundyHover = '#CD2626';
-const burgundyClicked = '#F5EAEA';
-
-const lightBurgundyBase = '#CD2626';
-const lightBurgundyHover = '#FFCCCC';
-const lightBurgundyClicked = '#F5EAEA';
-
-const lightGrey = '#D3D3D3';
+const white3 = '#F5EAEA'; 
+const white4 = '#FFFFFF'; // pure white 
+const white5 = '#D9D9D9'; // grey
 
 const graphiteBackground = '#29232A';
-const windowBackground = '#D9D9D9';
 const inactiveTableBackground = '#4A4A4A';
 const advertisementBackground = '#382E3A';
 
-const graphiteText = '#FFFFFF';
 const disabledText = '#BDBDBD';
 const disabledBackground = '#F5F5F5';
 
@@ -42,57 +30,42 @@ const greyButton = '#808080';
 const inactiveBorderColor = '#E0E0E0';
 const activeBorderColor = '#FF0000';
 
-const activeChevronColor = '#C0C0C0';
-
 const darkTheme = createTheme({
   palette: {
+    default: {
+      black1: black1, black2: black2, black3: black3, black4: black4, black5: black5,
+      red1: red1, red2: red2, red3: red3, red4: red4, red5: red5,
+      white1: white1, white2: white2, white3: white3, white4: white4, white5: white5, 
+    },
     primary: {
-      main: burgundyBase,
-      light: burgundyClicked,
-      dark: burgundyBase,
-      hover: burgundyHover,
+      main: red3,
+      light: white3,
+      dark: red3,
+      hover: red4,
       menu: greyButton,
-      contrastText: getContrastRatio(burgundyBase, graphiteText) > 4.5 ? graphiteText : '#000',
+      contrastText: getContrastRatio(red3, white4) > 4.5 ? white4 : '#000',
     },
     secondary: {
-      main: burgundyHover,
-      light: alpha(burgundyHover, 0.5),
-      dark: alpha(burgundyHover, 0.9),
+      main: red4,
+      light: alpha(red4, 0.5),
+      dark: alpha(red4, 0.9),
     },
     background: {
       default: graphiteBackground,
       paper: alpha(graphiteBackground, 0.9),
-      window: windowBackground,
+      window: white5,
       disabled: disabledBackground,
       light: advertisementBackground,
       white: white4,
     },
     text: {
-      primary: graphiteText,
-      secondary: alpha(graphiteText, 0.7),
+      dark: black2,
+      primary: white4,
+      secondary: alpha(white4, 0.7),
       gray: inactiveTableBackground,
       visited: 'grey',
       disabled: disabledText,
-      light: lightGrey, 
-    },
-    button: {
-      grey: {
-        main: greyButton,
-        light: lightGrey,
-        contrastText: graphiteText,
-      },
-      red: {
-        main: burgundyBase,
-        light: burgundyClicked,
-        hover: burgundyHover,
-        contrastText: graphiteText,
-      },
-      lightRed: {  
-        main: lightBurgundyBase, 
-        light: white3,        
-        hover: lightBurgundyHover,  
-        contrastText: graphiteText,  
-      }
+      light: white5, 
     },
     border: {
       default: activeBorderColor,
@@ -100,7 +73,7 @@ const darkTheme = createTheme({
     },
     chevron: {
       default: 'transparent',
-      hover: activeChevronColor,
+      hover: red3,
     },
   },
   typography: {
@@ -110,6 +83,8 @@ const darkTheme = createTheme({
       'sans-serif',
     ].join(","),
   },
+
+  
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -129,57 +104,56 @@ const darkTheme = createTheme({
             display: 'none',
           },
         },
-       /* "*": {
-          margin: 0,
-          padding: 0,
-          boxSizing: "border-box",
-          overflowX: 'hidden',
-          '& ::-webkit-scrollbar': {
-            display: 'none',
-          },
-        },*/
       },
     },
-    // Стили для DataGrid
+
     MuiDataGrid: {
       styleOverrides: {
         root: {
           border: 'none',
-          color: graphiteText,
+          color: white4,
           '& .MuiDataGrid-columnHeaders': {
-            backgroundColor: black4,
-            borderBottom: `1px solid ${activeBorderColor}`,
+
           },
           '& .MuiDataGrid-columnHeader': {
+            backgroundColor: black4,
+            color: white3,
+            border: 'none',
+
             '&:hover': {
-              backgroundColor: alpha(burgundyBase, 0.2),
+              backgroundColor: alpha(red3, 0.2),
             },
             '&.MuiDataGrid-columnHeader--sorted': {
-              backgroundColor: alpha(burgundyBase, 0.3),
+              backgroundColor: alpha(red3, 0.3),
+            },
+            '&.MuiDataGrid-columnHeader--sortable': {
+              border: 'none',
             },
           },
           '& .MuiDataGrid-columnHeaderTitle': {
             fontWeight: 'bold',
           },
           '& .MuiDataGrid-cell': {
-            borderBottom: `1px solid ${alpha(inactiveBorderColor, 0.5)}`,
+            border: 'none',
             '&:focus': {
               outline: 'none',
             },
           },
           '& .MuiDataGrid-row': {
+            border: 'none',
+            backgroundColor: black2,
             '&:hover': {
-              backgroundColor: alpha(burgundyBase, 0.1),
+              backgroundColor: alpha(red3, 0.1),
             },
             '&.Mui-selected': {
-              backgroundColor: alpha(burgundyBase, 0.2),
+              backgroundColor: alpha(red3, 0.2),
               '&:hover': {
-                backgroundColor: alpha(burgundyBase, 0.3),
+                backgroundColor: alpha(red3, 0.3),
               },
             },
           },
           '& .MuiDataGrid-footerContainer': {
-            borderTop: `1px solid ${activeBorderColor}`,
+            borderTop: 'none',
             backgroundColor: black4,
           },
           '& .MuiDataGrid-toolbarContainer': {
@@ -187,19 +161,22 @@ const darkTheme = createTheme({
             padding: '8px 16px',
           },
           '& .MuiDataGrid-menuIcon': {
-            color: graphiteText,
+            color: white4,
           },
           '& .MuiDataGrid-sortIcon': {
-            color: graphiteText,
+            color: white4,
           },
           '& .MuiDataGrid-filterIcon': {
-            color: graphiteText,
+            color: white4,
           },
           '& .MuiDataGrid-columnSeparator': {
-            color: inactiveBorderColor,
+            display: 'none',
+          },
+          '& .MuiDataGrid-filler': {
+            display: 'none',
           },
           '& .MuiDataGrid-overlay': {
-            backgroundColor: alpha(graphiteBackground, 0.8),
+            backgroundColor: black2,
           },
         },
       },
@@ -207,38 +184,80 @@ const darkTheme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: burgundyBase,
-          color: graphiteText,
+          backgroundColor: red3,
+          color: white4,
           '& ::-webkit-scrollbar': {
             display: 'none',
           },
         },
       },
     },
+    
     MuiButton: {
       variants: [
         {
           props: { variant: 'grey' },
           style: {
             backgroundColor: greyButton,
-            color: graphiteText,
+            color: white4,
             '&:hover': {
-              backgroundColor: lightGrey,
-              color: graphiteText,
+              backgroundColor: white5,
+              color: white4,
             },
           },
         },
         {
           props: { variant: 'red' },
           style: {
-            backgroundColor: burgundyBase,
-            color: graphiteText,
+            backgroundColor: red3,
+            color: white4,
             '&:hover': {
-              backgroundColor: burgundyClicked,
-              color: burgundyBase,
+              backgroundColor: red4,
             },
+            '&:active': {
+              backgroundColor: white3,
+              color: red3,
+            },
+            '& .MuiTouchRipple-root': {
+              '& .MuiTouchRipple-child': {
+                display: 'none',
+              }
+            }
           },
-        }
+        },
+        {
+          props: { variant: 'lightRed' },
+          style: {
+            backgroundColor: red4,
+            color: white4,
+            '&:hover': {
+              backgroundColor: red5,
+            },
+            '&:active': {
+              backgroundColor: white4,
+              color: red4,
+            },
+            '& .MuiTouchRipple-root': {
+              '& .MuiTouchRipple-child': {
+                display: 'none',
+              }
+            }
+          },
+        },
+        {
+          props: { variant: 'disabled-dark' },
+          style: {
+            '&.Mui-disabled': {
+              backgroundColor: black2,
+              color: black5,
+              '& .MuiTouchRipple-root': {
+                '& .MuiTouchRipple-child': {
+                  display: 'none',
+                }
+              }
+            }
+          },
+        },
       ],
       styleOverrides: {
         root: {
@@ -263,7 +282,7 @@ const darkTheme = createTheme({
         {
           props: { variant: 'grey' },
           style: {
-            color: getContrastRatio(burgundyBase, graphiteText) > 4.5 ? graphiteText : '#000',
+            color: getContrastRatio(red3, white4) > 4.5 ? white4 : '#000',
             backgroundColor: 'transparent',
             '&:hover': {
               transition: 'box-shadow 0.1s ease',
@@ -274,11 +293,11 @@ const darkTheme = createTheme({
         {
           props: { variant: 'red' },
           style: {
-            color: graphiteText,
-            backgroundColor: burgundyBase,
+            color: white4,
+            backgroundColor: red3,
             '&:hover': {
               transition: 'box-shadow 0.1s ease',
-              backgroundColor: burgundyBase,
+              backgroundColor: red3,
               boxShadow: `inset 0 0 0 2px ${red4}`,
             },
           },
@@ -288,8 +307,8 @@ const darkTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: alpha(graphiteBackground, 0.8),
-          color: graphiteText,
+          backgroundColor: black4,
+          color: white4,
           '& ::-webkit-scrollbar': {
             display: 'none',
           },
@@ -300,7 +319,7 @@ const darkTheme = createTheme({
       styleOverrides: {
         paper: {
           backgroundColor: graphiteBackground,
-          color: graphiteText,
+          color: white4,
           '& ::-webkit-scrollbar': {
             display: 'none',
           },
@@ -310,31 +329,66 @@ const darkTheme = createTheme({
     MuiMenuItem: {
       styleOverrides: {
         root: {
-          color: graphiteText,
+          color: white4,
           '&:hover': {
-            backgroundColor: alpha(burgundyBase, 0.1),
+            backgroundColor: alpha(red3, 0.1),
           },
           '& .MuiSvgIcon-root': {
-            color: graphiteText,
+            color: white4,
           },
         },
       },
     },
+
+
     MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            color: graphiteText,
-            '& fieldset': {
-              borderColor: activeBorderColor, 
+      // IMPORTANT!
+      // don't ask me why, but use "variant_tf" instead of "variant"
+      variants: [
+        {
+          props: { variant_tf: "light" },
+          style: {
+            "& .MuiInputLabel-root": {
+              color: black5,
             },
-            '&:hover fieldset': {
-              borderColor: graphiteText, 
-            },
+            "& .MuiOutlinedInput-root": {
+              "& .MuiOutlinedInput-input": {
+                color: black2,
+              },
+              
+              "& fieldset": {
+                borderColor: black5,
+              },
+              // "&:hover fieldset": {
+              //   borderColor: white1,
+              // }
+            }
           },
         },
-      },
+        {
+          props: { variant_tf: "dark" },
+          style: {
+            "& .MuiInputLabel-root": {
+              color: black5,
+            },
+            "& .MuiOutlinedInput-root": {
+              "& .MuiOutlinedInput-input": {
+                color: white4,
+              },
+              
+              "& fieldset": {
+                borderColor: black5,
+              },
+              // "&:hover fieldset": {
+              //   borderColor: white1,
+              // }
+            }
+          },
+        },
+      ],
     },
+
+    
   },
 });
 

@@ -66,15 +66,23 @@ export default function NavBar({ children }) {
     const path = location.pathname;
 
     switch (path) {
-      case "/registration":
-        return "Регистрация";
-      case "/login":
-        return "Вход";
+    case "/registration":
+      return "Регистрация";
+    case "/login":
+      return "Вход";
     }
   };
 
+  function SetPageTitle() {
+    React.useEffect(() => {
+      if (resolvePageName()) document.title = resolvePageName();
+      else document.title = "ЧГК рейтинг";
+    }, []);
+  }
+
   return (
     <div>
+      <SetPageTitle />
       <Box sx={{ display: "flex", width: "100vw", mb: 0 }}>
         <AppBar 
           position="fixed" 
@@ -82,17 +90,17 @@ export default function NavBar({ children }) {
           sx={{ 
             zIndex: theme.zIndex.drawer + 1, 
           }}>
-            <Toolbar id="toolbar">
-              <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
-                {resolvePageName()}
-              </Typography>
-            </Toolbar>
+          <Toolbar id="toolbar">
+            <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, pl: 2 }}>
+              {resolvePageName()}
+            </Typography>
+          </Toolbar>
         </AppBar>
         <Box
           id="mainbox"
           component="main"
           sx={{mt: 0}}>
-            {children}
+          {children}
         </Box>
       </Box>
     </div>

@@ -18,7 +18,6 @@ import Box from "@mui/material/Box";
 import { AddCircle, ChevronLeft, ChevronRight, HelpOutline, PlayArrow } from "@mui/icons-material";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
-import Fade from '@mui/material/Fade';
 import { checkAuth } from "../utils/AuthUtils";
 
 const NewGame = React.lazy(() => import ("../components/NewGame"));
@@ -222,12 +221,12 @@ export default function NavBar({ children }) {
   const renderIcon = (index) => {
     const size = 28;
     switch (index) {
-      case 0: return <img src="/question_w.ico" alt="question" style={{ width: size, height: size }} />;
-      case 1: return <img src="/bag_w.ico" alt="bag" style={{ width: size, height: size }} />;
-      case 2: return <img src="/user_w.ico" alt="user" style={{ width: size, height: size }} />;
-      case 3: return <img src="/team_w.ico" alt="team" style={{ width: size, height: size }} />;
-      case 4: return <img src="/home_w.ico" alt="home" style={{ width: size, height: size }} />;
-      default: return null;
+    case 0: return <img src="/question_w.ico" alt="question" style={{ width: size, height: size }} />;
+    case 1: return <img src="/bag_w.ico" alt="bag" style={{ width: size, height: size }} />;
+    case 2: return <img src="/user_w.ico" alt="user" style={{ width: size, height: size }} />;
+    case 3: return <img src="/team_w.ico" alt="team" style={{ width: size, height: size }} />;
+    case 4: return <img src="/home_w.ico" alt="home" style={{ width: size, height: size }} />;
+    default: return null;
     }
   };
 
@@ -239,21 +238,29 @@ export default function NavBar({ children }) {
     if (/^\/team\/\d+$/.test(path)) return "Информация о команде";
 
     switch (path) {
-      case "/news": return "Главная";
-      case "/questions": return "Вопросы";
-      case "/packs": return "Пакеты";
-      case "/users": return "Пользователи";
-      case "/teams": return "Команды";
-      case "/add-question": return "Добавить вопрос";
-      case "/add-pack": return "Добавить пак";
-      case "/add-pack/add-question": return "Добавить пак";
-      case "/myprofile": return "Мой профиль";
-      default: return "";
+    case "/news": return "Главная";
+    case "/questions": return "Вопросы";
+    case "/packs": return "Пакеты";
+    case "/users": return "Пользователи";
+    case "/teams": return "Команды";
+    case "/add-question": return "Добавить вопрос";
+    case "/add-pack": return "Добавить пак";
+    case "/add-pack/add-question": return "Добавить пак";
+    case "/myprofile": return "Мой профиль";
+    default: return "";
     }
   };
 
+  function SetPageTitle() {
+    React.useEffect(() => {
+      if (resolvePageName()) document.title = resolvePageName();
+      else document.title = "ЧГК рейтинг";
+    }, []);
+  }
+
   return (
     <div>
+      <SetPageTitle />
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
 
@@ -263,15 +270,15 @@ export default function NavBar({ children }) {
           aria-labelledby="new-game-modal"
           aria-describedby="new-game-modal-description"
         >
-         <React.Suspense fallback={<div>Загрузка...</div>}>
+          <React.Suspense fallback={<div>Загрузка...</div>}>
             <NewGame onClose={handleCloseGameModal} />
           </React.Suspense>
         </Modal>
 
         {gameModalOpen && (
           <Box sx={{
-            zIndex: theme.zIndex.modal - 1
-          }} />
+                 zIndex: theme.zIndex.modal - 1
+               }} />
         )}
 
         <Drawer variant="permanent" open={open}>
@@ -287,18 +294,17 @@ export default function NavBar({ children }) {
               }} 
             />
             <PlayButton 
-              variant="contained" 
-              color="secondary"
+              variant="lightRed" 
               onClick={handlePlayClick}
             >
               <Box sx={{height: "36px", width: "0"}}/>
               <Typography variant="h5"
-                variant="contained"
-                sx={{
-                  position: 'absolute',
-                  opacity: open ? 1 : 0,
-                  transition: 'opacity 0.3s ease',
-                }}
+                          variant="contained"
+                          sx={{
+                            position: 'absolute',
+                            opacity: open ? 1 : 0,
+                            transition: 'opacity 0.3s ease',
+                          }}
               >
                 Играть
               </Typography>
@@ -329,41 +335,42 @@ export default function NavBar({ children }) {
               const isActive = location.pathname === path;
               return (
                 <ListItem disablePadding key={text} sx={{ 
-                  display: "block", 
-                  position: "relative", 
-                  pt: 0, 
-                  pb: 0.5, 
-                  pr: 1, 
-                  pl: 1 
-                }}>
+                            display: "block", 
+                            position: "relative", 
+                            pt: 0, 
+                            pb: 0.5, 
+                            pr: 1, 
+                            pl: 1 
+                          }}>
                   <ListItemButton
-                      component={Link}
-                      to={path}
-                      variant = {isActive ? "red" : "grey"}
-                      sx={{
-                        justifyContent: open ? "initial" : "center",
-                        px: 2.5,
-                        minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
-                      }}
+                    component={Link}
+                    to={path}
+                    variant = {isActive ? "red" : "grey"}
+                    sx={{
+                      justifyContent: open ? "initial" : "center",
+                      px: 2.5,
+                      minWidth: open ? drawerWidth - 30 : `calc(${theme.spacing(4)} + 1px)`,
+                    }}
                   >
-                        <ListItemIcon
-                          sx={{
-                            ml: 1,
-                            minWidth: open ? "auto" : `calc(100% - 8px)`,
-                            justifyContent: "left",
-                          }}
-                        >
-                          {renderIcon(iconIndex)}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={text}
-                          sx={{
-                            ml: 1.2,
-                            opacity: open ? 1 : 0,
-                            whiteSpace: "nowrap",
-                          }}
-                        />
+                    <ListItemIcon
+                      sx={{
+                        ml: 1,
+                        minWidth: open ? "auto" : `calc(100% - 8px)`,
+                        justifyContent: "left",
+                      }}
+                    >
+                      {renderIcon(iconIndex)}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={text}
+                      sx={{
+                        ml: 1.2,
+                        opacity: open ? 1 : 0,
+                        whiteSpace: "nowrap",
+                      }}
+                    />
                   </ListItemButton>
+                  
                   {open && text === "Вопросы" && (
                     <Item onClick={handleAddQuestionClick} sx={{ ml: 1.2 }}>
                       <AddCircle/>
@@ -373,7 +380,7 @@ export default function NavBar({ children }) {
                     <Item onClick={handleAddPackClick} sx={{ ml: 1.2 }}>
                       <AddCircle/>
                     </Item>
-                  )}
+                  )} 
                 </ListItem>
               );
             })}
@@ -418,22 +425,22 @@ export default function NavBar({ children }) {
             </React.Suspense>
           </Toolbar>
         </AppBar>
-         <Box
-           id="mainbox"
-           component="main"
-           sx={{
-             flexGrow: 1,
-             p: 10,
-             pt: 6,
-             display: "flex",
-             flexDirection: "column",
-             height: "100vh",
-             overflow: "hidden",
-             filter: gameModalOpen ? 'blur(2px)' : 'none',
-             transition: 'filter 0.3s ease'
-         }}>
-            {children}
-         </Box>
+        <Box
+          id="mainbox"
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 10,
+            pt: 6,
+            display: "flex",
+            flexDirection: "column",
+            height: "100vh",
+            overflow: "hidden",
+            filter: gameModalOpen ? 'blur(2px)' : 'none',
+            transition: 'filter 0.3s ease'
+          }}>
+          {children}
+        </Box>
       </Box>
     </div>
   );

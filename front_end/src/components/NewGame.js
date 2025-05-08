@@ -243,92 +243,68 @@ const NewGame = ({ onClose }) => {
             </Stack>
           </Paper>
 
-          <Stack 
-            direction={{ xs: 'column', sm: 'row' }} 
-            spacing={5}
-            justifyContent="center"
-            sx={{ width: '100%' }}
-          >
-            <Box sx={{ 
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              flex: 1,
-              maxWidth: 280
-            }}>
-              <Button
-                fullWidth
-                variant="lightRed"
-                onClick={handleRandomPack}
-                sx={{
-                  backgroundColor: theme.palette.button.lightRed.main,
-                  py: 2,
-                  '&:hover': {
-                    backgroundColor: theme.palette.button.lightRed.hover,
-                    color: theme.palette.button.lightRed.activeText, 
-                  },
-                  '&:active': {
-                    backgroundColor:  theme.palette.button.lightRed.active,
-                    color: theme.palette.button.lightRed.activeText, 
-                  }
-                }}
-              >
-                <Typography variant="h6">
-                  СЛУЧАЙНЫЙ ПАК
-                </Typography>
-              </Button>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  mt: 1.5,
-                  color: theme.palette.text.gray,
-                  textAlign: 'center'
-                }}
-              >
-                Случайный пак - прямо как в игре
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={5}
+          justifyContent="center"
+          sx={{ width: '100%' }}
+        >
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            flex: 1,
+            maxWidth: 280
+          }}>
+            <Button disableRipple
+              fullWidth
+              variant="lightRed"
+              onClick={handleRandomPack}
+            >
+              <Typography variant="h6">
+                СЛУЧАЙНЫЙ ПАК
               </Typography>
-            </Box>
+            </Button>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mt: 1.5,
+                color: theme.palette.text.gray,
+                textAlign: 'center'
+              }}
+            >
+              Случайный пак - прямо как в игре
+            </Typography>
+          </Box>
 
-            <Box sx={{ 
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              flex: 1,
-              maxWidth: 280
-            }}>
-              <Button
-                fullWidth
-                variant="lightRed"
-                onClick={() => setSelectQuestionsOpen(true)}
-                sx={{
-                  backgroundColor: theme.palette.button.lightRed.main,
-                  py: 2,
-                  '&:hover': {
-                    backgroundColor: theme.palette.button.lightRed.hover,
-                    color: theme.palette.button.lightRed.activeText, 
-                  },
-                  '&:active': {
-                    backgroundColor:  theme.palette.button.lightRed.active,
-                    color: theme.palette.button.lightRed.activeText, 
-                  }
-                }}
-              >
-                <Typography variant="h6">
-                  ВЫБРАТЬ ВОПРОСЫ
-                </Typography>
-              </Button>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  mt: 1.5,
-                  color: theme.palette.text.gray,
-                  textAlign: 'center'
-                }}
-              >
-                Тренируйтесь на конкретные темы
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            flex: 1,
+            maxWidth: 280
+          }}>
+            <Button disableRipple
+              fullWidth
+              variant="lightRed"
+              onClick={handleSelectQuestions}
+            >
+              <Typography variant="h6">
+                ВЫБРАТЬ ВОПРОСЫ
               </Typography>
-            </Box>
-          </Stack>
+            </Button>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mt: 1.5,
+                color: theme.palette.text.gray,
+                textAlign: 'center'
+              }}
+            >
+              Тренируйтесь на конкретные темы
+            </Typography>
+          </Box>
+        </Stack>
 
           <Box sx={{ mt: 4, textAlign: 'center'}}>
             <Button 
