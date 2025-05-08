@@ -96,22 +96,21 @@ const QuestionDetail = () => {
           />
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Button
-              variant="main_button"
-              color="primary"
+              variant="red"
               onClick={handleSubmit}
             >
               Отправить ответ
             </Button>
-            {feedback === "Ответ неверный" && (
-              <Button
-                variant="main_button"
-                color="secondary"
-                sx={{ ml: 2 }}
-                onClick={handleRetry}
-              >
-                <RotateLeft sx={{ color: "#FFFFFF" }} />
-              </Button>
-            )}
+
+            <Button
+              variant={feedback === "Ответ неверный" ? "red" : "disabled-dark"}
+              disabled={feedback !== "Ответ неверный"}
+              sx={{ ml: 2 }}
+              onClick={handleRetry}
+            >
+              <RotateLeft/>
+            </Button>
+            
           </Box>
           <Typography variant="subtitle1" sx={{ mt: 2, color: answerColor }}>
             {feedback}

@@ -129,26 +129,17 @@ const Login = () => {
         )}
 
         <TextField
+          variant_tf="light"
           name="username"
           label="Имя пользователя"
-          variant="outlined"
           fullWidth
           value={formData.username}
           onChange={handleChange}
           disabled={submitting}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: theme.palette.divider
-              },
-              "&:hover fieldset": {
-                borderColor: theme.palette.primary.light
-              }
-            }
-          }}
         />
 
         <TextField
+          variant_tf="light"
           name="password"
           label="Пароль"
           type="password"
@@ -157,16 +148,6 @@ const Login = () => {
           value={formData.password}
           onChange={handleChange}
           disabled={submitting}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: theme.palette.divider
-              },
-              "&:hover fieldset": {
-                borderColor: theme.palette.primary.light
-              }
-            }
-          }}
         />
 
         <Tooltip 
@@ -218,7 +199,7 @@ const Login = () => {
           sx={{ 
             textAlign: "center", 
             mt: 1, 
-            color: theme.palette.text.secondary 
+            color: theme.palette.default.black5,
           }}
         >
           Нет аккаунта?{" "}

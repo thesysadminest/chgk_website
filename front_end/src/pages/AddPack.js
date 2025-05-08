@@ -194,14 +194,8 @@ const AddPack = () => {
           {authState.error || "Для создания пакетов необходимо авторизоваться"}
         </Typography>
         <Button
-          variant="contained"
+          variant="red"
           onClick={() => navigate("/login")}
-          sx={{
-            mt: 2,
-            backgroundColor: theme.palette.button.red.main,
-            color: theme.palette.button.red.contrastText,
-            "&:hover": { backgroundColor: theme.palette.button.red.hover },
-          }}
         >
           Войти в аккаунт
         </Button>

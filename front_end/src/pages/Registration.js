@@ -154,86 +154,46 @@ const Registration = () => {
         )}
 
         <TextField
+          variant_tf="light"
           name="username"
           label="Имя пользователя"
-          variant="outlined"
           fullWidth
           value={formData.username}
           onChange={handleChange}
           disabled={submitting}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: theme.palette.divider
-              },
-              "&:hover fieldset": {
-                borderColor: theme.palette.primary.light
-              }
-            }
-          }}
         />
 
         <TextField
+          variant_tf="light"
           name="email"
           label="Email"
           type="email"
-          variant="outlined"
           fullWidth
           value={formData.email}
           onChange={handleChange}
           disabled={submitting}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: theme.palette.divider
-              },
-              "&:hover fieldset": {
-                borderColor: theme.palette.primary.light
-              }
-            }
-          }}
         />
 
         <TextField
+          variant_tf="light"
           name="password"
           label="Пароль"
           type="password"
-          variant="outlined"
           fullWidth
           value={formData.password}
           onChange={handleChange}
           disabled={submitting}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: theme.palette.divider
-              },
-              "&:hover fieldset": {
-                borderColor: theme.palette.primary.light
-              }
-            }
-          }}
         />
 
         <TextField
+          variant_tf="light"
           name="confirmPassword"
           label="Подтвердите пароль"
           type="password"
-          variant="outlined"
           fullWidth
           value={formData.confirmPassword}
           onChange={handleChange}
           disabled={submitting}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: theme.palette.divider
-              },
-              "&:hover fieldset": {
-                borderColor: theme.palette.primary.light
-              }
-            }
-          }}
         />
 
         <Tooltip 
@@ -285,7 +245,7 @@ const Registration = () => {
           sx={{ 
             textAlign: "center", 
             mt: 1, 
-            color: theme.palette.text.secondary 
+            color: theme.palette.default.black5
           }}
         >
           Уже есть аккаунт?{" "}

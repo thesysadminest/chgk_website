@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { AppBar, Toolbar, Box, Button, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +39,26 @@ const LobbyNavBar = () => {
     navigate(path);
   };
 
+  const location = useLocation();
+  const resolvePageName = () => {
+    const path = location.pathname;
+
+    switch (path) {
+      case "/": return "ЧГК рейтинг";
+      default: return "";
+    }
+  };
+
+  function SetPageTitle() {
+    React.useEffect(() => {
+      if (resolvePageName()) document.title = resolvePageName();
+      else document.title = "ЧГК рейтинг";
+    }, []);
+  }
+
   return (
+    <>
+    <SetPageTitle />
     <AppBar 
       position="fixed" 
       sx={{ 
@@ -124,6 +144,7 @@ const LobbyNavBar = () => {
         </Box>
       </Toolbar>
     </AppBar>
+      </>
   );
 };
 

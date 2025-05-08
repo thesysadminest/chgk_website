@@ -258,22 +258,10 @@ const NewGame = ({ onClose }) => {
             flex: 1,
             maxWidth: 280
           }}>
-            <Button
+            <Button disableRipple
               fullWidth
               variant="lightRed"
               onClick={handleRandomPack}
-              sx={{
-                backgroundColor: theme.palette.button.lightRed.main,
-                py: 2,
-                '&:hover': {
-                  backgroundColor: theme.palette.button.lightRed.hover,
-                  color: theme.palette.button.lightRed.activeText, 
-                },
-                '&:active': {
-                  backgroundColor:  theme.palette.button.lightRed.active,
-                  color: theme.palette.button.lightRed.activeText, 
-                }
-              }}
             >
               <Typography variant="h6">
                 СЛУЧАЙНЫЙ ПАК
@@ -298,22 +286,10 @@ const NewGame = ({ onClose }) => {
             flex: 1,
             maxWidth: 280
           }}>
-            <Button
+            <Button disableRipple
               fullWidth
               variant="lightRed"
               onClick={handleSelectQuestions}
-              sx={{
-                backgroundColor: theme.palette.button.lightRed.main,
-                py: 2,
-                '&:hover': {
-                  backgroundColor: theme.palette.button.lightRed.hover,
-                  color: theme.palette.button.lightRed.activeText, 
-                },
-                '&:active': {
-                  backgroundColor:  theme.palette.button.lightRed.active,
-                  color: theme.palette.button.lightRed.activeText, 
-                }
-              }}
             >
               <Typography variant="h6">
                 ВЫБРАТЬ ВОПРОСЫ

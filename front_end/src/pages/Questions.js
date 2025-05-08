@@ -73,7 +73,7 @@ const Questions = () => {
         </Stack>
 
         <TextField
-          variant="outlined"
+          variant_tf="dark"
           size="small"
           placeholder="Поиск по вопросу"
           value={searchText}
@@ -82,63 +82,22 @@ const Questions = () => {
         />
       </Stack>
 
-      <Box sx={{ flexGrow: 1 }}>
-        <DataGrid
-          rows={rows}
-          columns={[
-            { 
-              field: "id", 
-              headerName: "ID", 
-              flex: 0.7,
-              renderCell: (params) => (
-                <MuiLink 
-                  component="button" 
-                  variant="body2" 
-                  onClick={() => handleRowClick(params)} 
-                  sx={{ 
-                    color: visited[params.id] ? "grey" : "white",
-                    textDecoration: "underline", 
-                    cursor: "pointer",
-                    '&:hover': {
-                      color: visited[params.id] ? 'darkgrey' : 'primary.light'
-                    }
-                  }}
-                >
-                  {params.value}
-                </MuiLink>
-              )
-            },
-            { field: "question_text", headerName: "Question Text", flex: 3 },
-            { field: "author_q", headerName: "Author", flex: 2 },
-            { field: "pub_date_q", headerName: "Date", flex: 2 },
-          ]}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
-          sx={{ 
-            boxShadow: 2, 
-            border: 1, 
-            borderColor: 'grey.300',
-            '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: 'background.paper',
-              color: 'text.primary',
-              borderBottom: '1px solid',
-              borderColor: 'primary.main'
-            },
-            '& .MuiDataGrid-columnHeaderTitle': {
-              fontWeight: 'bold'
-            },
-            '& .MuiDataGrid-cell': {
-              borderBottom: '1px solid',
-              borderColor: 'grey.800'
-            },
-            '& .visited-row': {
-              color: 'grey'
-            }
-          }}
-          getRowClassName={(params) => visited[params.id] ? "visited-row" : ""}
-          onRowClick={handleRowClick}
-        />
-      </Box>
+
+      <DataGrid
+        rows={rows}
+        columns={[
+          { field: "id", headerName: "ID", flex: 0.5 },
+          { field: "question_text", headerName: "Вопрос", flex: 3 },
+          { field: "author_q", headerName: "Автор", flex: 2 },
+          { field: "pub_date_q", headerName: "Дата", flex: 2 },
+        ]}
+        pageSize={5}
+        rowsPerPageOptions={[5, 10, 20]}
+        getRowClassName={(params) => visited[params.id] ? "visited-row" : ""}
+        disableSelectionOnClick
+        onRowClick={handleRowClick}
+      />
+
     </Box>
   );
 };

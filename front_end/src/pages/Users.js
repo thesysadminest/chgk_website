@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import { Box, Link as MuiLink, Button, TextField, CircularProgress, Typography, Alert, Tooltip } from "@mui/material";
+import { Box, Link as MuiLink, Button, TextField, CircularProgress, Typography, Alert, Tooltip, Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { checkAuth, getAccessToken, clearAuthTokens } from "../utils/AuthUtils";
 
 const Users = () => {
+  const theme = useTheme();
   const [rows, setRows] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -141,67 +143,47 @@ const Users = () => {
   }
 
   return (
-    <Box sx={{ height: "80vh", width: "75vw", p: 2 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3, alignItems: "center" }}>
+    <Box sx={{ display: "flex", justifyContent: "space-between", flexDirection: 'column', mb: 3}}>
+      <Stack 
+        direction="row" 
+        spacing={2} 
+        sx={{ 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          mb: 2,
+          flexWrap: 'wrap',
+          gap: 2
+        }}
+      >
         <Tooltip title={authState.isAuthenticated ? "" : "Войдите в систему, чтобы использовать эту функцию"}>
           <span>
             <Button
-              variant="contained"
+              variant={authState.isAuthenticated ? "red" : "?disabled-dark"}
               onClick={handleFindMe}
               disabled={!authState.isAuthenticated}
-              sx={{
-                backgroundColor: authState.isAuthenticated ? "primary.main" : "grey.300",
-                color: authState.isAuthenticated ? "#fff" : "grey.500",
-                "&:hover": {
-                  backgroundColor: authState.isAuthenticated ? "primary.dark" : "grey.300",
-                },
-              }}
             >
               Найти меня
             </Button>
           </span>
         </Tooltip>
+        
         <TextField
-          label="Поиск"
-          variant="outlined"
+          variant_tf="dark"
           size="small"
+          placeholder="Поиск"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          sx={{ width: 300 }}
+          sx={{ width: "300px" }}
         />
-      </Box>
+
+      </Stack>
+
 
       <DataGrid
         rows={rows}
         columns={[
-          { 
-            field: "id", 
-            headerName: "ID", 
-            width: 80, 
-            renderCell: (params) => (
-              <MuiLink 
-                onClick={() => handleRowClick(params)}
-                underline="hover"
-                sx={{ cursor: "pointer" }}
-              >
-                {params.value}
-              </MuiLink>
-            ),
-          },
-          { 
-            field: "username", 
-            headerName: "Имя", 
-            flex: 1,
-            renderCell: (params) => (
-              <MuiLink 
-                onClick={() => handleRowClick(params)}
-                underline="hover"
-                sx={{ cursor: "pointer" }}
-              >
-                {params.value}
-              </MuiLink>
-            ),
-          },
+          { field: "id", headerName: "ID", flex: 0.5 },
+          { field: "username", headerName: "Имя", flex: 1 },
           { field: "email", headerName: "Email", flex: 1.5 },
           { field: "bio", headerName: "О себе", flex: 2 },
           { field: "date_joined", headerName: "Дата регистрации", width: 150 },
@@ -209,11 +191,8 @@ const Users = () => {
         pageSize={10}
         rowsPerPageOptions={[10, 20, 50]}
         disableSelectionOnClick
+        onRowClick={handleRowClick}
         apiRef={apiRef}
-        sx={{
-          "& .MuiDataGrid-cell:focus": { outline: "none" },
-          "& .MuiDataGrid-columnHeader:focus": { outline: "none" },
-        }}
       />
     </Box>
   );
