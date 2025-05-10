@@ -71,7 +71,7 @@ const SelectQuestionsWindow = ({ open, onClose, onStartGame }) => {
   const fetchPacks = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get('/game/packs/');
+      const response = await axiosInstance.get('/pack/list/');
       setPacks(response.data);
       setMode('select');
       setLoading(false);
@@ -269,7 +269,7 @@ const SelectQuestionsWindow = ({ open, onClose, onStartGame }) => {
             <List>
               {packs.map((pack) => (
                 <ListItem 
-                  button 
+                  component="button" 
                   key={pack.id}
                   onClick={() => fetchPackQuestions(pack.id)}
                   sx={{

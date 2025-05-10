@@ -22,8 +22,7 @@ import PackDetail from './pages/PackDetail';
 import AddQuestion from './pages/AddQuestion';
 import AddPack from './pages/AddPack';
 import UserDetail from './pages/UserDetail';
-import GamePage from './pages/GamePage';
-import GameResults from './pages/GameResults';
+import GameMain from './pages/GameMain';
 
 function MainContent() {
     const location = useLocation();
@@ -58,6 +57,7 @@ function MainContent() {
                 <Route path="/" element={<NewsPage />} />
                 <Route path="/packs" element={<Packs />} />
                 <Route path="/pack/:id" element={<PackDetail />} />
+                <Route path="/pack/:id/question/:id" element={<QuestionDetail />} />
                 <Route path="/users" element={<Users />} />
                 <Route path="/user/:id" element={<UserDetail />} />
                 <Route path="/questions" element={<Question />} />
@@ -67,8 +67,7 @@ function MainContent() {
                 <Route path="/registration" element={<Registration />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/myprofile" element={<MyProfile />} />
-                <Route path="/game" element={<GamePage />} />
-                <Route path="/game/results" element={<GameResults />} />
+                <Route path="/game/:id/:firstQuestionId" element={<GameMain />} />
                 
             </Routes>
         </NavBar>

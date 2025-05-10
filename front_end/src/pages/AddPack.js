@@ -16,7 +16,9 @@ import {
   TableRow,
   TablePagination,
   Tooltip,
-  Container
+  Container,
+  Grid,
+  Paper
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
@@ -40,11 +42,6 @@ const AddPack = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const navigate = useNavigate();
-
-  const filteredQuestions = userQuestions.filter(question =>
-    question.question_text.toLowerCase().includes(searchText.toLowerCase()) ||
-    question.answer_text.toLowerCase().includes(searchText.toLowerCase())
-  );
 
   useEffect(() => {
     const initializeAuthAndData = async () => {
@@ -95,6 +92,11 @@ const AddPack = () => {
     initializeAuthAndData();
   }, []);
 
+  const filteredQuestions = userQuestions.filter(question =>
+    question.question_text?.toLowerCase().includes(searchText.toLowerCase()) ||
+    question.answer_text?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   const handleToggleQuestion = (questionId) => {
     setSelectedQuestions(prev =>
       prev.includes(questionId)
@@ -105,72 +107,54 @@ const AddPack = () => {
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      const newSelected = filteredQuestions
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-        .map(q => q.id);
-      setSelectedQuestions(prev => [...new Set([...prev, ...newSelected])]);
+      const newSelected = filteredQuestions.map(q => q.id);
+      setSelectedQuestions(newSelected);
     } else {
-      const currentPageIds = filteredQuestions
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-        .map(q => q.id);
-      setSelectedQuestions(prev => prev.filter(id => !currentPageIds.includes(id)));
+      setSelectedQuestions([]);
     }
   };
 
   const handleCreatePack = async () => {
-    setIsCreating(true);
-    try {
-      if (!authState.isAuthenticated || !packName) return;
+      setIsCreating(true);
+      try {
+        if (!authState.isAuthenticated || !packName.trim()) {
+          throw new Error("Не заполнены обязательные поля");
+        }
 
-      const token = getAccessToken();
-      if (!token) throw new Error("Токен доступа не найден");
+        const token = getAccessToken();
+        if (!token) throw new Error("Токен доступа не найден");
 
-      const packResponse = await axios.post(
-        "http://127.0.0.1:8000/api/pack/create/",
-        {
-          name: packName,
-          description: packDescription || "",
-          author_p: authState.user.id,
-        },
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
+        // 1. Создаем пак с основными данными
+        const packResponse = await axios.post(
+          "http://127.0.0.1:8000/api/pack/create/",
+          {
+            name: packName.trim(),
+            description: packDescription.trim(),
+            questions: selectedQuestions // Передаем сразу массив ID вопросов
           },
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (packResponse.status !== 201) {
+          throw new Error("Ошибка при создании пакета");
         }
-      );
 
-      if (packResponse.status !== 201) throw new Error("Ошибка при создании пакета");
-
-      const packId = packResponse.data.id;
-
-      for (const questionId of selectedQuestions) {
-        try {
-          await axios.post(
-            `http://127.0.0.1:8000/api/pack/question/${packId}/`,
-            { question_id: questionId },
-            { 
-              headers: { "Authorization": `Bearer ${token}` },
-              timeout: 5000 
-            }
-          );
-        } catch (error) {
-          console.error(`Ошибка при добавлении вопроса ${questionId}:`, error);
-        }
+        console.log("Пак успешно создан:", packResponse.data);
+        navigate("/packs");
+      } catch (error) {
+        console.error("Ошибка:", error);
+        setAuthState(prev => ({
+          ...prev,
+          error: error.response?.data?.message || error.message || "Ошибка при создании пакета"
+        }));
+      } finally {
+        setIsCreating(false);
       }
-
-      navigate("/packs");
-    } catch (error) {
-      console.error("Ошибка при создании пакета:", error);
-      setAuthState({
-        ...authState,
-        error: error.response?.data?.description?.[0] || 
-              error.response?.data?.message || 
-              "Ошибка при создании пакета"
-      });
-    } finally {
-      setIsCreating(false);
-    }
   };
 
   const handleChangePage = (event, newPage) => setPage(newPage);
@@ -194,7 +178,7 @@ const AddPack = () => {
           {authState.error || "Для создания пакетов необходимо авторизоваться"}
         </Typography>
         <Button
-          variant="red"
+          variant="contained"
           onClick={() => navigate("/login")}
         >
           Войти в аккаунт
@@ -204,221 +188,198 @@ const AddPack = () => {
   }
 
   return (
-    <Container  
+    <Container 
+      maxWidth="md" 
       sx={{ 
         height: '100vh',
-        width: '100vw',
-        overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: theme.palette.background.default,
-        justifyContent: 'center'
+        overflow: 'hidden',
+        py: 2
       }}
     >
-      <Box sx={{ 
-        maxWidth: 800,
-        mt: 4,
-        width: '100%',
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <Typography variant="h4" gutterBottom sx={{ 
-          textAlign: 'center', 
-          mb: 3,
-          color: theme.palette.text.primary
-        }}>
-          Создание нового пакета
-        </Typography>
+      <Box sx={{ flex: 1, overflow: 'auto', mb: 2 }}>
+        {/* Заголовок и форма */}
+        <Box>
+          <Typography variant="h4" gutterBottom sx={{ textAlign: "center", mb: 3 }}>
+            Создание нового пакета
+          </Typography>
 
-        {authState.error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {authState.error}
-          </Alert>
-        )}
+          {authState.error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {authState.error}
+            </Alert>
+          )}
 
-        <Box sx={{ 
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          mb: 3,
-          width: '100%',
-        }}>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              label="Название пакета *"
+              fullWidth
+              value={packName}
+              onChange={(e) => setPackName(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              label="Описание пакета"
+              fullWidth
+              multiline
+              rows={3}
+              value={packDescription}
+              onChange={(e) => setPackDescription(e.target.value)}
+            />
+          </Box>
+        </Box>
+
+        {/* Поиск и заголовок таблицы */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" sx={{ flex: 1 }}>
+            Выберите вопросы для пакета
+          </Typography>
           <TextField
-            label="Название пакета"
-            fullWidth
-            value={packName}
-            onChange={(e) => setPackName(e.target.value)}
-            required
-            error={!packName}
-            sx={{ maxWidth: 800, mx: 'auto' }}
-          />
-
-          <TextField
-            label="Описание пакета"
-            fullWidth
-            value={packDescription}
-            onChange={(e) => setPackDescription(e.target.value)}
-            required
-            multiline
-            rows={3}
-            sx={{ maxWidth: 800, mx: 'auto' }}
+            label="Поиск вопросов"
+            variant="outlined"
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            sx={{ width: 300 }}
           />
         </Box>
 
-        <Typography variant="h6" sx={{ 
-          mb: 2, 
-          textAlign: 'center',
-          color: theme.palette.text.primary
-        }}>
-          Выберите вопросы для пакета
-        </Typography>
-
-        <TextField
-          label="Поиск вопросов"
-          fullWidth
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          sx={{ mb: 3, maxWidth: 800, mx: 'auto' }}
-        />
-
-        {filteredQuestions.length > 0 ? (
-          <TableContainer sx={{ 
-            mb: 3, 
-            border: `1px solid ${theme.palette.border.default}`,
-            borderRadius: 1,
-            maxHeight: 400,
-            overflow: 'auto'
-          }}>
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: theme.palette.background.light }}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      indeterminate={
-                        selectedQuestions.length > 0 &&
-                        selectedQuestions.length < filteredQuestions.length
-                      }
-                      checked={
-                        filteredQuestions.length > 0 &&
-                        selectedQuestions.length === filteredQuestions.length
-                      }
-                      onChange={handleSelectAll}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ color: theme.palette.text.primary }}>Вопрос</TableCell>
-                  <TableCell sx={{ color: theme.palette.text.primary }}>Ответ</TableCell>
-                  <TableCell sx={{ color: theme.palette.text.primary }}>Дата создания</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredQuestions
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((question) => (
-                    <TableRow
-                      key={question.id}
-                      hover
-                      onClick={() => handleToggleQuestion(question.id)}
-                      sx={{
-                        cursor: 'pointer',
-                        backgroundColor: selectedQuestions.includes(question.id)
-                          ? theme.palette.primary.light
-                          : 'inherit'
-                      }}
-                    >
-                      <TableCell padding="checkbox">
+        {/* Таблица с вопросами */}
+        <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {filteredQuestions.length > 0 ? (
+            <>
+              <TableContainer sx={{ flex: 1, border: `1px solid ${theme.palette.divider}` }}>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: theme.palette.black2 }}>
+                      <TableCell padding="checkbox" sx={{ backgroundColor: theme.palette.black2 }}>
                         <Checkbox
-                          checked={selectedQuestions.includes(question.id)}
-                          onChange={() => handleToggleQuestion(question.id)}
-                          onClick={(e) => e.stopPropagation()}
+                          indeterminate={
+                            selectedQuestions.length > 0 &&
+                            selectedQuestions.length < filteredQuestions.length
+                          }
+                          checked={
+                            filteredQuestions.length > 0 &&
+                            selectedQuestions.length === filteredQuestions.length
+                          }
+                          onChange={handleSelectAll}
+                          sx={{ color: theme.palette.common.white }}
                         />
                       </TableCell>
-                      <TableCell sx={{ color: theme.palette.text.primary }}>
-                        {question.question_text}
+                      <TableCell sx={{ 
+                        backgroundColor: theme.palette.black2,
+                        color: theme.palette.common.white 
+                      }}>
+                        Вопрос
                       </TableCell>
-                      <TableCell sx={{ color: theme.palette.text.primary }}>
-                        {question.answer_text}
+                      <TableCell sx={{ 
+                        backgroundColor: theme.palette.black2,
+                        color: theme.palette.common.white 
+                      }}>
+                        Ответ
                       </TableCell>
-                      <TableCell sx={{ color: theme.palette.text.primary }}>
-                        {new Date(question.pub_date_q).toLocaleDateString()}
+                      <TableCell sx={{ 
+                        backgroundColor: theme.palette.black2,
+                        color: theme.palette.common.white 
+                      }}>
+                        Дата создания
                       </TableCell>
                     </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={filteredQuestions.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{ color: theme.palette.text.primary }}
-            />
-          </TableContainer>
-        ) : (
-          <Alert severity="info" sx={{ mb: 3 }}>
-            {searchText 
-              ? "Вопросы по вашему запросу не найдены"
-              : "У вас пока нет созданных вопросов. Сначала создайте вопросы."}
-          </Alert>
-        )}
-
-        <Box sx={{ 
-          display: "flex", 
-          gap: 2,
-          mt: 'auto',
-          pt: 2
-        }}>
-          <Button
-            variant="outlined"
-            onClick={() => navigate("/add-question")}
-            sx={{ 
-              flex: 1, 
-              maxWidth: 400, 
-              mx: 'auto',
-              color: theme.palette.text.primary,
-              borderColor: theme.palette.text.primary
-            }}
-          >
-            Создать новый вопрос
-          </Button>
-          <Tooltip 
-            title={!packName || selectedQuestions.length === 0 ? "Заполните все обязательные поля" : ""}
-            placement="top"
-          >
-          <span>
-              <Button
-                variant="contained"
-                onClick={handleCreatePack}
-                disabled={!packName || selectedQuestions.length === 0 || isCreating}
-                sx={{
-                  flex: 1,
-                  maxWidth: 400,
-                  mx: 'auto',
-                  backgroundColor: !packName || selectedQuestions.length === 0 
-                    ? theme.palette.action.disabled 
-                    : theme.palette.button.red.main,
-                  color: !packName || selectedQuestions.length === 0 
-                    ? theme.palette.text.disabled 
-                    : theme.palette.button.red.contrastText,
-                  "&:hover": {
-                    backgroundColor: !packName || selectedQuestions.length === 0 
-                      ? theme.palette.action.disabled 
-                      : theme.palette.button.red.hover,
-                  },
+                  </TableHead>
+                  <TableBody sx={{ overflow: 'auto' }}>
+                    {filteredQuestions
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((question) => (
+                        <TableRow
+                          key={question.id}
+                          hover
+                          selected={selectedQuestions.includes(question.id)}
+                          onClick={() => handleToggleQuestion(question.id)}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={selectedQuestions.includes(question.id)}
+                              onChange={() => handleToggleQuestion(question.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </TableCell>
+                          <TableCell>{question.question_text || "Без текста"}</TableCell>
+                          <TableCell>{question.answer_text || "Без ответа"}</TableCell>
+                          <TableCell>
+                            {question.pub_date_q 
+                              ? new Date(question.pub_date_q).toLocaleDateString() 
+                              : "Нет даты"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={filteredQuestions.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                sx={{ 
+                  border: `1px solid ${theme.palette.divider}`,
+                  borderTop: 0,
+                  backgroundColor: theme.palette.black2,
+                  color: theme.palette.common.white
                 }}
-              >
-                {isCreating ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  `Создать пак (${selectedQuestions.length} вопросов)`
-                )}
-              </Button>
-            </span>
-          </Tooltip>
+              />
+            </>
+          ) : (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              {searchText 
+                ? "Вопросы по вашему запросу не найдены"
+                : "У вас пока нет созданных вопросов"}
+            </Alert>
+          )}
         </Box>
+      </Box>
+
+      {/* Кнопки внизу */}
+      <Box sx={{ 
+        padding: 2,
+        backgroundColor: theme.palette.background.paper,
+        borderTop: `1px solid ${theme.palette.divider}`
+      }}>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={() => navigate("/add-question")}
+            >
+              Создать новый вопрос
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Tooltip 
+              title={!packName ? "Укажите название пакета" : 
+                    selectedQuestions.length === 0 ? "Выберите хотя бы один вопрос" : ""}
+            >
+              <span style={{ width: '100%' }}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleCreatePack}
+                  disabled={!packName || selectedQuestions.length === 0 || isCreating}
+                >
+                  {isCreating ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    `Создать пак (${selectedQuestions.length})`
+                  )}
+                </Button>
+              </span>
+            </Tooltip>
+          </Grid>
+        </Grid>
       </Box>
     </Container>
   );

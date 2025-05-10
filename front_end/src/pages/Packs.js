@@ -18,7 +18,7 @@ const Packs = () => {
           id: item.id,
           name: item.name,
           questions: item.questions,
-          author_p: item.author_p || "Неизвестно",
+          author_p: item.author_p?.username || "Неизвестно",
           description: item.description || "",
           pub_date_p: (item.pub_date_p ? new Date(item.pub_date_p).toLocaleDateString("ru-RU") : "Неизвестно")
         }));
@@ -52,7 +52,7 @@ const Packs = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-between", flexDirection: 'column', mb: 2 }}>
+    <Box sx={{ height: '100%', display: "flex", justifyContent: "space-between", flexDirection: 'column', mb: 2 }}>
       <Stack 
         direction="row" 
         spacing={2} 
@@ -95,7 +95,6 @@ const Packs = () => {
         ]}
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
-        autoHeight
         disableSelectionOnClick
         onRowClick={handleRowClick}
       />

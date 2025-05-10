@@ -31,16 +31,11 @@ urlpatterns = [
     path('user/delete/<int:pk>/', views.UserDelete.as_view(), name="delete-user"),
     path('user/me/', views.CurrentUserView.as_view(), name='current-user'),
     
-    path('game/<int:pack_id>/start/', views.StartGameView.as_view(), name='start-game'),
-
-    path('game/packs/', views.PackViewList.as_view(), name='pack-list'), 
-    path('game/random/', views.RandomPackView.as_view(), name='random-pack'), 
+    path('game/<int:pack_id>/start/', views.GameStartView.as_view(), name='start-game'),
     path('game/<int:pack_id>/questions/', views.PackQuestionViewList.as_view(), name='pack-questions'),
     
-    path('game/questions/all/', views.QuestionViewList.as_view(), name='all-questions'),    
-
     path('game/<int:pack_id>/questions/<int:question_id>/', views.PackQuestionView.as_view(), name='question-detail'),
     path('game/<int:pack_id>/questions/<int:question_id>/next/', views.NextQuestionView.as_view(), name='next-question'),
-    path('game/<int:pack_id>/user/<int:user_id>/attempt/<int:attempt_id>/submit/', views.SubmitAnswerView.as_view(), name='submit-answer'),
-    path('game/<int:pack_id>/user/<int:user_id>/attempt/<int:attempt_id>/results/', views.GameResultsView.as_view(), name='game-results'),
+    path('game/<int:pack_id>/questions/<int:question_id>/submit/', views.SubmitAnswerView.as_view(), name='submit-answer'),
+    path('game/<int:pack_id>/results/', views.GameResultsView.as_view(), name='game-results'),
 ]

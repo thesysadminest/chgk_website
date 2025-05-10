@@ -12,7 +12,8 @@ import {
 import { checkAuth, getUserData } from '../utils/AuthUtils';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from "@mui/material/styles";
-import { selectQuestions, startSelectedQuestionsGame } from '../utils/GameUtils';
+//import { selectQuestions, startSelectedQuestionsGame } from '../utils/GameUtils';
+import { GameRedirect} from '../utils/GameUtils';
 import SelectQuestionsWindow from './SelectQuestionsWindow';
 
 const NewGame = ({ onClose }) => {
@@ -47,18 +48,6 @@ const NewGame = ({ onClose }) => {
 
     verifyAuthentication();
   }, []);
-
-  const handleRandomPack = async () => {
-    try {
-      setGameLoading(true);
-      const gameData = await selectQuestions('random');
-      navigate(`/game/${gameData.packId}/questions/${gameData.firstQuestionId}`);
-      onClose();
-    } catch (error) {
-      console.error('Error starting random game:', error);
-      setGameLoading(false);
-    }
-  };
 
   const handleStartSelectedQuestions = (selectedQuestions) => {
     // Логика для начала игры с выбранными вопросами
@@ -154,18 +143,20 @@ const NewGame = ({ onClose }) => {
               </Button>
               
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                Ещё нет аккаунта?{' '}
-                <Link 
-                  component="button" 
-                  onClick={() => navigate('/registration')}
-                  sx={{ 
-                    color: theme.palette.primary.main,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Зарегистрироваться
-                </Link>
-              </Typography>
+                  Ещё нет аккаунта?{' '}
+                  <Link
+                    component="button"
+                    variant="body2"
+                    onClick={() => navigate('/registration')}
+                    sx={{
+                      color: theme.palette.primary.main,
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Зарегистрироваться
+                  </Link>
+                </Typography>
             </Stack>
           </Paper>
 
@@ -259,7 +250,7 @@ const NewGame = ({ onClose }) => {
             <Button disableRipple
               fullWidth
               variant="lightRed"
-              onClick={handleRandomPack}
+              onClick={handleStartSelectedQuestions}
             >
               <Typography variant="h6">
                 СЛУЧАЙНЫЙ ПАК
@@ -278,32 +269,31 @@ const NewGame = ({ onClose }) => {
           </Box>
 
           <Box sx={{ 
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            flex: 1,
-            maxWidth: 280
-          }}>
-            <Button disableRipple
-              fullWidth
-              variant="lightRed"
-              onClick={handleSelectQuestions}
-            >
-              <Typography variant="h6">
-                ВЫБРАТЬ ВОПРОСЫ
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flex: 1,
+              maxWidth: 280
+            }}>
+              <Button 
+                disableRipple
+                fullWidth
+                variant="lightRed"
+                onClick={() => setSelectQuestionsOpen(true)} // Исправлено
+              >
+                <Typography variant="h6">ВЫБРАТЬ ВОПРОСЫ</Typography>
+              </Button>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mt: 1.5,
+                  color: theme.palette.text.gray,
+                  textAlign: 'center'
+                }}
+              >
+                Тренируйтесь на конкретные темы
               </Typography>
-            </Button>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                mt: 1.5,
-                color: theme.palette.text.gray,
-                textAlign: 'center'
-              }}
-            >
-              Тренируйтесь на конкретные темы
-            </Typography>
-          </Box>
+            </Box>
         </Stack>
 
           <Box sx={{ mt: 4, textAlign: 'center'}}>

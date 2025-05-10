@@ -82,45 +82,14 @@ class Pack(models.Model):
 ###        return f"User: {self.user.username} | Question: {self.question.id} | Correct: {self.is_correct}"
 
 class GameSession(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    pack_id = models.IntegerField()  # 0 для кастомных пакетов
-    attempt_id = models.IntegerField()  # Номер попытки
-    questions = models.ManyToManyField(Question)
-    current_question_index = models.IntegerField(default=0)
-    start_time = models.DateTimeField(auto_now_add=True)
-    end_time = models.DateTimeField(null=True, blank=True)
-    score = models.IntegerField(default=0)
-    is_completed = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ('user', 'pack_id', 'attempt_id')
-
-    def save(self, *args, **kwargs):
-        if not self.attempt_id:
-            last_attempt = GameSession.objects.filter(
-                user=self.user, 
-                pack_id=self.pack_id
-            ).order_by('-attempt_id').first()
-            self.attempt_id = (last_attempt.attempt_id + 1) if last_attempt else 1
-        super().save(*args, **kwargs)
-
-    def get_current_question(self):
-        questions = list(self.questions.order_by('id'))
-        if 0 <= self.current_question_index < len(questions):
-            return questions[self.current_question_index]
-        return None
     
-class Answer(models.Model):
-    session = models.ForeignKey(
-        GameSession, 
-        on_delete=models.CASCADE,
-        related_name='answers'
-    )
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    user_answer = models.TextField()
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="game_attempts")
+    pack = models.ForeignKey(Pack, on_delete=models.CASCADE, related_name="pack_attempts")
+    questions = models.ManyToManyField(Question, related_name="game_attempts")  
     is_correct = models.BooleanField(default=False)
+    correct_answers = models.IntegerField(default=0)
     timestamp = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('session', 'question')
-        ordering = ['timestamp']
+    
+    def __str__(self):
+        return f"User: {self.user.username} | Question: {self.question.id} | Correct: {self.is_correct}"
+    
