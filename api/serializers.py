@@ -32,7 +32,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     author_q = UserSerializer(read_only=True)
     class Meta:
         model = Question
-        fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q', 'pub_date_q')
+        fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q')
         #extra_kwargs = {"author_q": {"read_only": True}}
         depth = 1
         
@@ -44,9 +44,9 @@ class QuestionSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         questions = validated_data.pop('questions', [])
-        pack = Pack.objects.create(**validated_data)
-        pack.questions.set(questions)
-        return pack
+        question = Question.objects.create(**validated_data)
+        question.questions.set(questions)
+        return question
 
     def update(self, instance, validated_data):
         questions = validated_data.pop('questions', None)
@@ -135,12 +135,40 @@ class LoginSerializer(serializers.Serializer):
         
         return data
 
+'''
 class GameSessionSerializer(serializers.ModelSerializer):
+    pack = PackSerializer(read_only=True)  
+    current_question = serializers.SerializerMethodField()
     class Meta:
         model = GameSession
-        fields = ['id', 'user', 'pack', 'question', 'is_correct', 'timestamp', 'correct_answers']
+        fields = ['id', 'user', 'pack', 'question', 'timestamp', 'correct_answers']
         extra_kwargs = {
             'user': {'queryset': CustomUser.objects.all()},
             'pack': {'queryset': Pack.objects.all()},
             'question': {'queryset': Question.objects.all()},
         }
+'''
+
+class GameSessionSerializer(serializers.ModelSerializer):
+    questions_count = serializers.SerializerMethodField()
+    current_question = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GameSession
+        fields = ['id', 'user', 'pack', 'current_question_index', 
+                 'current_question', 'is_completed', 'correct_answers',
+                 'created_at', 'questions_count']
+
+    def get_questions_count(self, obj):
+        return obj.questions.count()
+
+    def get_current_question(self, obj):
+        question = obj.get_current_question()
+        if question:
+            return {
+                "id": question.id,
+                "question_text": question.question_text
+            }
+        return None
+
+        

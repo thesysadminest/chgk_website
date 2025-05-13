@@ -60,6 +60,7 @@ class QuestionCreate(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
+        print("Received data:", request.data)
         if response.status_code == 201 and not response.data.get('author_q'):
             question = Question.objects.get(id=response.data['id'])
             response.data['author_q'] = question.author_q.username if question.author_q else None
@@ -134,11 +135,32 @@ class AddQuestionToPack(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
   
     @action(detail=True, methods=['POST'])
-    def update(self, request):
-        q = get_object_or_404(klass=Question, id=request.data.get('question_id'))
+    def update(self, request, pk=None):
         pack = self.get_object()
-        pack.questions.add(q)
-        return Response({"message": "question added successfully"})
+        question_id = request.data.get('question_id')
+        
+        if not question_id:
+            return Response({"error": "question_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            question = Question.objects.get(id=question_id)
+            pack.questions.add(question)
+            return Response({"message": "Question added successfully"}, status=status.HTTP_200_OK)
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True, methods=['POST'])
+    def add_questions(self, request, pk=None):
+        pack = self.get_object()
+        question_ids = request.data.get('question_ids', [])
+    
+        if not question_ids:
+            return Response({"error": "question_ids array is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+        questions = Question.objects.filter(id__in=question_ids)
+        pack.questions.add(*questions)
+        return Response({"message": f"{len(questions)} questions added"}, status=status.HTTP_200_OK)
+
 
 ###     TEAM      ###
 
@@ -285,43 +307,160 @@ class GameStartView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, pack_id):
-        if (pack_id == 0):
-            # random logic
-            # pack = RANDOM
-            # questions = pack.questions.all().order_by('id')
-            return 0
-        else:
-            pack = get_object_or_404(Pack, id=pack_id)
+        try:
+            print(f"Starting game for pack {pack_id}, user {request.user.id}")  # Логирование
+            pack = Pack.objects.get(id=pack_id)
             questions = pack.questions.all().order_by('id')
-        if not questions.exists():
-            return Response(
-                {"error": "This pack has no questions"}, 
-                status=status.HTTP_400_BAD_REQUEST
+            
+            if not questions.exists():
+                print("Pack has no questions")  # Логирование
+                return Response({"error": "This pack has no questions"}, status=400)
+            
+            session = GameSession.objects.create(
+                user=request.user,
+                pack=pack,
+                correct_answers=0,
+                current_question_index=0
             )
-        
-        # Создаем или обновляем попытку игры
-        session = GameSession.objects.get_or_create(
-            user=request.user,
-            pack=pack,
-            defaults={'current_question': questions.first()}
-        )
-        
-        return Response({
-            "message": "Game started",
-            "pack_id": pack.id,
-            "first_question_id": questions.first().id,
-           
-        })
+            session.questions.set(questions)
+            
+            print(f"Session created: {session.id}")  # Логирование
+            return Response({
+                "first_question": {
+                    "id": questions.first().id,
+                    "question_text": questions.first().question_text
+                },
+                "session": {
+                    "id": session.id,
+                    "current_question_index": 0,
+                    "questions_count": questions.count()
+                }
+            })
+            
+        except Pack.DoesNotExist:
+            print("Pack not found")  # Логирование
+            return Response({"error": "Pack not found"}, status=404)
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")  # Логирование
+            return Response({"error": str(e)}, status=500)
+
+class SubmitAnswerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pack_id, question_id):
+        try:
+            pack = Pack.objects.get(id=pack_id)
+            question = Question.objects.get(id=question_id)
+
+            session = GameSession.objects.filter(
+                user=request.user,
+                pack=pack,
+                is_completed=False
+            ).latest('created_at')
+
+            current_question = session.get_current_question()
+            if not current_question or current_question.id != question.id:
+                return Response(
+                    {"error": "This is not the current question."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            user_answer = (request.data.get("answer") or "").strip().lower()
+            correct_answer = (question.answer_text or "").strip().lower()
+            is_correct = user_answer == correct_answer
+
+            if is_correct:
+                session.correct_answers += 1
+                session.save()
+
+            return Response({
+                "is_correct": is_correct,
+                "correct_answer": correct_answer,
+                "current_score": session.correct_answers,
+                "session": GameSessionSerializer(session).data
+            })
+
+        except (Pack.DoesNotExist, Question.DoesNotExist):
+            return Response(
+                {"error": "Pack or question not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except GameSession.DoesNotExist:
+            return Response(
+                {"error": "No active game session found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class NextQuestionView(APIView):
+    def get(self, request, pack_id, question_id):
+        try:
+            session = GameSession.objects.filter(
+                user=request.user,
+                pack_id=pack_id,
+                is_completed=False
+            ).latest('created_at')
+            
+            next_question = session.move_to_next_question()
+            
+            if next_question:
+                return Response({
+                    "question": {
+                        "id": next_question.id,
+                        "question_text": next_question.question_text
+                    },
+                    "session": {
+                        "id": session.id,
+                        "current_question_index": session.current_question_index,
+                        "questions_count": session.questions.count()
+                    }
+                })
+            else:
+                return Response({
+                    "message": "Game completed",
+                    "final_score": session.correct_answers,
+                    "total_questions": session.questions.count()
+                })
+                
+        except GameSession.DoesNotExist:
+            return Response(
+                {"error": "No active game session found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
     
 class PackQuestionView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def get(self, request, pack_id, question_id):
-        pack = get_object_or_404(Pack, id=pack_id)
-        question = get_object_or_404(pack.questions, id=question_id)
-        
-        serializer = QuestionSerializer(question)
-        return Response(serializer.data)
+        try:
+            pack = Pack.objects.get(id=pack_id)
+            question = Question.objects.get(id=question_id)
+
+            session = GameSession.objects.filter(
+                user=request.user,
+                pack=pack,
+                is_completed=False
+            ).latest('created_at')
+
+            current_question = session.get_current_question()
+            if current_question.id != question.id:
+                return Response(
+                    {"error": "Это не текущий вопрос."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            return Response({
+                "question": {
+                    "id": question.id,
+                    "question_text": question.question_text
+                },
+                "session": GameSessionSerializer(session).data
+            })
+        except (Pack.DoesNotExist, Question.DoesNotExist):
+            return Response({"error": "Пак или вопрос не найдены"}, status=404)
+        except GameSession.DoesNotExist:
+            return Response({"error": "Нет активной игровой сессии"}, status=404)
+
     
 class PackQuestionViewList(generics.ListAPIView):
     serializer_class = QuestionSerializer
@@ -331,31 +470,7 @@ class PackQuestionViewList(generics.ListAPIView):
         pack_id = self.kwargs['pack_id']
         pack = get_object_or_404(Pack, id=pack_id)
         return pack.questions.all()
-    
-"""GAME"""
 
-class GameStart(APIView):
-    # authentication_classes = [JWTAuthentication]  
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pack_id):
-        print("Headers:", request.headers)
-
-        if request.user.is_anonymous or not request.user:
-            return Response({"error": "Authentication required"}, status=401)
-            
-        pack = get_object_or_404(Pack, id=pack_id)
-        questions = pack.questions.all().order_by('id')
-        
-        if not questions.exists():
-            return Response({"error": "No questions available"}, status=status.HTTP_400_BAD_REQUEST)
-
-        attempt = GameSession.objects.create(user=request.user, pack=pack, is_correct=False)
-
-        first_question = questions.first()
-        
-        return Response({"message": "Game started", "first_question_id": first_question.id, "attempt_id": attempt.id})
-    
 class QuestionDetailView(APIView):
     def get(self, request, pack_id, question_id):
         pack = get_object_or_404(Pack, id=pack_id)
@@ -363,44 +478,6 @@ class QuestionDetailView(APIView):
         
         serializer = QuestionSerializer(question)
         return Response(serializer.data)
-    
-class SubmitAnswerView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]  
-    
-    def post(self, request, pack_id, question_id):
-        pack = get_object_or_404(Pack, id=pack_id)
-        question = question = get_object_or_404(pack.questions, id=question_id)
-        
-        user_answer = (request.data.get("answer") or "").strip().lower()
-        correct_answer = (question.answer_text or "").strip().lower()
-        is_correct = user_answer == correct_answer
-
-        attempt, created = GameSession.objects.get_or_create(user=request.user, pack=pack)
-        if is_correct:
-            attempt.correct_answers += 1
-        attempt.save()
-
-        return Response({"is_correct": is_correct})
-    
-
-class NextQuestionView(APIView):
-    permission_classes = [IsAuthenticated]
-    
-    def get(self, request, pack_id, question_id):
-        pack = get_object_or_404(Pack, id=pack_id)
-        questions = list(pack.questions.all().order_by('id'))
-        current_question = get_object_or_404(Question, id=question_id)
-
-        try:
-            current_index = questions.index(current_question)
-            next_question = questions[current_index + 1] if current_index + 1 < len(questions) else None
-        except ValueError:
-            return Response({"error": "Question not found in this pack"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if next_question:
-            return Response({"next_question_id": next_question.id})
-        return Response({"message": "Game over"})
  
 
 class GameResultsView(APIView):

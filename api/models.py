@@ -69,27 +69,38 @@ class Pack(models.Model):
     
     def get_description(self):
         return self.description 
-    
-###class GameAttempt(models.Model):
-###   user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="game_attempts")
-###    pack = models.ForeignKey(Pack, on_delete=models.CASCADE, related_name="pack_attempts")
-###    questions = models.ManyToManyField(Question, related_name="game_attempts")  
-###    is_correct = models.BooleanField(default=False)
-###    correct_answers = models.IntegerField(default=0)
-###    timestamp = models.DateTimeField(auto_now_add=True)
-    
-###    def __str__(self):
-###        return f"User: {self.user.username} | Question: {self.question.id} | Correct: {self.is_correct}"
-
+   
 class GameSession(models.Model):
-    
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="game_attempts")
-    pack = models.ForeignKey(Pack, on_delete=models.CASCADE, related_name="pack_attempts")
-    questions = models.ManyToManyField(Question, related_name="game_attempts")  
-    is_correct = models.BooleanField(default=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="game_sessions")
+    pack = models.ForeignKey(Pack, on_delete=models.CASCADE, related_name="game_sessions")
+    questions = models.ManyToManyField(Question, related_name="game_sessions")
+    current_question_index = models.IntegerField(default=0)
+    is_completed = models.BooleanField(default=False)
     correct_answers = models.IntegerField(default=0)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_current_question(self):
+        questions = list(self.questions.all())
+        if 0 <= self.current_question_index < len(questions):
+            return questions[self.current_question_index]
+        return None
+
+    def move_to_next_question(self):
+        if self.is_completed:
+            return None
+
+        questions = list(self.questions.all().order_by('id'))
+        next_index = self.current_question_index + 1
+
+        if next_index < len(questions):
+            self.current_question_index = next_index
+            self.save()
+            return questions[self.current_question_index]
+        else:
+            self.is_completed = True
+            self.save()
+            return None
+
     def __str__(self):
-        return f"User: {self.user.username} | Question: {self.question.id} | Correct: {self.is_correct}"
-    
+        return f"{self.user.username} - {self.pack.name}"

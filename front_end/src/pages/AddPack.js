@@ -115,23 +115,41 @@ const AddPack = () => {
   };
 
   const handleCreatePack = async () => {
-      setIsCreating(true);
-      try {
-        if (!authState.isAuthenticated || !packName.trim()) {
-          throw new Error("Не заполнены обязательные поля");
-        }
+    setIsCreating(true);
+    try {
+      if (!authState.isAuthenticated || !packName.trim()) {
+        throw new Error("Не заполнены обязательные поля");
+      }
 
-        const token = getAccessToken();
-        if (!token) throw new Error("Токен доступа не найден");
+      const token = getAccessToken();
+      if (!token) throw new Error("Токен доступа не найден");
 
-        // 1. Создаем пак с основными данными
-        const packResponse = await axios.post(
-          "http://127.0.0.1:8000/api/pack/create/",
-          {
-            name: packName.trim(),
-            description: packDescription.trim(),
-            questions: selectedQuestions // Передаем сразу массив ID вопросов
+      // 1. Создаем пак с основными данными
+      const packResponse = await axios.post(
+        "http://127.0.0.1:8000/api/pack/create/",
+        {
+          name: packName.trim(),
+          description: packDescription.trim()
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
+        }
+      );
+
+      if (packResponse.status !== 201) {
+        throw new Error("Ошибка при создании пакета");
+      }
+
+      const packId = packResponse.data.id;
+
+      // 2. Добавляем вопросы к паку
+      for (const questionId of selectedQuestions) {
+        await axios.post(
+          `http://127.0.0.1:8000/api/pack/question/${packId}/`,
+          { question_id: questionId },
           {
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -139,22 +157,19 @@ const AddPack = () => {
             },
           }
         );
-
-        if (packResponse.status !== 201) {
-          throw new Error("Ошибка при создании пакета");
-        }
-
-        console.log("Пак успешно создан:", packResponse.data);
-        navigate("/packs");
-      } catch (error) {
-        console.error("Ошибка:", error);
-        setAuthState(prev => ({
-          ...prev,
-          error: error.response?.data?.message || error.message || "Ошибка при создании пакета"
-        }));
-      } finally {
-        setIsCreating(false);
       }
+
+      console.log("Пак успешно создан с вопросами");
+      navigate("/packs");
+    } catch (error) {
+      console.error("Ошибка:", error);
+      setAuthState(prev => ({
+        ...prev,
+        error: error.response?.data?.message || error.message || "Ошибка при создании пакета"
+      }));
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleChangePage = (event, newPage) => setPage(newPage);

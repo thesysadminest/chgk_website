@@ -96,8 +96,8 @@ const GameQuestionDetail = () => {
   };
 
   const handleNext = () => {
-    if (currentIndex < questionsList.length - 1) {
-      navigateToQuestion(questionsList[currentIndex + 1].id);
+    if (currentIndex + 1 < questionsList.length) {
+      navigateToQuestion(questionsList[currentIndex].id);
     }
   };
 

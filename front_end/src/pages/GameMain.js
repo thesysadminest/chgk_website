@@ -1,135 +1,227 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+Ôªøimport React, { useState, useEffect } from 'react';
 import axiosInstance from "../components/axiosInstance";
-import { Box, Typography, TextField, Button, Link as MuiLink } from '@mui/material';
-import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Box, Typography, TextField, Button, CircularProgress, Alert } from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const GameMain = () => {
-  const { id, firstQuestionId } = useParams();
-  const location = useLocation();
+  const { pack_id, firstQuestionId } = useParams();
   const navigate = useNavigate();
-  const [question, setQuestion] = useState(null);
-  const [answer, setAnswer] = useState('');
-  const [feedback, setFeedback] = useState('');
-  const [answerColor, setAnswerColor] = useState('');
-  const [timeLeft, setTimeLeft] = useState(60);
 
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : { username: null };
+  const [gameState, setGameState] = useState({
+    loading: true,
+    error: null,
+    question: null,
+    session: null,
+    answer: '',
+    feedback: '',
+    answerColor: '',
+    timeLeft: 60
   });
 
+  // –ü—Ä–æ–≤–µ—Ä–∫–∞ –∞–≤—Ç–æ—Ä–∏–∑–∞—Ü–∏–∏
   useEffect(() => {
-    axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/`,
-      {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem('access_token')}`
-        }
-      })
-      .then(response => {
-        setQuestion(response.data);
-        setTimeLeft(60);
-      })
-      .catch(error => {
-        console.error('Error loading:', error);
-      });
-  }, [id, firstQuestionId]);
-
-  useEffect(() => {
-    if (timeLeft === 0) {
-      handleNextQuestion();
-    }
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  const handleAnswerChange = (event) => {
-    setAnswer(event.target.value);
-  };
-
-  const handleSubmit = () => {
-    if (user.username && answer.trim()) {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error("“ÓÍÂÌ ÓÚÒÛÚÒÚ‚ÛÂÚ. œÂÂÌ‡Ô‡‚ÎˇÂÏ Ì‡ ‡‚ÚÓËÁ‡ˆË˛.");
-        navigate("/login");
-      }
-
-      axiosInstance.post(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/submit/`, { answer },
-        {
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem('access_token')}`
-          }
-        })
-        .then(response => {
-          const isCorrect = response.data.is_correct;
-          setFeedback(isCorrect ? 'ŒÚ‚ÂÚ ‚ÂÌ˚È' : 'ŒÚ‚ÂÚ ÌÂ‚ÂÌ˚È');
-          setAnswerColor(isCorrect ? '#7fb890' : '#CD5C5C');
-        })
-        .catch(error => {
-          console.error('Œ¯Ë·Í‡ ÔË ÓÚÔ‡‚ÍÂ ÓÚ‚ÂÚ‡:', error);
-        });
-    }
-  };
-
-  const handleNextQuestion = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      console.error("“ÓÍÂÌ ÓÚÒÛÚÒÚ‚ÛÂÚ. œÂÂÌ‡Ô‡‚ÎˇÂÏ Ì‡ ‡‚ÚÓËÁ‡ˆË˛.");
-      navigate("/login");
+      navigate('/login');
     }
+  }, [navigate]);
 
-    axiosInstance.get(`http://127.0.0.1:8000/api/game/${id}/${firstQuestionId}/next/`)
-      .then(response => {
-        if (response.data.next_question_id) {
-          navigate(`/game/${id}/${response.data.next_question_id}`);
-        } else {
-          navigate(`/game/${id}/results`);
+  // –ó–∞–≥—Ä—É–∑–∫–∞ —Ç–µ–∫—É—â–µ–≥–æ –≤–æ–ø—Ä–æ—Å–∞ –ø–æ ID
+  useEffect(() => {
+    const loadCurrentQuestion = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/game/${pack_id}/questions/${firstQuestionId}/`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`
+            }
+          }
+        );
+
+        setGameState(prev => ({
+          ...prev,
+          loading: false,
+          question: response.data.question,
+          session: response.data.session,
+          timeLeft: 60
+        }));
+      } catch (error) {
+        console.error("–û—à–∏–±–∫–∞ –∑–∞–≥—Ä—É–∑–∫–∏ –≤–æ–ø—Ä–æ—Å–∞:", error);
+        setGameState(prev => ({
+          ...prev,
+          loading: false,
+          error: error.response?.data?.error || "–û—à–∏–±–∫–∞ –∑–∞–≥—Ä—É–∑–∫–∏ –≤–æ–ø—Ä–æ—Å–∞"
+        }));
+      }
+    };
+
+    loadCurrentQuestion();
+  }, [pack_id, firstQuestionId]);
+
+  // –¢–∞–π–º–µ—Ä
+  useEffect(() => {
+    if (!gameState.question || gameState.loading) return;
+
+    const timer = setInterval(() => {
+      setGameState(prev => {
+        const newTimeLeft = prev.timeLeft - 1;
+
+        if (newTimeLeft <= 0) {
+          handleNextQuestion();
+          return { ...prev, timeLeft: 0 };
         }
-      })
-      .catch(error => {
-        console.error('Œ¯Ë·Í‡ ÔË ÔÂÂıÓ‰Â Í ÒÎÂ‰Û˛˘ÂÏÛ ‚ÓÔÓÒÛ:', error);
+
+        return { ...prev, timeLeft: newTimeLeft };
       });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [gameState.question, gameState.loading]);
+
+  const handleSubmit = async () => {
+    if (!gameState.answer.trim()) return;
+
+    try {
+      const response = await axiosInstance.post(
+        `/game/${pack_id}/questions/${gameState.question.id}/submit/`,
+        { answer: gameState.answer.trim() },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      );
+
+      setGameState(prev => ({
+        ...prev,
+        feedback: response.data.is_correct ? '‚úì –í–µ—Ä–Ω–æ' : '‚úï –ù–µ–≤–µ—Ä–Ω–æ',
+        answerColor: response.data.is_correct ? '#7fb890' : '#CD5C5C',
+        session: response.data.session
+      }));
+    } catch (error) {
+      console.error("–û—à–∏–±–∫–∞ –æ—Ç–ø—Ä–∞–≤–∫–∏ –æ—Ç–≤–µ—Ç–∞:", error);
+      setGameState(prev => ({
+        ...prev,
+        error: error.response?.data?.error || "–û—à–∏–±–∫–∞ –ø—Ä–∏ –æ—Ç–ø—Ä–∞–≤–∫–µ –æ—Ç–≤–µ—Ç–∞"
+      }));
+    }
   };
 
+  const handleNextQuestion = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/game/${pack_id}/questions/${gameState.question.id}/next/`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      );
+
+      if (response.data.question) {
+        navigate(`/game/${pack_id}/questions/${response.data.question.id}`);
+      } else {
+        // –ó–∞–≤–µ—Ä—à–µ–Ω–∞ –∏–≥—Ä–∞
+        navigate(`/game/${pack_id}/results`, {
+          state: {
+            score: response.data.final_score,
+            total: response.data.total_questions
+          }
+        });
+      }
+    } catch (error) {
+      console.error("–û—à–∏–±–∫–∞ –ø–µ—Ä–µ—Ö–æ–¥–∞ –∫ —Å–ª–µ–¥—É—é—â–µ–º—É –≤–æ–ø—Ä–æ—Å—É:", error);
+      setGameState(prev => ({
+        ...prev,
+        error: error.response?.data?.error || "–û—à–∏–±–∫–∞ –ø–µ—Ä–µ—Ö–æ–¥–∞ –∫ —Å–ª–µ–¥—É—é—â–µ–º—É –≤–æ–ø—Ä–æ—Å—É"
+      }));
+    }
+  };
+
+  if (gameState.loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (gameState.error) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {gameState.error}
+        </Alert>
+        <Button
+          variant="contained"
+          onClick={() => window.location.reload()}
+        >
+          –ü–æ–ø—Ä–æ–±–æ–≤–∞—Ç—å —Å–Ω–æ–≤–∞
+        </Button>
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={{ p: 4 }}>
-      {question ? (
-        <>
-          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-            {question.question_text}
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mb: 2, color: 'gray' }}>
-            Time left: {timeLeft} 
-          </Typography>
-          <TextField
-            InputLabelProps={{ shrink: true }}
-            label="Your answer"
-            multiline
-            rows={3}
-            value={answer}
-            onChange={handleAnswerChange}
-            variant="filled"
-            fullWidth
-            sx={{ mt: 2, mb: 2, fontSize: '4h' }}
-            style={{ backgroundColor: answerColor }}
-          />
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button variant="main_button" color="primary" onClick={handleSubmit}>
-              Check
-            </Button>
-            <Button variant="main_button" color="secondary" sx={{ ml: 2 }} onClick={handleNextQuestion}>
-              Next
-            </Button>
-          </Box>
-          <Typography variant="subtitle1" sx={{ mt: 2, color: answerColor }}>
-            {feedback}
-          </Typography>
-        </>
-      ) : (
-        <Typography variant="h6">Loading question...</Typography>
+    <Box sx={{ p: 4, maxWidth: 800, margin: '0 auto' }}>
+      <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+        –í–æ–ø—Ä–æ—Å {gameState.session?.current_question_index + 1} –∏–∑ {gameState.session?.questions_count}
+      </Typography>
+
+      <Typography variant="h6" sx={{ mb: 3 }}>
+        {gameState.question?.question_text}
+      </Typography>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <Typography color="text.secondary">
+          –û—Å—Ç–∞–ª–æ—Å—å –≤—Ä–µ–º–µ–Ω–∏: {gameState.timeLeft} —Å–µ–∫.
+        </Typography>
+      </Box>
+
+      <TextField
+        fullWidth
+        variant="outlined"
+        label="–í–∞—à –æ—Ç–≤–µ—Ç"
+        multiline
+        rows={4}
+        value={gameState.answer}
+        onChange={(e) => setGameState(prev => ({ ...prev, answer: e.target.value }))}
+        sx={{ mb: 3 }}
+        style={{ backgroundColor: gameState.answerColor }}
+      />
+
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <Button
+          variant="contained"
+          size="large"
+          onClick={handleSubmit}
+          disabled={!gameState.answer.trim()}
+          sx={{ flex: 1 }}
+        >
+          –ü—Ä–æ–≤–µ—Ä–∏—Ç—å
+        </Button>
+        <Button
+          variant="outlined"
+          size="large"
+          onClick={handleNextQuestion}
+          sx={{ flex: 1 }}
+        >
+          –°–ª–µ–¥—É—é—â–∏–π –≤–æ–ø—Ä–æ—Å
+        </Button>
+      </Box>
+
+      {gameState.feedback && (
+        <Typography sx={{
+          mt: 3,
+          p: 2,
+          borderRadius: 1,
+          backgroundColor: gameState.answerColor,
+          color: '#fff',
+          textAlign: 'center'
+        }}>
+          {gameState.feedback}
+        </Typography>
       )}
     </Box>
   );
