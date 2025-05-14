@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics, viewsets, status
 
+import random
+
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
@@ -308,10 +310,17 @@ class GameStartView(APIView):
     
     def get(self, request, pack_id):
         try:
+            if (pack_id == 0):
+                while (True):
+                  pack_id = random.randint(1, Pack.objects.count() + 1)
+                  pack = Pack.objects.get(id=pack_id)
+                  questions = pack.questions.all().order_by('id')
+                  if questions.count() != 0:
+                      break
             print(f"Starting game for pack {pack_id}, user {request.user.id}")  # Логирование
             pack = Pack.objects.get(id=pack_id)
             questions = pack.questions.all().order_by('id')
-            
+            print(pack_id)
             if not questions.exists():
                 print("Pack has no questions")  # Логирование
                 return Response({"error": "This pack has no questions"}, status=400)
@@ -326,6 +335,7 @@ class GameStartView(APIView):
             
             print(f"Session created: {session.id}")  # Логирование
             return Response({
+                "real_pack_id" : pack_id, 
                 "first_question": {
                     "id": questions.first().id,
                     "question_text": questions.first().question_text

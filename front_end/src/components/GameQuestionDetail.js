@@ -26,15 +26,15 @@ const GameQuestionDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Получаем текущий вопрос
+        // РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёР№ РІРѕРїСЂРѕСЃ
         const questionRes = await axiosInstance.get(`/game/packs/${packId}/questions/${questionId}/`);
         setQuestion(questionRes.data);
         
-        // Получаем список всех вопросов для навигации
+        // РџРѕР»СѓС‡Р°РµРј СЃРїРёСЃРѕРє РІСЃРµС… РІРѕРїСЂРѕСЃРѕРІ РґР»СЏ РЅР°РІРёРіР°С†РёРё
         const packRes = await axiosInstance.get(`/game/packs/${packId}/questions/`);
         setQuestionsList(packRes.data.questions);
         
-        // Находим текущий индекс
+        // РќР°С…РѕРґРёРј С‚РµРєСѓС‰РёР№ РёРЅРґРµРєСЃ
         const index = packRes.data.questions.findIndex(q => q.id === parseInt(questionId));
         setCurrentIndex(index >= 0 ? index : 0);
         
@@ -71,7 +71,7 @@ const GameQuestionDetail = () => {
   };
 
   const handleTimeUp = () => {
-    setFeedback('Время вышло!');
+    setFeedback('Р’СЂРµРјСЏ РІС‹С€Р»Рѕ!');
   };
 
   const handleSubmit = async () => {
@@ -82,7 +82,7 @@ const GameQuestionDetail = () => {
         { answer: userAnswer }
       );
       
-      setFeedback(response.data.is_correct ? 'Правильно!' : 'Неправильно!');
+      setFeedback(response.data.is_correct ? 'РџСЂР°РІРёР»СЊРЅРѕ!' : 'РќРµРїСЂР°РІРёР»СЊРЅРѕ!');
     } catch (error) {
       console.error('Error submitting answer:', error);
     }
@@ -108,17 +108,17 @@ const GameQuestionDetail = () => {
   };
 
   if (!question) {
-    return <Box>Загрузка вопроса...</Box>;
+    return <Box>Р—Р°РіСЂСѓР·РєР° РІРѕРїСЂРѕСЃР°...</Box>;
   }
 
   return (
     <Box sx={{ p: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h5">
-          Вопрос {currentIndex + 1} из {questionsList.length}
+          Р’РѕРїСЂРѕСЃ {currentIndex + 1} РёР· {questionsList.length}
         </Typography>
         <Typography variant="h6" color={timer < 10 ? 'error.main' : 'text.primary'}>
-          Время: {timer} сек
+          Р’СЂРµРјСЏ: {timer} СЃРµРє
         </Typography>
       </Box>
 
@@ -129,7 +129,7 @@ const GameQuestionDetail = () => {
       <TextField
         fullWidth
         variant="outlined"
-        label="Ваш ответ"
+        label="Р’Р°С€ РѕС‚РІРµС‚"
         value={userAnswer}
         onChange={(e) => setUserAnswer(e.target.value)}
         sx={{ mb: 3 }}
@@ -143,12 +143,12 @@ const GameQuestionDetail = () => {
           disabled={!userAnswer.trim()}
           sx={{ mr: 2 }}
         >
-          Ответить
+          РћС‚РІРµС‚РёС‚СЊ
         </Button>
       ) : (
         <Typography 
           variant="h6" 
-          color={feedback === 'Правильно!' ? 'success.main' : 'error.main'}
+          color={feedback === 'РџСЂР°РІРёР»СЊРЅРѕ!' ? 'success.main' : 'error.main'}
           sx={{ mb: 2 }}
         >
           {feedback}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
+import {
+  Box,
+  Typography,
+  Button,
   Paper,
   Stack,
   Link,
@@ -12,8 +12,6 @@ import {
 import { checkAuth, getUserData } from '../utils/AuthUtils';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from "@mui/material/styles";
-//import { selectQuestions, startSelectedQuestionsGame } from '../utils/GameUtils';
-import { GameRedirect} from '../utils/GameUtils';
 import SelectQuestionsWindow from './SelectQuestionsWindow';
 
 const NewGame = ({ onClose }) => {
@@ -49,16 +47,19 @@ const NewGame = ({ onClose }) => {
     verifyAuthentication();
   }, []);
 
-  const handleStartSelectedQuestions = (selectedQuestions) => {
-    // Логика для начала игры с выбранными вопросами
-    console.log('Starting game with questions:', selectedQuestions);
-    // Здесь можно добавить навигацию или другую логику
+  const handleStartRandomPack = () => {
+    navigate('/game/0');
     onClose();
   };
 
   const handleLoginRedirect = () => {
     onClose();
     navigate('/login');
+  };
+
+  const handleSelectQuestions = () => {
+    //onClose(); // Закрываем текущее окно
+    setSelectQuestionsOpen(true); // Открываем окно выбора вопросов
   };
 
   if (authState.isLoading || gameLoading) {
@@ -95,9 +96,9 @@ const NewGame = ({ onClose }) => {
             justifyContent: 'center'
           }}
         >
-          <Typography 
-            variant="h4" 
-            sx={{ 
+          <Typography
+            variant="h4"
+            sx={{
               mb: 3,
               fontWeight: 'bold',
               color: theme.palette.text.gray,
@@ -116,16 +117,16 @@ const NewGame = ({ onClose }) => {
             }}
           >
             <Stack spacing={2}>
-              <Typography 
-                variant="body1" 
-                sx={{ 
+              <Typography
+                variant="body1"
+                sx={{
                   color: theme.palette.text.gray,
                   fontWeight: 'bold',
                 }}
               >
                 Для доступа к игре необходимо авторизоваться
               </Typography>
-              
+
               <Button
                 fullWidth
                 variant="contained"
@@ -141,26 +142,26 @@ const NewGame = ({ onClose }) => {
               >
                 Войти в систему
               </Button>
-              
+
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                  Ещё нет аккаунта?{' '}
-                  <Link
-                    component="button"
-                    variant="body2"
-                    onClick={() => navigate('/registration')}
-                    sx={{
-                      color: theme.palette.primary.main,
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Зарегистрироваться
-                  </Link>
-                </Typography>
+                Ещё нет аккаунта?{' '}
+                <Link
+                  component="button"
+                  variant="body2"
+                  onClick={() => navigate('/registration')}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Зарегистрироваться
+                </Link>
+              </Typography>
             </Stack>
           </Paper>
 
-          <Button 
+          <Button
             variant="outlined"
             onClick={onClose}
             sx={{
@@ -180,144 +181,149 @@ const NewGame = ({ onClose }) => {
 
   return (
     <>
-      <Container>
-        <Box
-          sx={{
-            backgroundColor: theme.palette.background.window,
-            p: 5,
-            borderRadius: 8,
-            width: '750px',
-            mt: '70px',
-            mx: 'auto'
-          }}
-        >
-          <Typography 
-            variant="h4" 
-            align="center"
-            sx={{ 
-              mt: 1,
-              mb: 3,
-              fontWeight: 'bold',
-              color: theme.palette.text.gray,
-            }}
-          >
-            ВЫБЕРИТЕ РЕЖИМ ИГРЫ
-          </Typography>
-
-          <Paper
+      {!selectQuestionsOpen && (
+        <Container>
+          <Box
             sx={{
-              backgroundColor: theme.palette.background.white,
-              p: 3,
-              mb: 5,
-              borderRadius: 2,
+              backgroundColor: theme.palette.background.window,
+              p: 5,
+              borderRadius: 8,
+              width: '750px',
+              mt: '70px',
+              mx: 'auto'
             }}
           >
-            <Stack spacing={2}>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: theme.palette.text.gray,
-                  fontWeight: 'bold',
-                }}
-              >
-                Добро пожаловать, {authState.user?.username || 'игрок'}!
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: theme.palette.text.gray,
-                  fontWeight: 'bold',
-                }}
-              >
-                ЧГК рейтинг предоставляет несколько режимов игры, предлагая возможность попробовать себя в ЧГК как новичкам, так и старожилам и ветеранам телевизионной игры
-              </Typography>
-            </Stack>
-          </Paper>
-
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          spacing={5}
-          justifyContent="center"
-          sx={{ width: '100%' }}
-        >
-          <Box sx={{ 
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            flex: 1,
-            maxWidth: 280
-          }}>
-            <Button disableRipple
-              fullWidth
-              variant="lightRed"
-              onClick={handleStartSelectedQuestions}
-            >
-              <Typography variant="h6">
-                СЛУЧАЙНЫЙ ПАК
-              </Typography>
-            </Button>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                mt: 1.5,
-                color: theme.palette.text.gray,
-                textAlign: 'center'
-              }}
-            >
-              Случайный пак - прямо как в игре
-            </Typography>
-          </Box>
-
-          <Box sx={{ 
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              flex: 1,
-              maxWidth: 280
-            }}>
-              <Button 
-                disableRipple
-                fullWidth
-                variant="lightRed"
-                onClick={() => setSelectQuestionsOpen(true)} // Исправлено
-              >
-                <Typography variant="h6">ВЫБРАТЬ ВОПРОСЫ</Typography>
-              </Button>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  mt: 1.5,
-                  color: theme.palette.text.gray,
-                  textAlign: 'center'
-                }}
-              >
-                Тренируйтесь на конкретные темы
-              </Typography>
-            </Box>
-        </Stack>
-
-          <Box sx={{ mt: 4, textAlign: 'center'}}>
-            <Button 
-              variant="outlined"
-              onClick={onClose}
+            <Typography
+              variant="h4"
+              align="center"
               sx={{
-                color: theme.palette.text.primary,
-                borderColor: theme.palette.text.primary,
-                '&:hover': {
-                  borderColor: theme.palette.primary.main,
-                }
+                mt: 1,
+                mb: 3,
+                fontWeight: 'bold',
+                color: theme.palette.text.gray,
               }}
             >
-              Закрыть
-            </Button>
+              ВЫБЕРИТЕ РЕЖИМ ИГРЫ
+            </Typography>
+
+            <Paper
+              sx={{
+                backgroundColor: theme.palette.background.white,
+                p: 3,
+                mb: 5,
+                borderRadius: 2,
+              }}
+            >
+              <Stack spacing={2}>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: theme.palette.text.gray,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Добро пожаловать, {authState.user?.username || 'игрок'}!
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: theme.palette.text.gray,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  ЧГК рейтинг предоставляет несколько режимов игры, предлагая возможность попробовать себя в ЧГК как новичкам, так и старожилам и ветеранам телевизионной игры
+                </Typography>
+              </Stack>
+            </Paper>
+
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={5}
+              justifyContent="center"
+              sx={{ width: '100%' }}
+            >
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                flex: 1,
+                maxWidth: 280
+              }}>
+                <Button disableRipple
+                  fullWidth
+                  variant="lightRed"
+                  onClick={handleStartRandomPack}
+                >
+                  <Typography variant="h6">
+                    СЛУЧАЙНЫЙ ПАК
+                  </Typography>
+                </Button>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 1.5,
+                    color: theme.palette.text.gray,
+                    textAlign: 'center'
+                  }}
+                >
+                  Случайный пак - прямо как в игре
+                </Typography>
+              </Box>
+
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                flex: 1,
+                maxWidth: 280
+              }}>
+                <Button
+                  disableRipple
+                  fullWidth
+                  variant="lightRed"
+                  onClick={handleSelectQuestions}
+                >
+                  <Typography variant="h6">ВЫБРАТЬ ВОПРОСЫ</Typography>
+                </Button>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 1.5,
+                    color: theme.palette.text.gray,
+                    textAlign: 'center'
+                  }}
+                >
+                  Тренируйтесь на конкретные темы
+                </Typography>
+              </Box>
+            </Stack>
+
+            <Box sx={{ mt: 4, textAlign: 'center' }}>
+              <Button
+                variant="outlined"
+                onClick={onClose}
+                sx={{
+                  color: theme.palette.text.primary,
+                  borderColor: theme.palette.text.primary,
+                  '&:hover': {
+                    borderColor: theme.palette.primary.main,
+                  }
+                }}
+              >
+                Закрыть
+              </Button>
+            </Box>
           </Box>
-        </Box>
-      </Container>
+        </Container>
+      )}
 
       <SelectQuestionsWindow
         open={selectQuestionsOpen}
-        onClose={() => setSelectQuestionsOpen(false)}
-        onStartGame={handleStartSelectedQuestions}
+        onClose={() => {
+          setSelectQuestionsOpen(false);
+          onClose(); // Дополнительно закрываем родительское окно при закрытии SelectQuestionsWindow
+        }}
+        onStartGame={handleStartRandomPack}
       />
     </>
   );

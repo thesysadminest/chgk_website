@@ -36,7 +36,7 @@ const GameResults = () => {
     totalQuestions: 0,
     score: 0,
     percentage: 0,
-    timeSpent: '0 мин'
+    timeSpent: '0 РјРёРЅ'
   });
 
   useEffect(() => {
@@ -52,7 +52,7 @@ const GameResults = () => {
           data: response.data
         });
         
-        // Вычисляем статистику
+        // Р’С‹С‡РёСЃР»СЏРµРј СЃС‚Р°С‚РёСЃС‚РёРєСѓ
         const correct = response.data.correct_answers;
         const total = response.data.total_questions;
         const percentage = Math.round((correct / total) * 100);
@@ -60,7 +60,7 @@ const GameResults = () => {
         setStats({
           correctAnswers: correct,
           totalQuestions: total,
-          score: response.data.score || correct, // Используем score если есть, иначе количество правильных
+          score: response.data.score || correct, // РСЃРїРѕР»СЊР·СѓРµРј score РµСЃР»Рё РµСЃС‚СЊ, РёРЅР°С‡Рµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїСЂР°РІРёР»СЊРЅС‹С…
           percentage,
           timeSpent: calculateTimeSpent(response.data.start_time, response.data.end_time)
         });
@@ -68,7 +68,7 @@ const GameResults = () => {
       } catch (error) {
         setResults({
           loading: false,
-          error: error.response?.data?.error || 'Не удалось загрузить результаты',
+          error: error.response?.data?.error || 'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚С‹',
           data: null
         });
       }
@@ -78,16 +78,16 @@ const GameResults = () => {
   }, [packId, userId, attemptId]);
 
   const calculateTimeSpent = (start, end) => {
-    if (!start || !end) return 'Неизвестно';
+    if (!start || !end) return 'РќРµРёР·РІРµСЃС‚РЅРѕ';
     
     const startTime = new Date(start);
     const endTime = new Date(end);
-    const diff = (endTime - startTime) / 1000; // Разница в секундах
+    const diff = (endTime - startTime) / 1000; // Р Р°Р·РЅРёС†Р° РІ СЃРµРєСѓРЅРґР°С…
     
     const minutes = Math.floor(diff / 60);
     const seconds = Math.floor(diff % 60);
     
-    return `${minutes} мин ${seconds} сек`;
+    return `${minutes} РјРёРЅ ${seconds} СЃРµРє`;
   };
 
   const handleReplay = () => {
@@ -116,7 +116,7 @@ const GameResults = () => {
           variant="contained" 
           onClick={handleBackToPacks}
         >
-          Вернуться к списку пакетов
+          Р’РµСЂРЅСѓС‚СЊСЃСЏ Рє СЃРїРёСЃРєСѓ РїР°РєРµС‚РѕРІ
         </Button>
       </Container>
     );
@@ -126,14 +126,14 @@ const GameResults = () => {
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper elevation={3} sx={{ p: 4, mb: 4, backgroundColor: theme.palette.background.paper }}>
         <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
-          Результаты игры
+          Р РµР·СѓР»СЊС‚Р°С‚С‹ РёРіСЂС‹
         </Typography>
         
         <Typography variant="h6" align="center" sx={{ mb: 4, color: theme.palette.text.secondary }}>
-          Пак: {results.data.pack_name || `ID ${packId}`} | Попытка #{attemptId}
+          РџР°Рє: {results.data.pack_name || `ID ${packId}`} | РџРѕРїС‹С‚РєР° #{attemptId}
         </Typography>
         
-        {/* Основная статистика */}
+        {/* РћСЃРЅРѕРІРЅР°СЏ СЃС‚Р°С‚РёСЃС‚РёРєР° */}
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-around', 
@@ -142,13 +142,13 @@ const GameResults = () => {
           mb: 4
         }}>
           <StatBox 
-            title="Правильные ответы" 
+            title="РџСЂР°РІРёР»СЊРЅС‹Рµ РѕС‚РІРµС‚С‹" 
             value={`${stats.correctAnswers}/${stats.totalQuestions}`}
             color={theme.palette.success.main}
           />
           
           <StatBox 
-            title="Процент правильных" 
+            title="РџСЂРѕС†РµРЅС‚ РїСЂР°РІРёР»СЊРЅС‹С…" 
             value={`${stats.percentage}%`}
             color={stats.percentage > 70 ? theme.palette.success.main : 
                   stats.percentage > 40 ? theme.palette.warning.main : 
@@ -156,31 +156,31 @@ const GameResults = () => {
           />
           
           <StatBox 
-            title="Набрано очков" 
+            title="РќР°Р±СЂР°РЅРѕ РѕС‡РєРѕРІ" 
             value={stats.score}
             color={theme.palette.primary.main}
           />
           
           <StatBox 
-            title="Затрачено времени" 
+            title="Р—Р°С‚СЂР°С‡РµРЅРѕ РІСЂРµРјРµРЅРё" 
             value={stats.timeSpent}
             color={theme.palette.info.main}
           />
         </Box>
         
-        {/* Детализация по вопросам */}
+        {/* Р”РµС‚Р°Р»РёР·Р°С†РёСЏ РїРѕ РІРѕРїСЂРѕСЃР°Рј */}
         <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-          Детализация ответов:
+          Р”РµС‚Р°Р»РёР·Р°С†РёСЏ РѕС‚РІРµС‚РѕРІ:
         </Typography>
         
         <TableContainer component={Paper} sx={{ mb: 4 }}>
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: theme.palette.primary.light }}>
-                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Вопрос</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'white' }}>Статус</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'white' }}>Ваш ответ</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'white' }}>Правильный ответ</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Р’РѕРїСЂРѕСЃ</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'white' }}>РЎС‚Р°С‚СѓСЃ</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'white' }}>Р’Р°С€ РѕС‚РІРµС‚</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'white' }}>РџСЂР°РІРёР»СЊРЅС‹Р№ РѕС‚РІРµС‚</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -188,21 +188,21 @@ const GameResults = () => {
                 <TableRow key={index}>
                   <TableCell>
                     <Typography variant="body2" noWrap sx={{ maxWidth: 300 }}>
-                      {item.question_text || `Вопрос ${index + 1}`}
+                      {item.question_text || `Р’РѕРїСЂРѕСЃ ${index + 1}`}
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
                     {item.is_correct ? (
                       <Chip 
                         icon={<Check />} 
-                        label="Правильно" 
+                        label="РџСЂР°РІРёР»СЊРЅРѕ" 
                         color="success" 
                         size="small" 
                       />
                     ) : (
                       <Chip 
                         icon={<Close />} 
-                        label="Неправильно" 
+                        label="РќРµРїСЂР°РІРёР»СЊРЅРѕ" 
                         color="error" 
                         size="small" 
                       />
@@ -210,7 +210,7 @@ const GameResults = () => {
                   </TableCell>
                   <TableCell align="right">
                     <Typography variant="body2">
-                      {item.user_answer || '—'}
+                      {item.user_answer || 'вЂ”'}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
@@ -226,7 +226,7 @@ const GameResults = () => {
         
         <Divider sx={{ my: 3 }} />
         
-        {/* Кнопки действий */}
+        {/* РљРЅРѕРїРєРё РґРµР№СЃС‚РІРёР№ */}
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'center',
@@ -247,7 +247,7 @@ const GameResults = () => {
               }
             }}
           >
-            Играть снова
+            РРіСЂР°С‚СЊ СЃРЅРѕРІР°
           </Button>
           
           <Button
@@ -264,7 +264,7 @@ const GameResults = () => {
               }
             }}
           >
-            Выбрать другой пак
+            Р’С‹Р±СЂР°С‚СЊ РґСЂСѓРіРѕР№ РїР°Рє
           </Button>
         </Box>
       </Paper>
@@ -272,7 +272,7 @@ const GameResults = () => {
   );
 };
 
-// Компонент для отображения статистики
+// РљРѕРјРїРѕРЅРµРЅС‚ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚Р°С‚РёСЃС‚РёРєРё
 const StatBox = ({ title, value, color }) => (
   <Box sx={{ 
     textAlign: 'center',

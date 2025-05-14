@@ -23,7 +23,7 @@ import AddQuestion from './pages/AddQuestion';
 import AddPack from './pages/AddPack';
 import UserDetail from './pages/UserDetail';
 import GameMain from './pages/GameMain';
-import GameRedirect from './components/GameRedirect.js';
+import GameRedirect from './pages/GameRedirect.js';
 
 function MainContent() {
     const location = useLocation();
