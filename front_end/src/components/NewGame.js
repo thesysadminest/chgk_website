@@ -12,7 +12,7 @@ import {
 import { checkAuth, getUserData } from '../utils/AuthUtils';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from "@mui/material/styles";
-import SelectQuestionsWindow from './SelectQuestionsWindow';
+import SelectPackWindow from './SelectPackWindow';
 
 const NewGame = ({ onClose }) => {
   const theme = useTheme();
@@ -23,7 +23,7 @@ const NewGame = ({ onClose }) => {
     user: null
   });
   const [gameLoading, setGameLoading] = useState(false);
-  const [selectQuestionsOpen, setSelectQuestionsOpen] = useState(false);
+  const [selectPackOpen, setselectPackOpen] = useState(false);
 
   useEffect(() => {
     const verifyAuthentication = async () => {
@@ -59,7 +59,7 @@ const NewGame = ({ onClose }) => {
 
   const handleSelectQuestions = () => {
     //onClose(); // Закрываем текущее окно
-    setSelectQuestionsOpen(true); // Открываем окно выбора вопросов
+    setselectPackOpen(true); // Открываем окно выбора вопросов
   };
 
   if (authState.isLoading || gameLoading) {
@@ -86,19 +86,22 @@ const NewGame = ({ onClose }) => {
 
   if (!authState.isAuthenticated) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ mt: 4, mt: '25vh' }}>
         <Box
           sx={{
             backgroundColor: theme.palette.background.window,
             p: 5,
             borderRadius: 8,
             width: '100%',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            textAlign: 'center',
+            my: 'auto'
           }}
         >
           <Typography
             variant="h4"
             sx={{
+
               mb: 3,
               fontWeight: 'bold',
               color: theme.palette.text.gray,
@@ -142,22 +145,6 @@ const NewGame = ({ onClose }) => {
               >
                 Войти в систему
               </Button>
-
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                Ещё нет аккаунта?{' '}
-                <Link
-                  component="button"
-                  variant="body2"
-                  onClick={() => navigate('/registration')}
-                  sx={{
-                    color: theme.palette.primary.main,
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Зарегистрироваться
-                </Link>
-              </Typography>
             </Stack>
           </Paper>
 
@@ -181,7 +168,7 @@ const NewGame = ({ onClose }) => {
 
   return (
     <>
-      {!selectQuestionsOpen && (
+      {!selectPackOpen && (
         <Container>
           <Box
             sx={{
@@ -317,11 +304,11 @@ const NewGame = ({ onClose }) => {
         </Container>
       )}
 
-      <SelectQuestionsWindow
-        open={selectQuestionsOpen}
+      <SelectPackWindow
+        open={selectPackOpen}
         onClose={() => {
-          setSelectQuestionsOpen(false);
-          onClose(); // Дополнительно закрываем родительское окно при закрытии SelectQuestionsWindow
+          setselectPackOpen(false);
+          onClose(); // Дополнительно закрываем родительское окно 
         }}
         onStartGame={handleStartRandomPack}
       />

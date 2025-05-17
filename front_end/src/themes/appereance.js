@@ -18,6 +18,8 @@ const white3 = '#F5EAEA';
 const white4 = '#FFFFFF'; // pure white 
 const white5 = '#D9D9D9'; // grey
 
+const grey1 = '#999999';
+
 const graphiteBackground = '#29232A';
 const inactiveTableBackground = '#4A4A4A';
 const advertisementBackground = '#382E3A';
@@ -61,9 +63,9 @@ const darkTheme = createTheme({
     text: {
       dark: black2,
       primary: white4,
-      secondary: alpha(white4, 0.7),
+      secondary: grey1,
       gray: inactiveTableBackground,
-      visited: 'grey',
+      visited: grey1,
       disabled: disabledText,
       light: white5, 
     },

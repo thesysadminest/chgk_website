@@ -7,6 +7,7 @@ import darkTheme from "./themes/appereance.js";
 
 import LobbyNavBar from './components/LobbyNavBar';
 import AuthorizationNavBar from './components/AuthorizationNavBar';
+import GameNavBar from './components/GameNavBar';
 import NavBar from './components/NavBar';
 
 import Lobby from './pages/Lobby';
@@ -24,12 +25,14 @@ import AddPack from './pages/AddPack';
 import UserDetail from './pages/UserDetail';
 import GameMain from './pages/GameMain';
 import GameRedirect from './pages/GameRedirect.js';
+import GameResults from './pages/GameResults.js';
 
 function MainContent() {
     const location = useLocation();
     const isLobby = location.pathname === '/';
     const isAuthorization = (location.pathname === '/registration' || location.pathname === '/login');
-    
+    const isGame = location.pathname.startsWith('/game/');
+
     if (isLobby) 
         return (
           <>
@@ -50,12 +53,23 @@ function MainContent() {
             </AuthorizationNavBar>
             </>
         );
+    else if (isGame)
+        return (
+            <>
+            <GameNavBar/>
+                <Routes>
+                    <Route path="/game/:pack_id/" element={<GameRedirect />} />
+                    <Route path="/game/:pack_id/questions/:firstQuestionId" element={<GameMain />} />
+                    <Route path="/game/:pack_id/results" element={<GameResults />} />
+                </Routes>
+            </>
+        );
     else return (
         <NavBar selected={location.pathname}>
 
             <Routes>
                 <Route path="/" element={<Lobby />} />
-                <Route path="/" element={<NewsPage />} />
+                <Route path="/news" element={<NewsPage />} />
                 <Route path="/packs" element={<Packs />} />
                 <Route path="/pack/:id" element={<PackDetail />} />
                 <Route path="/pack/:id/question/:id" element={<QuestionDetail />} />
@@ -70,7 +84,7 @@ function MainContent() {
                 <Route path="/myprofile" element={<MyProfile />} />
                 <Route path="/game/:pack_id/" element={<GameRedirect />} />
                 <Route path="/game/:pack_id/questions/:firstQuestionId" element={<GameMain />} />
-                
+                <Route path="/game/:pack_id/results" element={<GameResults />} />
             </Routes>
         </NavBar>
     );

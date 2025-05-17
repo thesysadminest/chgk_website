@@ -15,7 +15,7 @@ const NewsPage = () => {
         const response = await axios.get("http://127.0.0.1:8000/api/news/");
         setNews(response.data);
       } catch (err) {
-        setError("Ошибка при загрузке новостей.");
+        setError("РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РЅРѕРІРѕСЃС‚РµР№.");
       } finally {
         setLoading(false);
       }
@@ -52,7 +52,7 @@ const NewsPage = () => {
       }}
     >
       <Typography variant="h4" sx={{ mb: 3, color: theme.palette.text.primary }}>
-        Новости
+        РќРѕРІРѕСЃС‚Рё
       </Typography>
 
       {news.length > 0 ? (
@@ -66,12 +66,12 @@ const NewsPage = () => {
               variant="caption"
               sx={{ display: "block", mt: 1, color: theme.palette.text.secondary }}
             >
-              Опубликовано: {new Date(item.published_at).toLocaleDateString()}
+              РћРїСѓР±Р»РёРєРѕРІР°РЅРѕ: {new Date(item.published_at).toLocaleDateString()}
             </Typography>
           </Box>
         ))
       ) : (
-        <Typography variant="body1">Нет новых новостей.</Typography>
+        <Typography variant="body1">РќРµС‚ РЅРѕРІС‹С… РЅРѕРІРѕСЃС‚РµР№.</Typography>
       )}
     </Box>
   );

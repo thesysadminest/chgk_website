@@ -216,6 +216,7 @@ const SelectPackWindow = ({ open, onClose }) => {
                     '&:hover': {
                       backgroundColor: theme.palette.action.hover,
                     },
+                    color: theme.palette.text.dark,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center'
