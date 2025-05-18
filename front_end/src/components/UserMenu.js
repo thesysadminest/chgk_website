@@ -16,7 +16,6 @@ import { useTheme } from "@mui/material/styles";
 import { clearAuthTokens, getUserData } from "../utils/AuthUtils"; // Импортируем нужные функции
 
 const UserMenuItem = styled(Button)(({ theme }) => ({
-  height: "100px",
   textAlign: "center",
   fontFamily: theme.typography.fontFamily,
 }));

@@ -32,7 +32,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     author_q = UserSerializer(read_only=True)
     class Meta:
         model = Question
-        fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q')
+        fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q', 'pub_date_q')
         #extra_kwargs = {"author_q": {"read_only": True}}
         depth = 1
         

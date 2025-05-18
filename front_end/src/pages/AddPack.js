@@ -18,7 +18,6 @@ import {
   Tooltip,
   Container,
   Grid,
-  Paper
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
@@ -94,7 +93,7 @@ const AddPack = () => {
 
   const filteredQuestions = userQuestions.filter(question =>
     question.question_text?.toLowerCase().includes(searchText.toLowerCase()) ||
-    question.answer_text?.toLowerCase().includes(searchText.toLowerCase())
+      question.answer_text?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const handleToggleQuestion = (questionId) => {
@@ -272,62 +271,62 @@ const AddPack = () => {
                         <Checkbox
                           indeterminate={
                             selectedQuestions.length > 0 &&
-                            selectedQuestions.length < filteredQuestions.length
+                              selectedQuestions.length < filteredQuestions.length
                           }
                           checked={
                             filteredQuestions.length > 0 &&
-                            selectedQuestions.length === filteredQuestions.length
+                              selectedQuestions.length === filteredQuestions.length
                           }
                           onChange={handleSelectAll}
                           sx={{ color: theme.palette.common.white }}
                         />
                       </TableCell>
                       <TableCell sx={{ 
-                        backgroundColor: theme.palette.black2,
-                        color: theme.palette.common.white 
-                      }}>
+                                   backgroundColor: theme.palette.black2,
+                                   color: theme.palette.common.white 
+                                 }}>
                         Вопрос
                       </TableCell>
                       <TableCell sx={{ 
-                        backgroundColor: theme.palette.black2,
-                        color: theme.palette.common.white 
-                      }}>
+                                   backgroundColor: theme.palette.black2,
+                                   color: theme.palette.common.white 
+                                 }}>
                         Ответ
                       </TableCell>
                       <TableCell sx={{ 
-                        backgroundColor: theme.palette.black2,
-                        color: theme.palette.common.white 
-                      }}>
+                                   backgroundColor: theme.palette.black2,
+                                   color: theme.palette.common.white 
+                                 }}>
                         Дата создания
                       </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody sx={{ overflow: 'auto' }}>
                     {filteredQuestions
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((question) => (
-                        <TableRow
-                          key={question.id}
-                          hover
-                          selected={selectedQuestions.includes(question.id)}
-                          onClick={() => handleToggleQuestion(question.id)}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={selectedQuestions.includes(question.id)}
-                              onChange={() => handleToggleQuestion(question.id)}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </TableCell>
-                          <TableCell>{question.question_text || "Без текста"}</TableCell>
-                          <TableCell>{question.answer_text || "Без ответа"}</TableCell>
-                          <TableCell>
-                            {question.pub_date_q 
-                              ? new Date(question.pub_date_q).toLocaleDateString() 
-                              : "Нет даты"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                     .map((question) => (
+                       <TableRow
+                         key={question.id}
+                         hover
+                         selected={selectedQuestions.includes(question.id)}
+                         onClick={() => handleToggleQuestion(question.id)}
+                       >
+                         <TableCell padding="checkbox">
+                           <Checkbox
+                             checked={selectedQuestions.includes(question.id)}
+                             onChange={() => handleToggleQuestion(question.id)}
+                             onClick={(e) => e.stopPropagation()}
+                           />
+                         </TableCell>
+                         <TableCell>{question.question_text || "Без текста"}</TableCell>
+                         <TableCell>{question.answer_text || "Без ответа"}</TableCell>
+                         <TableCell>
+                           {question.pub_date_q 
+                            ? new Date(question.pub_date_q).toLocaleDateString() 
+                            : "Нет даты"}
+                         </TableCell>
+                       </TableRow>
+                     ))}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -350,8 +349,8 @@ const AddPack = () => {
           ) : (
             <Alert severity="info" sx={{ mb: 3 }}>
               {searchText 
-                ? "Вопросы по вашему запросу не найдены"
-                : "У вас пока нет созданных вопросов"}
+               ? "Вопросы по вашему запросу не найдены"
+               : "У вас пока нет созданных вопросов"}
             </Alert>
           )}
         </Box>
@@ -359,10 +358,10 @@ const AddPack = () => {
 
       {/* Кнопки внизу */}
       <Box sx={{ 
-        padding: 2,
-        backgroundColor: theme.palette.background.paper,
-        borderTop: `1px solid ${theme.palette.divider}`
-      }}>
+             padding: 2,
+             backgroundColor: theme.palette.background.paper,
+             borderTop: `1px solid ${theme.palette.divider}`
+           }}>
         <Grid container spacing={2}>
           <Grid item xs={6}>
             <Button
@@ -376,7 +375,7 @@ const AddPack = () => {
           <Grid item xs={6}>
             <Tooltip 
               title={!packName ? "Укажите название пакета" : 
-                    selectedQuestions.length === 0 ? "Выберите хотя бы один вопрос" : ""}
+                     selectedQuestions.length === 0 ? "Выберите хотя бы один вопрос" : ""}
             >
               <span style={{ width: '100%' }}>
                 <Button

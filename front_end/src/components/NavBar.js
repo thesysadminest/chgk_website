@@ -261,7 +261,11 @@ export default function NavBar({ children }) {
   return (
     <div>
       <SetPageTitle />
-      <Box sx={{ display: "flex" }}>
+      <Box
+        sx={{
+          display: "flex",
+          filter: gameModalOpen ? 'blur(2px)' : 'none',
+          transition: 'filter 0.3s ease'}}>
         <CssBaseline />
 
         <Modal
@@ -299,7 +303,6 @@ export default function NavBar({ children }) {
             >
               <Box sx={{height: "36px", width: "0"}}/>
               <Typography variant="h5"
-                          variant="contained"
                           sx={{
                             position: 'absolute',
                             opacity: open ? 1 : 0,
@@ -316,7 +319,6 @@ export default function NavBar({ children }) {
                   transition: 'opacity 0.3s ease',
                 }}
               />
-
 
               
             </PlayButton>
@@ -434,10 +436,7 @@ export default function NavBar({ children }) {
             pt: 6,
             display: "flex",
             flexDirection: "column",
-            height: "100vh",
             overflow: "hidden",
-            filter: gameModalOpen ? 'blur(2px)' : 'none',
-            transition: 'filter 0.3s ease'
           }}>
           {children}
         </Box>

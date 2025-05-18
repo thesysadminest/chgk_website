@@ -160,14 +160,7 @@ const AddQuestion = () => {
   }
 
   return (
-    <Box sx={{ 
-           maxWidth: 800, 
-           mx: "auto", 
-           p: 3,
-           backgroundColor: theme.palette.background.paper,
-           borderRadius: 2,
-           boxShadow: theme.shadows[1]
-         }}>
+    <>
       <Typography variant="h4" sx={{ mb: 3, color: theme.palette.text.primary }}>
         Создание нового вопроса
       </Typography>
@@ -260,7 +253,7 @@ const AddQuestion = () => {
           </span>
         </Tooltip>
       </Box>
-    </Box>
+    </>
   );
 };
 

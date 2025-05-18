@@ -114,6 +114,7 @@ const darkTheme = createTheme({
         root: {
           border: 'none',
           color: white4,
+          boxShadow: "0px 0px 20px 5px rgba(0,0,0,0.14)", 
           '& .MuiDataGrid-columnHeaders': {
 
           },
@@ -205,6 +206,19 @@ const darkTheme = createTheme({
             '&:hover': {
               backgroundColor: white5,
               color: white4,
+            },
+          },
+        },
+        {
+          props: { variant: 'outlined-grey' },
+          style: {
+            color: greyButton,
+            borderWidth: "1px",
+            borderStyle: "solid",
+            borderColor: greyButton,
+            '&:hover': {
+              color: red4,
+              borderColor: red4,
             },
           },
         },

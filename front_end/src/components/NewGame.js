@@ -149,15 +149,8 @@ const NewGame = ({ onClose }) => {
           </Paper>
 
           <Button
-            variant="outlined"
+            variant="outlined-grey"
             onClick={onClose}
-            sx={{
-              color: theme.palette.text.primary,
-              borderColor: theme.palette.text.primary,
-              '&:hover': {
-                borderColor: theme.palette.primary.main,
-              }
-            }}
           >
             Закрыть
           </Button>
@@ -287,15 +280,8 @@ const NewGame = ({ onClose }) => {
 
             <Box sx={{ mt: 4, textAlign: 'center' }}>
               <Button
-                variant="outlined"
+                variant="outlined-grey"
                 onClick={onClose}
-                sx={{
-                  color: theme.palette.text.primary,
-                  borderColor: theme.palette.text.primary,
-                  '&:hover': {
-                    borderColor: theme.palette.primary.main,
-                  }
-                }}
               >
                 Закрыть
               </Button>

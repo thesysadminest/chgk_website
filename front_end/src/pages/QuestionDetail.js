@@ -81,7 +81,7 @@ const QuestionDetail = () => {
   };
 
   return (
-    <Box sx={{ p: 4 }}>
+    <>
       <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, color: "gray" }}>
         ID вопроса: {question.id}
       </Typography>
@@ -144,7 +144,7 @@ const QuestionDetail = () => {
           </MuiLink>.
         </Typography>
       )}
-    </Box>
+    </>
   );
 };
 

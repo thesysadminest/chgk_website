@@ -3,8 +3,7 @@ import { useLocation } from "react-router-dom";
 import { AppBar, Toolbar, Box, Button, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import { checkAuth, getUserData } from "../utils/AuthUtils";
-import UserMenu from "../components/UserMenu";
+import { checkAuth } from "../utils/AuthUtils";
 import { Person } from "@mui/icons-material";
 
 const LobbyNavBar = () => {
