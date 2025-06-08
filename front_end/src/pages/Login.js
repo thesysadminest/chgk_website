@@ -83,7 +83,6 @@ const Login = () => {
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: theme.palette.background.default,
-        p: 2,
         overflow: 'auto'
       }}
     >

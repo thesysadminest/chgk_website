@@ -86,6 +86,10 @@ const darkTheme = createTheme({
     ].join(","),
   },
 
+  drawers: {
+    drawerWidth: 240,
+    drawerHeight: 63.8,
+  },
   
   components: {
     MuiCssBaseline: {

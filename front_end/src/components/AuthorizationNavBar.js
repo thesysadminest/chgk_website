@@ -51,7 +51,7 @@ export default function NavBar({ children }) {
   return (
     <div>
       <SetPageTitle />
-      <Box sx={{ display: "flex", width: "100vw", mb: 0 }}>
+      <Box sx={{ display: "flex"}}>
         <AppBar 
           position="fixed" 
           open={open} 

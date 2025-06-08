@@ -78,8 +78,8 @@ const Registration = () => {
       }
 
       setAuthTokens({
-        access: result.access,
-        refresh: result.refresh
+        access: result.tokens.access,
+        refresh: result.tokens.refresh
       });
       setUserData(result.user || { username: formData.username });
       

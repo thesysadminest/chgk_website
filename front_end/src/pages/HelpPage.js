@@ -18,9 +18,15 @@ const HelpPage = () => {
   }
 
   return (
+    <Box display="flex" justifyContent="center" alignItems="center"
+         sx={{height: `calc(100vh - ${theme.drawers.drawerHeight}px - 8*16px)`,
+             maxHeight: `calc(100vh - ${theme.drawers.drawerHeight}px - 8*16px)`}}
+    >
     <Box
       sx={{
-        width: 950,
+        width: "60vw",
+        maxHeight: "inherit",
+        overflowY: "auto",
         mx: "auto",
         p: 4,
         backgroundColor: theme.palette.background.window,
@@ -109,6 +115,7 @@ const HelpPage = () => {
         </Typography>
       </Box>
     </Box>
+          </Box>
   );
 };
 
