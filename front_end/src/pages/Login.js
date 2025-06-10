@@ -11,10 +11,11 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useTheme } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { setAuthTokens } from "../utils/AuthUtils";
 
 const Login = () => {
+  const redirectLocation = useLocation()?.state?.redirect;
   const theme = useTheme();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -57,7 +58,7 @@ const Login = () => {
         refresh: response.data.refresh
       });
 
-      navigate("/news", { replace: true });
+      navigate((redirectLocation ? redirectLocation.pathname : "/news"), { replace: true });
       
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 
@@ -205,7 +206,7 @@ const Login = () => {
           <MuiLink 
             component="button" 
             type="button"
-            onClick={() => navigate("/registration")}
+            onClick={() => navigate("/registration", { state:{redirect: redirectLocation}, replace: true })}
             sx={{ 
               color: theme.palette.primary.main, 
               fontWeight: theme.typography.fontWeightMedium,

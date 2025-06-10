@@ -3,7 +3,7 @@ import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import { Box, Link as MuiLink, Button, TextField, CircularProgress, Typography, Alert, Tooltip, Stack } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { checkAuth, getAccessToken, clearAuthTokens } from "../utils/AuthUtils";
 
 const Users = () => {
@@ -18,6 +18,7 @@ const Users = () => {
     isLoading: true
   });
   const navigate = useNavigate();
+  const location = useLocation();
   const apiRef = useGridApiRef();
 
   useEffect(() => {
@@ -132,7 +133,7 @@ const Users = () => {
         {error.includes("Сессия истекла") && (
           <Button 
             variant="outlined" 
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/login", { state:{redirect: location} })}
             sx={{ mt: 2, ml: 2 }}
           >
             Войти
@@ -155,10 +156,17 @@ const Users = () => {
           gap: 2
         }}
       >
-        <Tooltip title={authState.isAuthenticated ? "" : "Войдите в систему, чтобы использовать эту функцию"}>
+        <Tooltip disableHoverListener={authState.isAuthenticated} disableFocusListener disableTouchListener title={
+                   <Typography variant="h7">
+                     <MuiLink component={Link} to="/login" state={{ redirect: location }}>
+                       Войдите в систему
+                     </MuiLink>
+                     , чтобы использовать эту функцию
+                   </Typography>
+                 }>
           <span>
             <Button
-              variant={authState.isAuthenticated ? "red" : "?disabled-dark"}
+              variant={authState.isAuthenticated ? "red" : "disabled-dark"}
               onClick={handleFindMe}
               disabled={!authState.isAuthenticated}
             >

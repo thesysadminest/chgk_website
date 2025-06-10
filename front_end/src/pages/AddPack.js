@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Box, 
   Button, 
@@ -41,6 +41,7 @@ const AddPack = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const initializeAuthAndData = async () => {
@@ -193,7 +194,7 @@ const AddPack = () => {
         </Typography>
         <Button
           variant="contained"
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/login", { state:{redirect: location} })}
         >
           Войти в аккаунт
         </Button>

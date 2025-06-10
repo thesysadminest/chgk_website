@@ -10,10 +10,11 @@ import {
   Link as MuiLink
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { setAuthTokens, setUserData } from "../utils/AuthUtils";
 
 const Registration = () => {
+  const redirectLocation = useLocation()?.state?.redirect;
   const theme = useTheme();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -83,7 +84,7 @@ const Registration = () => {
       });
       setUserData(result.user || { username: formData.username });
       
-      navigate("/news", { replace: true });
+      navigate((redirectLocation ? redirectLocation.pathname : "/news"), { replace: true });
       
     } catch (error) {
       console.error("Ошибка:", error);
@@ -252,7 +253,7 @@ const Registration = () => {
           <MuiLink 
             component="button" 
             type="button"
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/login", { state:{redirect: redirectLocation}, replace: true })}
             sx={{ 
               color: theme.palette.primary.main, 
               fontWeight: theme.typography.fontWeightMedium,

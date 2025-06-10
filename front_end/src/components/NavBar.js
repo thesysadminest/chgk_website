@@ -388,7 +388,7 @@ export default function NavBar({ children }) {
             })}
           </List>
 
-          <BottomButtonsContainer>
+          <BottomButtonsContainer sx={{zIndex: 1200}}>
             {open && (
               <>
                 <RoundIconButton onClick={handleHelpClick}>

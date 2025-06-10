@@ -18,7 +18,7 @@ import {
   DialogActions,
   Paper
 } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Check, 
   Close, 
@@ -82,6 +82,7 @@ const GameMain = () => {
   const theme = useTheme();
   const { pack_id, firstQuestionId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [quitDialogOpen, setQuitDialogOpen] = useState(false);
   const [targetQuestionId, setTargetQuestionId] = useState(null);
   const [timeExpired, setTimeExpired] = useState(false);
@@ -104,9 +105,9 @@ const GameMain = () => {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      navigate('/login');
+      navigate('/login', { state:{redirect: location} });
     }
-  }, [navigate]);
+  }, [navigate, location]);
 
   useEffect(() => {
     const loadCurrentQuestion = async () => {

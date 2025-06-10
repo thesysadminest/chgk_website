@@ -20,7 +20,7 @@ import {
   Group, 
   People 
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -34,6 +34,7 @@ const MyProfile = () => {
   const [loading, setLoading] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -42,7 +43,7 @@ const MyProfile = () => {
         const userData = JSON.parse(localStorage.getItem("user"));
         
         if (!token || !userData) {
-          navigate("/login");
+          navigate("/login", { state:{redirect: location} });
           return;
         }
 
@@ -58,14 +59,14 @@ const MyProfile = () => {
         setUser(response.data[0]);
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
-        navigate("/login");
+        navigate("/login", { state:{redirect: location} });
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserData();
-  }, [navigate]);
+  }, [navigate, location]);
 
   const handleCreateClick = (event) => {
     setAnchorEl(event.currentTarget);

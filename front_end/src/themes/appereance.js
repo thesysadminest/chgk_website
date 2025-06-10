@@ -37,7 +37,8 @@ const darkTheme = createTheme({
     default: {
       black1: black1, black2: black2, black3: black3, black4: black4, black5: black5,
       red1: red1, red2: red2, red3: red3, red4: red4, red5: red5,
-      white1: white1, white2: white2, white3: white3, white4: white4, white5: white5, 
+      white1: white1, white2: white2, white3: white3, white4: white4, white5: white5,
+      greyButton: greyButton,
     },
     primary: {
       main: red3,
@@ -334,6 +335,24 @@ const darkTheme = createTheme({
           },
         },
       },
+      // IMPORTANT!
+      // use "variant_p" instead of "variant"
+      variants: [
+        {
+          props: { variant_p: "chip" },
+          style: {
+            display: 'flex',
+            justifyContent: 'center',
+            color: greyButton,
+            fontSize: "medium",
+            borderColor: greyButton,
+            borderStyle: "ridge",
+            borderRadius: "15px",
+            borderWidth: "1px",
+            padding: "4px 8px 4px 8px",
+          },
+        },
+      ],
     },
     MuiMenu: {
       styleOverrides: {
@@ -359,7 +378,6 @@ const darkTheme = createTheme({
         },
       },
     },
-
 
     MuiTextField: {
       // IMPORTANT!

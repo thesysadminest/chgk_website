@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Box, 
   Button, 
@@ -28,6 +28,7 @@ const AddQuestion = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const verifyAuthentication = async () => {
@@ -136,7 +137,7 @@ const AddQuestion = () => {
         </Typography>
         <Button 
           variant="contained"
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/login", { state:{redirect: location} })}
           sx={{ 
             mt: 2,
             backgroundColor: theme.palette.primary.main,
@@ -151,7 +152,7 @@ const AddQuestion = () => {
         <Button 
           sx={{ mt: 2, ml: 2 }}
           variant="outlined"
-          onClick={() => navigate("/registration")}
+          onClick={() => navigate("/registration", { state:{redirect: location} })}
         >
           Зарегистрироваться
         </Button>
