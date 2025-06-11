@@ -12,6 +12,7 @@ const Users = () => {
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
     user: null,
@@ -92,9 +93,13 @@ const Users = () => {
 
   const handleFindMe = () => {
     if (authState.user) {
-      const userIndex = rows.findIndex(row => row.id === authState.user.id);
+      const userId = authState.user.id;
+      setSelectedUserId(userId);
+      
+      const userIndex = rows.findIndex(row => row.id === userId);
       if (userIndex !== -1) {
         apiRef.current.scrollToIndexes({ rowIndex: userIndex });
+        apiRef.current.setRowSelectionModel([userId]);
       }
     }
   };
@@ -166,9 +171,10 @@ const Users = () => {
                  }>
           <span>
             <Button
-              variant={authState.isAuthenticated ? "red" : "disabled-dark"}
+              variant={authState.isAuthenticated ? "contained" : "outlined"}
               onClick={handleFindMe}
               disabled={!authState.isAuthenticated}
+              color="primary"
             >
               Найти меня
             </Button>
@@ -176,34 +182,49 @@ const Users = () => {
         </Tooltip>
         
         <TextField
-          variant_tf="dark"
+          variant="outlined"
           size="small"
           placeholder="Поиск"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           sx={{ width: "300px" }}
         />
-
       </Stack>
 
+      <Box sx={{ height: 600 }}>
+        <DataGrid
+          rows={rows}
+          columns={[
+            { field: "id", headerName: "ID", flex: 0.5 },
+            { field: "username", headerName: "Имя", flex: 1 },
+            { field: "email", headerName: "Email", flex: 1.5 },
+            { field: "bio", headerName: "О себе", flex: 2 },
+            { field: "date_joined", headerName: "Дата регистрации", width: 150 },
+          ]}
+          pageSize={10}
+          rowsPerPageOptions={[10, 20, 50]}
+          disableSelectionOnClick
+          onRowClick={handleRowClick}
+          apiRef={apiRef}
+          getRowClassName={(params) => {
+            return params.id === selectedUserId ? 'highlighted-row' : '';
+          }}
+        />
+      </Box>
 
-      <DataGrid
-        rows={rows}
-        columns={[
-          { field: "id", headerName: "ID", flex: 0.5 },
-          { field: "username", headerName: "Имя", flex: 1 },
-          { field: "email", headerName: "Email", flex: 1.5 },
-          { field: "bio", headerName: "О себе", flex: 2 },
-          { field: "date_joined", headerName: "Дата регистрации", width: 150 },
-        ]}
-        pageSize={10}
-        rowsPerPageOptions={[10, 20, 50]}
-        disableSelectionOnClick
-        onRowClick={handleRowClick}
-        apiRef={apiRef}
-      />
+      <style>
+        {`
+          .highlighted-row {
+            background-color: ${theme.palette.default.red1} !important;
+          }
+          .highlighted-row:hover {
+            background-color: ${theme.palette.default.red2} !important;
+          }
+        `}
+      </style>
     </Box>
   );
 };
 
 export default Users;
+

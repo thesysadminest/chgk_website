@@ -119,17 +119,14 @@ const darkTheme = createTheme({
         root: {
           border: 'none',
           color: white4,
-          boxShadow: "0px 0px 20px 5px rgba(0,0,0,0.14)", 
-          '& .MuiDataGrid-columnHeaders': {
-
-          },
+          boxShadow: "0px 0px 20px 5px rgba(0,0,0,0.14)",
+          '& .MuiDataGrid-columnHeaders': {},
           '& .MuiDataGrid-columnHeader': {
             backgroundColor: black4,
             color: white3,
             border: 'none',
-
             '&:hover': {
-              backgroundColor: alpha(red3, 0.2),
+              backgroundColor: alpha(red3, 0.3),
             },
             '&.MuiDataGrid-columnHeader--sorted': {
               backgroundColor: alpha(red3, 0.3),
@@ -151,14 +148,20 @@ const darkTheme = createTheme({
             border: 'none',
             backgroundColor: black2,
             '&:hover': {
-              backgroundColor: alpha(red3, 0.1),
+              backgroundColor: red2,
+            },
+            '&.highlighted-row': {
+              backgroundColor: `${red1} !important`,
+              '&:hover': {
+                backgroundColor: `${red2} !important`,
+              }
             },
             '&.Mui-selected': {
-              backgroundColor: alpha(red3, 0.2),
+              backgroundColor: red2,
               '&:hover': {
-                backgroundColor: alpha(red3, 0.3),
-              },
-            },
+                backgroundColor: red2,
+              }
+            }
           },
           '& .MuiDataGrid-footerContainer': {
             borderTop: 'none',
@@ -189,6 +192,7 @@ const darkTheme = createTheme({
         },
       },
     },
+
     MuiAppBar: {
       styleOverrides: {
         root: {
@@ -207,11 +211,7 @@ const darkTheme = createTheme({
           props: { variant: 'grey' },
           style: {
             backgroundColor: greyButton,
-            color: white4,
-            '&:hover': {
-              backgroundColor: white5,
-              color: white4,
-            },
+            color: black4,
           },
         },
         {
