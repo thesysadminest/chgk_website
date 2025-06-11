@@ -195,7 +195,7 @@ const HelpInfo = () => {
 
             <Accordion sx={{backgroundColor: theme.palette.background.disabled}}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{color: theme.palette.primary.main}}>
-                <Typography variant="h6">Как доавить вопрос?</Typography>
+                <Typography variant="h6">Как добавить вопрос?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body1" sx={{color: theme.palette.text.dark}}>

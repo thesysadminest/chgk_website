@@ -11,7 +11,9 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
+import { Link } from 'react-router-dom';
 import { checkAuth, getAccessToken, getUserData, clearAuthTokens } from "../utils/AuthUtils";
+import AddQuestionSuccess from "../components/AddQuestionSuccess";
 
 const AddQuestion = () => {
   const theme = useTheme();
@@ -27,6 +29,8 @@ const AddQuestion = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [packType, setPackType] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,12 +63,13 @@ const AddQuestion = () => {
     }));
   };
 
-  const handleAddQuestion = async (packType) => {
+  const handleAddQuestion = async (type) => {
     if (!authState.isAuthenticated || !isFormValid) return;
 
     try {
       setSubmitting(true);
       setSubmitError(null);
+      setPackType(type);
 
       const token = getAccessToken();
       const user = getUserData();
@@ -80,7 +85,7 @@ const AddQuestion = () => {
           answer_text: questionData.answer.trim(),
           question_note: questionData.comment.trim(),
           author_q: user.id,
-          pack_type: packType
+          pack_type: type
         },
         {
           headers: {
@@ -91,9 +96,8 @@ const AddQuestion = () => {
       );
 
       if (response.status === 201) {
-        alert(`Вопрос успешно добавлен в ${packType === 'open' ? 'открытый' : 'ваш'} пак!`);
+        setSuccessModalOpen(true);
         setQuestionData({ text: "", answer: "", comment: "" });
-        navigate("/questions");
       }
     } catch (error) {
       console.error("Ошибка при добавлении вопроса:", error);
@@ -161,98 +165,182 @@ const AddQuestion = () => {
 
   return (
     <>
-      <Typography variant="h4" sx={{ mb: 3, color: theme.palette.text.primary }}>
-        Создание нового вопроса
-      </Typography>
+      <Box sx={{
+        backgroundColor: theme.palette.background.window, 
+        p: 4, 
+        borderRadius: 4, 
+        width: 1050, 
+        ml: 5,
+        position: 'relative',
+        pb: 8
+      }}>
+        <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main, fontWeight: 'bold' }}>
+          Создание нового вопроса
+        </Typography>
 
-      {submitError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {submitError}
-        </Alert>
-      )}
+        {submitError && (
+          <Alert severity="error">
+            {submitError}
+          </Alert>
+        )}
 
-      <Alert severity="info" sx={{ mb: 3 }}>
-        Пожалуйста, убедитесь, что ваш вопрос соответствует правилам сообщества.
+        <Alert severity="warning">
+        Пожалуйста, убедитесь, что ваш вопрос соответствует{' '}
+        <Link 
+          to="/help/basic-rules" 
+          style={{
+            color: theme.palette.primary.main,
+            textDecoration: 'underline'
+          }}
+        >
+          правилам сообщества
+        </Link>.
       </Alert>
 
-      <TextField
-        label="Текст вопроса"
-        fullWidth
-        value={questionData.text}
-        onChange={handleInputChange("text")}
-        margin="normal"
-        multiline
-        rows={4}
-        required
-        sx={{ mb: 2 }}
-      />
+        <TextField
+          label="Текст вопроса"
+          fullWidth
+          value={questionData.text}
+          onChange={handleInputChange("text")}
+          margin="normal"
+          multiline
+          rows={4}
+          required
+          sx={{ 
+            borderRadius: 1,
+            backgroundColor: theme.palette.background.white, 
+            '& .MuiInputBase-input': {
+              color: theme.palette.text.dark
+            },
+            mb: 1
+          }}
+        />
 
-      <TextField
-        label="Правильный ответ"
-        fullWidth
-        value={questionData.answer}
-        onChange={handleInputChange("answer")}
-        margin="normal"
-        required
-        sx={{ mb: 2 }}
-      />
+        <TextField
+          label="Правильный ответ"
+          fullWidth
+          value={questionData.answer}
+          onChange={handleInputChange("answer")}
+          margin="normal"
+          required
+          sx={{ 
+            borderRadius: 1,
+            backgroundColor: theme.palette.background.white,
+            '& .MuiInputBase-input': {
+              color: theme.palette.text.dark
+            },
+            mb: 1
+          }}
+        />
 
-      <TextField
-        label="Авторский комментарий (необязательно)"
-        fullWidth
-        value={questionData.comment}
-        onChange={handleInputChange("comment")}
-        margin="normal"
-        multiline
-        rows={2}
-        sx={{ mb: 4 }}
-      />
+        <TextField
+          label="Авторский комментарий (необязательно)"
+          fullWidth
+          value={questionData.comment}
+          onChange={handleInputChange("comment")}
+          margin="normal"
+          multiline
+          rows={2}
+          sx={{ 
+            mb: 4,
+            '& .MuiInputBase-input': {
+              color: theme.palette.text.dark
+            }
+          }}
+        />
 
-      <Box sx={{ display: "flex", gap: 2 }}>
-        <Tooltip 
-          title={!isFormValid ? "Заполните текст вопроса и правильный ответ" : ""} 
-          arrow
-        >
-          <span>
-            <Button
-              variant={isButtonDisabled ? "disabled-dark" : "red"}
-              disabled={isButtonDisabled}
-              onClick={() => handleAddQuestion("open")}
-              sx={{
-                py: 1.5,
-              }}
-            >
-              {submitting ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Добавить в открытый пак"
-              )}
-            </Button>
-          </span>
-        </Tooltip>
+        <Box sx={{ 
+          position: 'absolute',
+          right: 24,
+          bottom: 24,
+          display: "flex", 
+          gap: 2 
+        }}>
+          <Tooltip 
+            title={!isFormValid ? "Заполните текст вопроса и правильный ответ" : ""} 
+            arrow
+            placement="top"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: theme.palette.background.tooltip,
+                  color: theme.palette.text.tooltip,
+                  '& .MuiTooltip-arrow': {
+                    color: theme.palette.background.tooltip,
+                  }
+                }
+              }
+            }}
+          >
+            <span>
+              <Button
+                variant="contained"
+                disabled={isButtonDisabled}
+                onClick={() => handleAddQuestion("open")}
+                sx={{
+                  py: 1.5,
+                  px: 3,
+                  backgroundColor: isButtonDisabled ? 
+                    theme.palette.action.disabled : 
+                    theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: isButtonDisabled ? 
+                      theme.palette.action.disabled : 
+                      theme.palette.primary.dark,
+                  }
+                }}
+              >
+                 Добавить в открытый пак
+              </Button>
+            </span>
+          </Tooltip>
 
-        <Tooltip 
-          title={!isFormValid ? "Заполните текст вопроса и правильный ответ" : ""} 
-          arrow
-        >
-          <span>
-            <Button
-              variant={isButtonDisabled ? "disabled-dark" : "red"}
-              disabled={isButtonDisabled}
-              onClick={() => handleAddQuestion("my")}
-              sx={{
-                py: 1.5,
-              }}
-            >
-              {submitting ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Добавить в мой пак"
-              )}
-            </Button>
-          </span>
-        </Tooltip>
+          <Tooltip 
+            title={!isFormValid ? "Заполните текст вопроса и правильный ответ" : ""} 
+            arrow
+            placement="top"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: theme.palette.background.tooltip,
+                  color: theme.palette.text.tooltip,
+                  '& .MuiTooltip-arrow': {
+                    color: theme.palette.background.tooltip,
+                  }
+                }
+              }
+            }}
+          >
+            <span>
+              <Button
+                variant="contained"
+                disabled={isButtonDisabled}
+                onClick={() => handleAddQuestion("my")}
+                sx={{
+                  py: 1.5,
+                  px: 3,
+                  backgroundColor: isButtonDisabled ? 
+                    theme.palette.action.disabled : 
+                    theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: isButtonDisabled ? 
+                      theme.palette.action.disabled : 
+                      theme.palette.primary.main,
+                  }
+                }}
+              >
+                Добавить в мой пак
+              </Button>
+            </span>
+          </Tooltip>
+        </Box>
       </Box>
+
+      <AddQuestionSuccess 
+        open={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+        packType={packType}
+      />
     </>
   );
 };

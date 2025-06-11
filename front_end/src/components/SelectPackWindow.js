@@ -188,11 +188,11 @@ const SelectPackWindow = ({ open, onClose }) => {
           sx={{
             mb: 3,
             fontWeight: 'bold',
-            color: theme.palette.text.gray,
+            color: theme.palette.primary.main,
             textAlign: 'center'
           }}
         >
-          ВЫБЕРИТЕ ПАК ВОПРОСОВ
+          Выберите пак вопросов
         </Typography>
 
         {loading ? (
