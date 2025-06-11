@@ -10,7 +10,7 @@ import {
   ListItemText 
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Person, PersonAdd } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { clearAuthTokens, getUserData } from "../utils/AuthUtils"; // Импортируем нужные функции
@@ -24,6 +24,7 @@ const UserMenu = ({ onLogout }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const fontSize = "2vh";
 
   // Получаем данные пользователя через AuthUtils
@@ -148,6 +149,7 @@ const UserMenu = ({ onLogout }) => {
         <UserMenuItem 
           component={Link} 
           to="/login"
+          state={{ redirect: location }}
           sx={{ color: theme.palette.text.primary }}>
             <PersonAdd sx={{ color: theme.palette.text.primary }} />
         </UserMenuItem>

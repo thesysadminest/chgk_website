@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import CssBaseline from "@mui/material/CssBaseline";
 import axiosInstance from "../components/axiosInstance";
 import {
@@ -17,6 +17,7 @@ const GameRedirect = () => {
   const theme = useTheme();
   const { pack_id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const hasRedirected = useRef(false);
   const [packInfo, setPackInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,7 +50,7 @@ const GameRedirect = () => {
 
     const access_token = localStorage.getItem("access_token");
     if (!access_token) {
-      navigate("/login");
+      navigate("/login", { state:{redirect: location} });
       return;
     }
 
@@ -65,7 +66,7 @@ const GameRedirect = () => {
       }
     } catch (error) {
       if (error.response?.status === 401) {
-        navigate("/login");
+        navigate("/login", { state:{redirect: location} });
       } else {
         navigate("/packs");
       }

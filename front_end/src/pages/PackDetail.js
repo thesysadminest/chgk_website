@@ -2,20 +2,21 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import { getAccessToken, getUserData } from "../utils/AuthUtils";
-import { Box, Typography, Stack, Button, TextField, CircularProgress, Alert } from "@mui/material";
-import { Edit, Delete, DeleteForever, Done, Close } from "@mui/icons-material";
-import { useParams, useNavigate } from "react-router-dom";
+import { Box, Typography, Link as MuiLink, Stack, Button, Paper, TextField, CircularProgress, Alert } from "@mui/material";
+import { Edit, Delete, DeleteForever, Done, Close, Face, Event } from "@mui/icons-material";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
 const PackDetail = () => {
   const theme = useTheme();
   const [rows, setRows] = useState([]);
-  const { id: packId } = useParams();
   const navigate = useNavigate();
   const [visited, setVisited] = useState({});
   const [pack, setPack] = useState({
+    id: useParams().id,
     name: "",
     author_p: "",
+    author_id: "",
     pub_date_p: "",
     questions: [],
   });
@@ -44,17 +45,20 @@ const PackDetail = () => {
   };
 
   useEffect(() => {
+    //if (!pack.id) return;
     const fetchPackData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/pack/${packId}/`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/pack/${pack.id}/`);
         console.log("Raw response data:", response.data);
         
         // Упрощенная обработка
         const packData = response.data;
         setPack({
+          id: packData.id || "",
           name: packData.name || "No name",
           description: packData.description || "",
           author_p: packData.author_p?.username || "Unknown",
+          author_id: packData.author_p?.id || "Unknown",
           pub_date_p: packData.pub_date_p || "Unknown",
           questions: packData.questions || []
         });
@@ -74,7 +78,7 @@ const PackDetail = () => {
       }
     };
     fetchPackData();
-  }, [packId, myName]);
+  }, [pack.id, myName]);
 
   const handleRowClick = (params) => {
     navigate(`/question/${params.row.id}`);
@@ -118,7 +122,7 @@ const PackDetail = () => {
       const token = getAccessToken();
       if (!token) throw new Error("Токен доступа не найден");
       const packResponse = await axios.put(
-        `http://127.0.0.1:8000/api/pack/update/${packId}/`,
+        `http://127.0.0.1:8000/api/pack/update/${pack.id}/`,
         {
           name: packNameEdit.trim(),
           description: packDescrEdit.trim()
@@ -135,8 +139,8 @@ const PackDetail = () => {
         throw new Error("Ошибка при редактировании пакета");
       }
 
-      pack.name = packNameEdit;
-      pack.description = packDescrEdit;
+      pack.name = packNameEdit.trim();
+      pack.description = packDescrEdit.trim();
       setGoodState("Информация обновлена!");
     }
     catch (error) {
@@ -156,7 +160,7 @@ const PackDetail = () => {
       const token = getAccessToken();
       if (!token) throw new Error("Токен доступа не найден");
       const packResponse = await axios.delete(
-        `http://127.0.0.1:8000/api/pack/delete/${packId}/`,
+        `http://127.0.0.1:8000/api/pack/delete/${pack.id}/`,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -170,27 +174,22 @@ const PackDetail = () => {
       }
 
       setPack({
-        name: "",
-        author_p: "",
-        pub_date_p: "",
-        questions: [],
+        id: pack.id,
       });
+      console.log(pack);
       setRows([]);
       setDeletedState(true);
       setGoodState("Пакет удалён!");
     }
     catch (error) {
       console.error("Ошибка:", error);
-      setErrState(error.response?.data?.message || error.message || "Ошибка при редактировании пакета")
+      setErrState(error.response?.data?.message || error.message || "Ошибка при удалении пакета")
     } finally {
       setButtonsPending(false);
       handleCloseButton();
     }
   };
 
-  const handleToPacks = () => {
-    navigate("/packs"); 
-  };
 
   return (
     <Box sx={{ height: '100%', display: "flex", justifyContent: "space-between", flexDirection: 'column', mb: 2 }}>
@@ -205,29 +204,44 @@ const PackDetail = () => {
        </Alert>
       }
       {deletedState &&
-       <Button  variant="outlined-grey" onClick={handleToPacks}>
+       <Button variant="outlined-grey" component={Link} to={`/packs`}>
          Назад к пакам
        </Button>
       }
+      
       {!deletedState && (
         <>
           <Stack 
             direction="row" 
-            spacing={2} 
             sx={{ 
               justifyContent: "space-between", 
               alignItems: "center", 
               mb: 2,
-              flexWrap: 'wrap',
+              flexWrap: 'wrap-reverse',
               gap: 2
             }}
           >
             <Box>
               {!(buttonsEdit) && (
                 <>
-                  <Typography variant="h4" gutterBottom>
-                    Имя пака: {pack.name}
-                  </Typography>
+                  <Box display="flex" flexDirection="row" alignItems="center" sx={{flexWrap: 'revert'}}>
+                    <Typography variant="h4" sx={{mr: 4}}>
+                      {pack.name}
+                    </Typography>
+                    <Paper variant_p="chip">
+                      <Face/>
+                      <MuiLink component={Link} to={`/user/${pack.author_id}`} color="inherit" sx={{ ml: "4px" }}>
+                        {pack.author_p}
+                      </MuiLink>
+
+                      <Event sx={{ ml: 2 }}/>
+                      <Typography sx={{ ml: "4px" }}>
+                        {pack.pub_date_p !== "Неизвестно" 
+                         ? new Date(pack.pub_date_p).toLocaleDateString("ru-RU") 
+                         : "----"}
+                      </Typography>
+                    </Paper>
+                  </Box>
                   <Typography variant="h6" gutterBottom>
                     {pack.description}
                   </Typography>
@@ -274,7 +288,7 @@ const PackDetail = () => {
                       variant={editIsValid ? "outlined-grey" : "disabled-dark"}
                       disabled={!editIsValid}
                       onClick={handleEditPack}>
-                      {buttonsPending ? <CircularProgress color="inherit"/> : <Done /> }
+                      {buttonsPending ? <CircularProgress size={24} color="inherit"/> : <Done /> }
                     </Button>
                     <Button variant="outlined-grey" onClick={handleCloseButton}>
                       <Close />
@@ -295,14 +309,6 @@ const PackDetail = () => {
               </>
             )}
         </Stack>
-        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, color: "gray" }}>
-          Автор: {pack.author_p}
-        </Typography>
-        <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, color: "gray" }}>
-          Дата публикации: {pack.pub_date_p !== "Неизвестно" 
-                            ? new Date(pack.pub_date_p).toLocaleDateString("ru-RU") 
-                            : "Неизвестно"}
-        </Typography>
         <Typography variant="h6" gutterBottom>
           Вопросы:
         </Typography>
@@ -326,7 +332,7 @@ const PackDetail = () => {
       )}
 
     </Box>
-);
+  );
 };
 
 export default PackDetail;
