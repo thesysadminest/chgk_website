@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from .models import Question, Pack, Team, CustomUser, GameSession
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -170,5 +170,56 @@ class GameSessionSerializer(serializers.ModelSerializer):
                 "question_text": question.question_text
             }
         return None
+    
 
+class ForumMessageSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+    replies = serializers.SerializerMethodField()
+    user_vote = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ForumMessage
+        fields = [
+            'id', 'content', 'created_at', 'author',
+            'parent_message', 'replies', 'user_vote',
+            'upvotes_count', 'downvotes_count'
+        ]
+        extra_kwargs = {
+            'parent_message': {'required': False, 'allow_null': True}
+        }
+
+    def validate(self, data):
+        if len(data.get('content', '').strip()) < 1:
+            raise serializers.ValidationError("Сообщение не может быть пустым")
+        return data
+
+    def get_replies(self, obj):
+        replies = obj.replies.all().order_by('created_at')
+        return ForumMessageSerializer(replies, many=True, context=self.context).data
+
+    def get_user_vote(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.get_user_vote(request.user)
+        return None
+
+#порядок не менять!
+class ForumThreadSerializer(serializers.ModelSerializer):
+    messages = ForumMessageSerializer(many=True, read_only=True)
+    created_by = serializers.StringRelatedField()
+    
+    class Meta:
+        model = ForumThread
+        fields = ['id', 'title', 'created_by', 'created_at', 'updated_at', 'is_closed', 'messages']
         
+
+class MessageVoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MessageVote
+        fields = ['vote']  
+        read_only_fields = ['user', 'message']
+
+    def validate_vote(self, value):
+        if value not in [-1, 1]: 
+            raise serializers.ValidationError("Vote must be -1 or 1")
+        return value

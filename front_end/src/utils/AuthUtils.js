@@ -129,3 +129,15 @@ export const checkAuth = async () => {
     return { isAuthorized: false, user: null };
   }
 };
+
+export const cacheVote = (messageId, vote) => {
+  const votes = JSON.parse(localStorage.getItem('user_votes') || '{}');
+  votes[messageId] = vote;
+  localStorage.setItem('user_votes', JSON.stringify(votes));
+  return;
+};
+
+export const getCachedVote = (messageId) => {
+  const votes = JSON.parse(localStorage.getItem('user_votes') || '{}');
+  return votes[messageId] || 0;
+};

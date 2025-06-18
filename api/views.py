@@ -1,15 +1,18 @@
 from django.shortcuts import render
-from rest_framework import generics, viewsets, status
+from rest_framework import generics, viewsets, status, permissions
 
 import random
 
+from django.db import transaction
+from django.db.models import Sum, Count, Max
+
+from django.core.exceptions import ValidationError
+
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
 
 from rest_framework.response import Response
 from rest_framework.decorators import action, APIView, action, permission_classes
-
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -21,11 +24,13 @@ from .serializers import (
     UserSerializer, TeamSerializer, 
     MyTokenObtainPairSerializer, 
     RegisterSerializer, LoginSerializer,
-    GameSessionSerializer
+    GameSessionSerializer,
+    ForumThreadSerializer, ForumMessageSerializer, 
+    MessageVoteSerializer
 )
 
 from django.contrib.auth.models import AbstractUser
-from .models import Question, Pack, Team, CustomUser, GameSession
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote
 
 import uuid
 
@@ -39,7 +44,7 @@ import uuid
 class QuestionViewList(generics.ListCreateAPIView):
     
     serializer_class = QuestionSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
     
     def get_queryset(self):
       queryset = Question.objects.all()
@@ -49,12 +54,12 @@ class QuestionViewList(generics.ListCreateAPIView):
 class QuestionView(generics.RetrieveAPIView):
     queryset = Question.objects.all()  
     serializer_class = QuestionSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
    
     
 class QuestionCreate(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Question.objects.all()
     
     def perform_create(self, serializer):
@@ -70,13 +75,13 @@ class QuestionCreate(generics.ListCreateAPIView):
     
 class QuestionDelete(generics.DestroyAPIView):
     serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Question.objects.all()
 
 class QuestionUpdate(generics.UpdateAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def update_text(self, request):
         instance = self.get_object()
@@ -92,7 +97,7 @@ class QuestionUpdate(generics.UpdateAPIView):
 
 class PackCreate(generics.ListCreateAPIView):
     serializer_class = PackSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Pack.objects.all()
     
     def perform_create(self, serializer):
@@ -101,12 +106,12 @@ class PackCreate(generics.ListCreateAPIView):
 class PackDelete(generics.DestroyAPIView):  
     serializer_class = PackSerializer  
     queryset = Pack.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
 class PackUpdate(generics.UpdateAPIView):
     serializer_class = PackSerializer
     queryset = Pack.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def update_pack(self, request):
         instance = self.get_object()
@@ -119,13 +124,13 @@ class PackUpdate(generics.UpdateAPIView):
  
 class PackView(generics.RetrieveAPIView): 
     serializer_class = PackSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
     queryset = Pack.objects.all()
 
     
 class PackViewList(generics.ListCreateAPIView):
     serializer_class = PackSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
     
     def get_queryset(self):
       queryset = Pack.objects.all()
@@ -134,7 +139,7 @@ class PackViewList(generics.ListCreateAPIView):
 class AddQuestionToPack(viewsets.ModelViewSet):
     queryset = Pack.objects.all()
     serializer_class = PackSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
   
     @action(detail=True, methods=['POST'])
     def update(self, request, pk=None):
@@ -168,32 +173,32 @@ class AddQuestionToPack(viewsets.ModelViewSet):
 
 class TeamView(generics.ListCreateAPIView):
     serializer_class = TeamSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Team.objects.filter(id=self.kwargs['pk']) 
     
 class TeamViewList(generics.ListCreateAPIView):
     serializer_class = TeamSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
     def get_queryset(self):
       queryset = Team.objects.all()
       return queryset
     
 class TeamCreate(generics.ListCreateAPIView):
     serializer_class = TeamSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Team.objects.all()
 
 class TeamDelete(generics.DestroyAPIView):
     serializer_class = TeamSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Team.objects.all()
     
 class TeamUpdate(generics.UpdateAPIView):
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def update_team(self, request):
         instance = self.get_object()
@@ -206,13 +211,13 @@ class TeamUpdate(generics.UpdateAPIView):
 
 ###     USER      ###
 
-#Login User
+#Login CustomUser
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -235,7 +240,7 @@ class RegisterView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
 
 class LoginView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -256,14 +261,14 @@ class LoginView(APIView):
 class UserViewList(generics.ListCreateAPIView):
     
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
       return CustomUser.objects.all()
     
 class UserView(generics.ListCreateAPIView):
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
       queryset = CustomUser.objects.all().filter(id=self.kwargs['pk'])
@@ -272,7 +277,7 @@ class UserView(generics.ListCreateAPIView):
 class UserUpdate(generics.UpdateAPIView):
     serializer_class = UserSerializer
     queryset = CustomUser.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     #lookup_field = "id"
     
     def update(self, request):
@@ -286,11 +291,11 @@ class UserUpdate(generics.UpdateAPIView):
         
 class UserDelete(generics.DestroyAPIView):
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = CustomUser.objects.all()
 
 class CurrentUserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
    
     def get(self, request):
         try:
@@ -306,7 +311,7 @@ class CurrentUserView(APIView):
  
 ###     GAME INTERFACE      ###     
 class GameStartView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, pack_id):
         try:
@@ -355,7 +360,7 @@ class GameStartView(APIView):
             return Response({"error": str(e)}, status=500)
 
 class SubmitAnswerView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pack_id, question_id):
         try:
@@ -439,7 +444,7 @@ class NextQuestionView(APIView):
             )
     
 class PackQuestionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pack_id, question_id):
         try:
@@ -474,7 +479,7 @@ class PackQuestionView(APIView):
     
 class PackQuestionViewList(generics.ListAPIView):
     serializer_class = QuestionSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
     
     def get_queryset(self):
         pack_id = self.kwargs['pack_id']
@@ -492,7 +497,7 @@ class QuestionDetailView(APIView):
 
 class GameResultsView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]  
+    permission_classes = [permissions.IsAuthenticated]  
     def get(self, request, pack_id):
         pack = get_object_or_404(Pack, id=pack_id)
         attempt = GameSession.objects.filter(user=request.user, pack=pack).first()
@@ -500,3 +505,128 @@ class GameResultsView(APIView):
             "correct_answers": attempt.correct_answers if attempt else 0,
             "total_questions": pack.questions.count()
         })
+    
+
+###     FORUM INTERFACE      ###   
+
+class ThreadViewList(generics.ListAPIView):
+    
+    serializer_class = ForumThreadSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get_queryset(self):
+        queryset = ForumThread.objects.annotate(
+            message_count=Count('messages'),
+            updated_at=Max('messages__created_at')
+        ).select_related('created_by').order_by('-created_at')
+        
+        # Фильтрация по статусу (если нужно)
+        is_closed = self.request.query_params.get('is_closed', None)
+        if is_closed is not None:
+            queryset = queryset.filter(is_closed=is_closed.lower() == 'true')
+            
+        # Поиск по названию (если нужно)
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(title__icontains=search)
+            
+        return queryset
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+
+class ThreadMessagesView(generics.ListAPIView):
+    serializer_class = ForumMessageSerializer
+    
+    def get_queryset(self):
+        thread_id = self.kwargs['thread_id']
+        thread = get_object_or_404(ForumThread, id=thread_id)
+        
+        # Получаем все сообщения темы одним запросом
+        messages = thread.messages.select_related('author').prefetch_related('replies').all()
+        
+        # Возвращаем только корневые сообщения (реплики будут включены через сериализатор)
+        return messages.filter(parent_message__isnull=True).order_by('created_at')
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+
+class MessageCreateView(generics.CreateAPIView):
+    serializer_class = ForumMessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        thread_id = kwargs.get('thread_id')
+        thread = get_object_or_404(ForumThread, id=thread_id)
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        try:
+            message = serializer.save(
+                author=request.user,
+                thread=thread,
+                parent_message_id=request.data.get('parent_message')
+            )
+            
+            thread.save()
+            
+            return Response(
+                ForumMessageSerializer(message, context=self.get_serializer_context()).data,
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class MessageVoteView(generics.CreateAPIView):
+    queryset = MessageVote.objects.all()
+    serializer_class = MessageVoteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        message_id = kwargs['message_id']
+        message = get_object_or_404(ForumMessage, id=message_id)
+        user = request.user
+        vote_value = serializer.validated_data['vote']
+
+        with transaction.atomic():
+            vote, created = MessageVote.objects.update_or_create(
+                user=user,
+                message=message,
+                defaults={'vote': vote_value}
+            )
+            
+            # Обновляем рейтинг и счетчики
+            message.rating = message.votes.aggregate(Sum('vote'))['vote__sum'] or 0
+            message.upvotes_count = message.votes.filter(vote=1).count()
+            message.downvotes_count = message.votes.filter(vote=-1).count()
+            message.save()
+
+        return Response({
+            'id': vote.id,
+            'vote': vote.vote,
+            'current_rating': message.rating,
+            'upvotes_count': message.upvotes_count,
+            'downvotes_count': message.downvotes_count,
+            'message_id': message.id
+        }, status=status.HTTP_201_CREATED)
+
+class MessageViewList(generics.ListAPIView):
+    serializer_class = ForumMessageSerializer
+    
+    def get_queryset(self):
+        thread_id = self.kwargs.get('thread_id')
+        return ForumMessage.objects.filter(thread_id=thread_id, parent_message__isnull=True)
+

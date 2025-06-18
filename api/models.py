@@ -4,6 +4,10 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
+from django.db.models import Sum, Count
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 class CustomUser(AbstractUser):
     USERNAME_FIELD = 'username'
@@ -104,3 +108,80 @@ class GameSession(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.pack.name}"
+
+
+class ForumThread(models.Model):
+    title = models.CharField(max_length=200)
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField
+    is_closed = models.BooleanField(default=False)
+    message_count = models.IntegerField
+
+    def get_all_messages(self):
+        return self.messages.select_related('author').prefetch_related('replies').all()
+
+    def __str__(self):
+        return self.title
+
+class ForumMessage(models.Model):
+    thread = models.ForeignKey(ForumThread, on_delete=models.CASCADE, related_name='messages')
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    parent_message = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
+    upvotes_count = models.IntegerField(default=0)
+    downvotes_count = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.pk: 
+            self.thread.updated_at = timezone.now()
+            self.thread.save()
+        super().save(*args, **kwargs)
+
+    def get_user_vote(self, user):
+        
+        if not user.is_authenticated:
+            return None
+        
+        try:
+            vote = self.votes.get(user=user)
+            return vote.vote
+        except MessageVote.DoesNotExist:
+            return None
+
+class MessageVote(models.Model):
+    VOTE_CHOICES = (
+        (1, 'Upvote'),
+        (-1, 'Downvote'),
+    )
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    message = models.ForeignKey(ForumMessage, on_delete=models.CASCADE, related_name='votes')
+    vote = models.SmallIntegerField(choices=VOTE_CHOICES)
+    
+    class Meta:
+        unique_together = ('user', 'message') 
+        
+    def __str__(self):
+        return f"{self.user.username} voted {self.get_vote_display()} for message #{self.message.id}"
+    
+    def save(self, *args, **kwargs):                                                
+        created = not self.pk
+        old_vote = None
+        if not created:
+            old_vote = MessageVote.objects.get(pk=self.pk).vote
+        
+        super().save(*args, **kwargs)
+        
+        # Update message rating and counts
+        self.message.rating = self.message.votes.aggregate(
+            Sum('vote')
+        )['vote__sum'] or 0
+        
+        self.message.upvotes_count = self.message.votes.filter(vote=1).count()
+        self.message.downvotes_count = self.message.votes.filter(vote=-1).count()
+        self.message.save()
