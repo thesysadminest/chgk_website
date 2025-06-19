@@ -509,52 +509,50 @@ class GameResultsView(APIView):
 
 ###     FORUM INTERFACE      ###   
 
-class ThreadViewList(generics.ListAPIView):
-    
+class ThreadViewList(generics.ListCreateAPIView):
     serializer_class = ForumThreadSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_queryset(self):
         queryset = ForumThread.objects.annotate(
-            message_count=Count('messages'),
-            updated_at=Max('messages__created_at')
-        ).select_related('created_by').order_by('-created_at')
+            calculated_message_count=Count('messages'), 
+            last_activity=Max('messages__created_at')
+        ).select_related('created_by').prefetch_related('messages')
         
-        # Фильтрация по статусу (если нужно)
-        is_closed = self.request.query_params.get('is_closed', None)
+        # Сортировка по дате обновления (новые сначала)
+        queryset = queryset.order_by('-updated_at')
+        
+        # Фильтрация
+        is_closed = self.request.query_params.get('is_closed')
         if is_closed is not None:
             queryset = queryset.filter(is_closed=is_closed.lower() == 'true')
             
-        # Поиск по названию (если нужно)
-        search = self.request.query_params.get('search', None)
+        search = self.request.query_params.get('search')
         if search:
             queryset = queryset.filter(title__icontains=search)
             
         return queryset
     
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
-    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)      
+ 
 
-class ThreadMessagesView(generics.ListAPIView):
+class ThreadMessagesViewList(generics.ListAPIView):
     serializer_class = ForumMessageSerializer
     
     def get_queryset(self):
-        thread_id = self.kwargs['thread_id']
-        thread = get_object_or_404(ForumThread, id=thread_id)
+        # Теперь используем self.kwargs['pk'] вместо thread_id
+        thread = get_object_or_404(ForumThread, pk=self.kwargs['pk'])
         
-        # Получаем все сообщения темы одним запросом
-        messages = thread.messages.select_related('author').prefetch_related('replies').all()
-        
-        # Возвращаем только корневые сообщения (реплики будут включены через сериализатор)
-        return messages.filter(parent_message__isnull=True).order_by('created_at')
-    
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
+        # Получаем сообщения с предзагрузкой связанных данных
+        return thread.messages.filter(
+            parent_message__isnull=True
+        ).select_related(
+            'author'
+        ).prefetch_related(
+            'replies',
+            'replies__author'
+        ).order_by('created_at')
 
 
 class MessageCreateView(generics.CreateAPIView):
@@ -623,10 +621,5 @@ class MessageVoteView(generics.CreateAPIView):
             'message_id': message.id
         }, status=status.HTTP_201_CREATED)
 
-class MessageViewList(generics.ListAPIView):
-    serializer_class = ForumMessageSerializer
-    
-    def get_queryset(self):
-        thread_id = self.kwargs.get('thread_id')
-        return ForumMessage.objects.filter(thread_id=thread_id, parent_message__isnull=True)
+
 

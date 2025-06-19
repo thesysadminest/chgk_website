@@ -187,6 +187,7 @@ class ForumMessageSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'parent_message': {'required': False, 'allow_null': True}
         }
+        depth = 1
 
     def validate(self, data):
         if len(data.get('content', '').strip()) < 1:
@@ -205,14 +206,22 @@ class ForumMessageSerializer(serializers.ModelSerializer):
 
 #порядок не менять!
 class ForumThreadSerializer(serializers.ModelSerializer):
+    created_by = serializers.StringRelatedField(read_only=True)
     messages = ForumMessageSerializer(many=True, read_only=True)
-    created_by = serializers.StringRelatedField()
+    created_at = serializers.DateTimeField(read_only=True)  # Добавлено read_only
+    updated_at = serializers.DateTimeField(read_only=True)  # Добавлено read_only
+    message_count = serializers.SerializerMethodField() 
     
     class Meta:
         model = ForumThread
-        fields = ['id', 'title', 'created_by', 'created_at', 'updated_at', 'is_closed', 'messages']
+        fields = [
+            'id', 'title', 'created_by', 'is_closed', 
+            'messages', 'created_at', 'updated_at', 'message_count'
+        ] 
         
-
+    def get_message_count(self, obj):
+        return obj.calculated_message_count if hasattr(obj, 'calculated_message_count') else obj.message_count
+    
 class MessageVoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = MessageVote

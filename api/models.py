@@ -114,9 +114,10 @@ class ForumThread(models.Model):
     title = models.CharField(max_length=200)
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField
+    updated_at = models.DateTimeField(auto_now=True)
     is_closed = models.BooleanField(default=False)
-    message_count = models.IntegerField
+    message_count = models.IntegerField(default=0)  
+
 
     def get_all_messages(self):
         return self.messages.select_related('author').prefetch_related('replies').all()
@@ -137,10 +138,13 @@ class ForumMessage(models.Model):
         ordering = ['created_at']
 
     def save(self, *args, **kwargs):
-        if not self.pk: 
-            self.thread.updated_at = timezone.now()
-            self.thread.save()
+        is_new = not self.pk
         super().save(*args, **kwargs)
+        
+        if is_new:
+            # Обновляем счетчик сообщений в теме
+            self.thread.message_count = self.thread.messages.count()
+            self.thread.save(update_fields=['message_count'])
 
     def get_user_vote(self, user):
         

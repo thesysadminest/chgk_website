@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { 
   Box, 
   Typography, 
@@ -14,16 +15,19 @@ import {
   Paper,
   Avatar,
   Badge,
-  alpha
+  alpha,
+  Tooltip,
+  Collapse
 } from "@mui/material";
-import axios from "axios";
-import { useTheme } from "@mui/material/styles";
 import { 
   ThumbUp, 
   ThumbDown,
   Send,
-  Reply
+  Reply,
+  Fullscreen,
+  FullscreenExit 
 } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 import {
   getAccessToken,
   isAuthenticated,
@@ -36,9 +40,11 @@ import {
 
 const NewsPage = () => {
   const theme = useTheme();
+
   const [error, setError] = useState(null);
   const [authAlert, setAuthAlert] = useState(false);
-  
+  const [expanded, setExpanded] = useState(false);
+
   const [threads, setThreads] = useState([]);
   const [activeThread, setActiveThread] = useState(null);
   const [messages, setMessages] = useState({});
@@ -116,32 +122,30 @@ const NewsPage = () => {
 useEffect(() => {
   if (activeThread) {
     const fetchMessages = async () => {
-      try {
-        setForumLoading(true);
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/threads/${activeThread.id}/messages/`,
-          { 
-            timeout: 5000,
-            headers: {
-              'Authorization': `Bearer ${getAccessToken()}`
-            }
-          }
-        );
-        
-        // Сервер теперь возвращает полную иерархию сообщений
-        setMessages(prev => ({ 
-          ...prev, 
-          [activeThread.id]: response.data 
-        }));
-        
-      } catch (err) {
-        console.error("Ошибка при загрузке сообщений:", err);
-        setError(err.message || "Ошибка при загрузке сообщений");
-        setMessages(prev => ({ ...prev, [activeThread.id]: [] }));
-      } finally {
-        setForumLoading(false);
+  try {
+    setForumLoading(true);
+    const response = await axios.get(
+      `http://127.0.0.1:8000/api/threads/${activeThread.id}/messages/`,
+      { 
+        timeout: 5000,
+        headers: {
+          'Authorization': `Bearer ${getAccessToken()}`
+        }
       }
-    };
+    );
+    
+    setMessages(prev => ({ 
+      ...prev, 
+      [activeThread.id]: response.data 
+    }));
+    
+  } catch (err) {
+    console.error("Ошибка при загрузке сообщений:", err);
+    setError(err.message || "Ошибка при загрузке сообщений");
+  } finally {
+    setForumLoading(false);
+  }
+};
 
     fetchMessages();
   }
@@ -155,38 +159,59 @@ useEffect(() => {
   };
 
   const handleCreateThread = async () => {
-    if (!isAuthenticated()) {
-      handleAuthRedirect();
-      return;
+  if (!isAuthenticated()) {
+    handleAuthRedirect();
+    return;
+  }
+
+  try {
+    setForumLoading(true);
+    const csrfToken = getCookie('csrftoken');
+    if (!csrfToken) {
+      throw new Error('CSRF token not found');
     }
 
-    try {
-      setForumLoading(true);
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/threads/", 
-        { title: newThreadTitle },
-        {
-          headers: {
-            'Authorization': `Bearer ${getAccessToken()}`
-          },
-          timeout: 5000
-        }
-      );
-      setThreads([...threads, response.data]);
-      setNewThreadTitle("");
-      setShowThreadForm(false);
-      setActiveThread(response.data);
-    } catch (err) {
-      console.error("Ошибка при создании темы:", err);
-      setError("Ошибка при создании темы");
-      if (err.response?.status === 401) {
-        clearAuthTokens();
-        handleAuthRedirect();
+    const response = await axios.post(
+      "http://127.0.0.1:8000/api/threads/",
+      { title: newThreadTitle },
+      {
+        headers: {
+          'Authorization': `Bearer ${getAccessToken()}`,
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true,
+        timeout: 5000
       }
-    } finally {
-      setForumLoading(false);
+    );
+
+    setThreads([...threads, response.data]);
+    setNewThreadTitle("");
+    setShowThreadForm(false);
+    setActiveThread(response.data);
+  } catch (err) {
+    console.error("Ошибка при создании темы:", err);
+    
+    // Enhanced error handling
+    if (err.response?.data) {
+      const errorData = err.response.data;
+      if (typeof errorData === 'object') {
+        setError(`Ошибка: ${JSON.stringify(errorData)}`);
+      } else {
+        setError(`Ошибка: ${errorData}`);
+      }
+    } else {
+      setError(err.message || "Ошибка при создании темы");
     }
-  };
+    
+    if (err.response?.status === 401) {
+      clearAuthTokens();
+      handleAuthRedirect();
+    }
+  } finally {
+    setForumLoading(false);
+  }
+};
 
   const handleReply = (message) => {
     if (!isAuthenticated()) {
@@ -194,8 +219,10 @@ useEffect(() => {
       return;
     }
     setReplyTo(message);
-    setNewMessage(`@${message.author.username}, `);
+    setNewMessage(`@${message.author?.username || 
+                     (typeof message.author === 'string' ? message.author : 'Anonymous')}, `);
   };
+
 const handleSendMessage = async () => {
   if (!isAuthenticated()) {
     handleAuthRedirect();
@@ -370,7 +397,8 @@ const handleSendMessage = async () => {
     const isUpvoted = userVote === 1;
     const isDownvoted = userVote === -1;
 
-    const authorName = message.author?.username || 'Anonymous';
+    const authorName = message.author?.username || 
+                     (typeof message.author === 'string' ? message.author : 'Anonymous');
     const authorInitial = authorName.charAt(0).toUpperCase();
 
     return (
@@ -385,16 +413,15 @@ const handleSendMessage = async () => {
           top: 0,
           bottom: 0,
           width: '2px',
-          backgroundColor: theme.palette.divider,
         } : null
       }}>
-        <Paper sx={{ p: 2, mb: 2 }}>
+        <Paper sx={{ p: 2, mb: 2, backgroundColor: theme.palette.default.black5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Avatar sx={{ 
               width: 32, 
               height: 32, 
               mr: 1,
-              bgcolor: theme.palette.primary.main
+              bgcolor: theme.palette.primary.hover
             }}>
               {authorInitial}
             </Avatar>
@@ -412,10 +439,10 @@ const handleSendMessage = async () => {
               size="small"
               onClick={() => handleVote(message.id, 1)}
             >
-              <ThumbUp fontSize="small" sx={{color: isUpvoted ? theme.palette.primary.main : theme.palette.text.dark}}/>
+              <ThumbUp fontSize="small" sx={{color: isUpvoted ? theme.palette.primary.hover : theme.palette.text.dark}}/>
               <Badge 
                 badgeContent={message.upvotes_count || 0} 
-                sx={{ ml: 2, color: isUpvoted ? theme.palette.primary.main : theme.palette.text.dark }}
+                sx={{ ml: 2, color: isUpvoted ? theme.palette.primary.hover : theme.palette.text.dark }}
               />
             </IconButton>
             
@@ -423,10 +450,10 @@ const handleSendMessage = async () => {
               size="small"
               onClick={() => handleVote(message.id, -1)}
             >
-              <ThumbDown fontSize="small" sx={{color: isDownvoted ? theme.palette.error.main : theme.palette.text.dark}} />
+              <ThumbDown fontSize="small" sx={{color: isDownvoted ? theme.palette.primary.hover : theme.palette.text.dark}} />
               <Badge 
                 badgeContent={message.downvotes_count || 0} 
-                sx={{ ml: 2, color: isDownvoted ? theme.palette.error.main : theme.palette.text.dark}}
+                sx={{ ml: 2, color: isDownvoted ? theme.palette.primary.hover : theme.palette.text.dark}}
               />
             </IconButton>
 
@@ -458,28 +485,31 @@ const handleSendMessage = async () => {
   return (
     <Box sx={{ 
       backgroundColor: theme.palette.background.window,
-      p: 4,
-      flex: 1,
-      height: '90vh',
-      width: '60vw',
-      overflow: 'auto',
-      borderRadius: 4
+      p: 3,
+      position: 'fixed',
+      right: 20,
+      width: expanded ? '80vw' : '350px',
+      height: '87vh',
+      top: 80,
+      zIndex: 1000,
+      boxShadow: 3,
+      transition: 'width 0.3s ease',
+      overflow: 'auto'
     }}>
-      <Typography variant="h4" sx={{ textAlign: 'center', mb: 2, fontWeight: 'bold', color: theme.palette.primary.main }}>
-        ЧГК Форум
-      </Typography>
+      <Box sx={{ 
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        mb: 1
+      }}>
+          <Typography variant="h4" sx={{ textAlign: 'center', fontWeight: 'bold', color: theme.palette.primary.main }}>
+            ЧГК Форум
+          </Typography>
+          <IconButton onClick={() => setExpanded(!expanded)}>
+              {expanded ? <FullscreenExit /> : <Fullscreen />}
+            </IconButton>
 
-      {authAlert && (
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          Для выполнения этого действия требуется авторизация. Вы будете перенаправлены на страницу входа.
-        </Alert>
-      )}
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+      </Box>
 
       {forumLoading && !activeThread ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -539,8 +569,10 @@ const handleSendMessage = async () => {
                     >
                       <ListItemText 
                         primary={thread.title}
-                        secondary={`Создана: ${new Date(thread.created_at).toLocaleDateString()} | Обновлена: ${new Date(thread.updated_at).toLocaleDateString()}`}
+                        secondary={`Создано: ${new Date(thread.created_at).toLocaleDateString()}\n` +
+                        `Обновлено: ${new Date(thread.updated_at).toLocaleDateString()}`}
                         primaryTypographyProps={{ fontWeight: 'medium' }}
+                        secondaryTypographyProps={{ style: { whiteSpace: 'pre-line' } }} // ключевое свойство
                       />
                     </ListItem>
                     <Divider />
@@ -554,7 +586,7 @@ const handleSendMessage = async () => {
                 display: 'flex', 
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                mb: 2,
+                mb: 1,
               }}>
                 <Typography variant="h6" sx={{ color: theme.palette.text.dark }}>
                   {activeThread.title}
@@ -572,7 +604,8 @@ const handleSendMessage = async () => {
               {replyTo && (
                 <Box sx={{ mb: 2, p: 2, backgroundColor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.text.dark, borderRadius: 1 }}>
                   <Typography variant="body2">
-                    Ответ на сообщение от {replyTo.author?.username || 'Anonymous'}
+                    Ответ на сообщение от {replyTo.author?.username || 
+                     (typeof replyTo.author === 'string' ? replyTo.author : 'Anonymous')}
                   </Typography>
                   <Button 
                     size="small" 
@@ -588,6 +621,7 @@ const handleSendMessage = async () => {
                 maxHeight: '50vh', 
                 overflow: 'auto',
                 mb: 2,
+                backdroundColor: theme.palette.background.disabled
               }}>
                 {forumLoading ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>

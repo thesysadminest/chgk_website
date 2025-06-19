@@ -40,8 +40,7 @@ urlpatterns = [
     path('game/<int:pack_id>/results/', views.GameResultsView.as_view(), name='game-results'),
 
     path('threads/', views.ThreadViewList.as_view(), name='thread-list'),
-    path('threads/<int:pk>/', views.ThreadMessagesView.as_view(), name='thread-detail'),
-    path('threads/<int:thread_id>/messages/', views.MessageViewList.as_view(), name='message-list'),
+    path('threads/<int:pk>/messages/', views.ThreadMessagesViewList.as_view(), name='thread-detail'),
     path('threads/<int:thread_id>/messages/create/', views.MessageCreateView.as_view(), name='message-create'),
     path('messages/<int:message_id>/vote/', views.MessageVoteView.as_view(), name='message-vote'),
 ]
