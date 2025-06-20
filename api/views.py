@@ -27,12 +27,11 @@ from .serializers import (
     GameSessionSerializer,
     ForumThreadSerializer, ForumMessageSerializer, 
     MessageVoteSerializer,
-    NotificationSerializer,
-    TeamMemberSerializer, TeamDetailSerializer
+    NotificationSerializer
 )
 
 from django.contrib.auth.models import AbstractUser
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification, TeamMember
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification
 
 import uuid
 
@@ -174,7 +173,7 @@ class AddQuestionToPack(viewsets.ModelViewSet):
 ###     TEAM      ###
 
 class TeamView(generics.RetrieveAPIView):
-    serializer_class = TeamDetailSerializer
+    serializer_class = TeamSerializer
     permission_classes = [permissions.AllowAny]
     queryset = Team.objects.all()
    
@@ -192,17 +191,7 @@ class TeamCreate(generics.ListCreateAPIView):
     queryset = Team.objects.all()
 
     def perform_create(self, serializer):
-        team = serializer.save(captain=self.request.user)
-        # Автоматически добавляем капитана в участники
-        TeamMember.objects.create(
-            user=self.request.user,
-            team=team,
-            role='CAPTAIN',
-            is_active=True
-        )
-        # Обновляем счетчик команды
-        team.team_score = self.request.user.personal_score
-        team.save()
+        serializer.save()
 
 class TeamDelete(generics.DestroyAPIView):
     serializer_class = TeamSerializer

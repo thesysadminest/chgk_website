@@ -9,6 +9,7 @@ import { checkAuth, getAccessToken, clearAuthTokens } from "../utils/AuthUtils";
 const Users = () => {
   const theme = useTheme();
   const [rows, setRows] = useState([]);
+  const [originalRows, setOriginalRows] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -71,6 +72,7 @@ const Users = () => {
         }));
 
         setRows(formattedData);
+        setOriginalRows(formattedData);
       } catch (err) {
         console.error("Error fetching users:", err);
         if (err.response?.status === 401) {
@@ -90,6 +92,18 @@ const Users = () => {
       setLoading(false);
     }
   }, [authState.isAuthenticated, authState.isLoading]);
+
+  useEffect(() => {
+    if (searchText === "") {
+      setRows(originalRows);
+    } else {
+      const filteredRows = originalRows.filter((row) => {
+        return (
+          row.username && row.username.toLowerCase().includes(searchText.toLowerCase()))
+      });
+      setRows(filteredRows);
+    }
+  }, [searchText, originalRows]);
 
   const handleFindMe = () => {
     if (authState.user) {
@@ -112,6 +126,10 @@ const Users = () => {
 
   const handleRowClick = (params) => {
     navigate(`/user/${params.id}`, { state: { user: params.row } });
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchText(event.target.value);
   };
 
   if (authState.isLoading) {
@@ -149,7 +167,7 @@ const Users = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-between", flexDirection: 'column', mb: 3}}>
+    <Box sx={{ display: "flex", justifyContent: "space-between", maxHeight: '80vh', flexDirection: 'column', mb: 3}}>
       <Stack 
         direction="row" 
         spacing={2} 
@@ -182,12 +200,12 @@ const Users = () => {
         </Tooltip>
         
         <TextField
-          variant="outlined"
+          variant_tf="dark"
           size="small"
-          placeholder="Поиск"
+          placeholder="Поиск пользователей"
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          sx={{ width: "300px" }}
+          onChange={handleSearchChange}
+          sx={{ width: "300px" }} 
         />
       </Stack>
 
@@ -227,4 +245,3 @@ const Users = () => {
 };
 
 export default Users;
-

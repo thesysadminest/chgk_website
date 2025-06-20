@@ -1,4 +1,4 @@
-import datetime
+п»їimport datetime
 import uuid
 from django.db import models
 from django.utils import timezone
@@ -25,20 +25,43 @@ class CustomUser(AbstractUser):
 class Team(models.Model):
     name = models.TextField(default="", unique=True)
     team_score = models.IntegerField(default=0)
-    captain = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="captain_teams", null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)  
+    captain = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(default="")
+    active_members = models.ManyToManyField(CustomUser, related_name='active_teams')
+    pending_members = models.ManyToManyField(CustomUser, related_name='pending_teams')
     
     def __str__(self):
         return self.name
     
-    def get_members(self):
-        return self.members.filter(is_active=True)
+    def get_active_members(self):
+        return self.active_members.all()
         
-    def get_pending_invitations(self):
-        return self.members.filter(is_active=False)
+    def get_pending_members(self):
+        return self.pending_members.all()
     
     def get_captain_username(self):
         return self.captain.username if self.captain else None
+
+    def add_invitation(self, user):
+        if not self.active_members.filter(id=user.id).exists() and \
+           not self.pending_members.filter(id=user.id).exists():
+            self.pending_members.add(user)
+            return True
+        return False
+
+    def add_member(self, user):
+        if self.pending_members.filter(id=user.id).exists() and \
+           not self.active_members.filter(id=user.id).exists():
+            self.pending_members.remove(user)
+            self.active_members.add(user)
+            return True
+        return False
     
 class Question(models.Model):
     question_text = models.TextField(default="")
@@ -151,7 +174,7 @@ class ForumMessage(models.Model):
         super().save(*args, **kwargs)
         
         if is_new:
-            # Обновляем счетчик сообщений в теме
+            # РћР±РЅРѕРІР»СЏРµРј СЃС‡РµС‚С‡РёРє СЃРѕРѕР±С‰РµРЅРёР№ РІ С‚РµРјРµ
             self.thread.message_count = self.thread.messages.count()
             self.thread.save(update_fields=['message_count'])
 
@@ -217,17 +240,3 @@ class Notification(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-class TeamMember(models.Model):
-    ROLES = [
-        ('CAPTAIN', 'Captain'),
-        ('MEMBER', 'Member'),
-    ]
-    
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='members')
-    role = models.CharField(max_length=10, choices=ROLES, default='MEMBER')
-    joined_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=False)  # False until invitation is accepted
-    
-    class Meta:
-        unique_together = ('user', 'team')

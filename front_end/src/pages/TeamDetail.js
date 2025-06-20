@@ -95,57 +95,6 @@ const TeamDetail = () => {
     navigate(`/team/${teamId}/invite`);
   };
 
-  const handleRespondToInvitation = async (invitationId, accept) => {
-    try {
-      const token = getAccessToken();
-      if (!token) {
-        throw new Error("Требуется авторизация");
-      }
-
-      await axios.post(
-        `http://127.0.0.1:8000/api/invitations/${invitationId}/respond/`,
-        { response: accept ? 'accept' : 'reject' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Обновляем данные команды после ответа
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/team/${teamId}/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTeam(response.data);
-
-    } catch (error) {
-      console.error("Ошибка обработки приглашения:", error);
-      setError(error.response?.data?.message || error.message || "Ошибка обработки приглашения");
-    }
-  };
-
-  const handleRevokeInvitation = async (memberId) => {
-    try {
-      const token = getAccessToken();
-      if (!token) {
-        throw new Error("Требуется авторизация");
-      }
-
-      await axios.delete(
-        `http://127.0.0.1:8000/api/team/member/${memberId}/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Обновляем данные команды после отзыва
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/team/${teamId}/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTeam(response.data);
-
-    } catch (error) {
-      console.error("Ошибка отзыва приглашения:", error);
-      setError(error.response?.data?.message || error.message || "Ошибка отзыва приглашения");
-    }
-  };
-
   if (loading) {
     return <CircularProgress />;
   }
@@ -163,13 +112,15 @@ const TeamDetail = () => {
   captain: team.captain,
   captain_username: team.captain_username,
   created_at: team.created_at,
-  members: team.members
+  active_members: team.active_members,
+  pending_members: team.pending_members,
+  description: team.description
 });
-  const activeMembers = team.members?.filter(member => member.is_active) || [];
-  const pendingInvitations = team.members?.filter(member => !member.is_active) || [];
+  const activeMembers = team.active_members || [];
+  const pendingMembers = team.pending_members || [];
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
+    <Box sx={{ maxWidth: 1200, mx: "auto", p: 3, mt: -4 }}>
       <StyledTeamBox>
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Avatar sx={{ width: 100, height: 100, mr: 3, bgcolor: 'primary.main' }}>
@@ -206,6 +157,7 @@ const TeamDetail = () => {
               variant="contained" 
               startIcon={<PersonAddIcon />}
               onClick={handleInviteMembers}
+              sx={{mt:8}}
             >
               Пригласить
             </Button>
@@ -213,6 +165,14 @@ const TeamDetail = () => {
         </Box>
 
         <Divider sx={{ my: 3 }} />
+
+        {team.description && (
+          <Box sx={{ mt: 2, mb: 3 }}>
+            <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+              {team.description}
+            </Typography>
+          </Box>
+        )} 
 
         <Box sx={{ display: "flex", gap: 2 }}>
           <Chip 
@@ -222,11 +182,12 @@ const TeamDetail = () => {
           />
           <Chip 
             icon={<PersonAddIcon />} 
-            label={`Приглашений: ${pendingInvitations.length}`} 
+            label={`Приглашений: ${pendingMembers.length}`} 
             variant="outlined" 
           />
         </Box>
       </StyledTeamBox>
+
 
       <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 3 }}>
         <Tab label="Участники" icon={<GroupIcon />} />
@@ -234,108 +195,69 @@ const TeamDetail = () => {
         <Tab label="История игр" icon={<HistoryIcon />} />
       </Tabs>
 
-      {activeTab === 0 && (
+      
+    {activeTab === 0 && (
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>Участники команды</Typography>
-          {activeMembers.length > 0 ? (
-            <List>
-              {activeMembers.map((member) => (
-                <ListItem key={member.id}>
-                  <ListItemAvatar>
-                    <Avatar>
-                      {member.user?.username?.charAt(0).toUpperCase()}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={member.user?.username || "Неизвестный пользователь"}
-                    secondary={member.user?.email || ""}
+        <Typography variant="h6" gutterBottom>Участники команды</Typography>
+        {activeMembers.length > 0 ? (
+          <List>
+            {activeMembers.map((member) => (
+              <ListItem key={member.id}>
+                <ListItemAvatar>
+                  <Avatar>
+                    {member.username?.charAt(0).toUpperCase()}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={member.username || "Неизвестный пользователь"}
+                  secondary={member.email || ""}
+                />
+                {member.id === team.captain ? ( 
+                  <Chip 
+                    label="Капитан" 
+                    color="primary" 
+                    size="small"
+                    icon={<MilitaryTechIcon />}
                   />
-                  {member.role === 'CAPTAIN' ? (
-                    <Chip 
-                      label="Капитан" 
-                      color="primary" 
-                      size="small"
-                      icon={<MilitaryTechIcon />}
-                    />
-                  ) : (
-                    <Chip 
-                      label="Участник" 
-                      color="default" 
-                      size="small"
-                    />
-                  )}
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>В команде пока нет участников</Typography>
-          )}
-        </Paper>
+                ) : (
+                  <Chip 
+                    label="Участник" 
+                    color="default" 
+                    size="small"
+                  />
+                )}
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography>В команде пока нет участников</Typography>
+        )}
+      </Paper>
       )}
 
       {activeTab === 1 && (
         <Paper sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" gutterBottom>Ожидающие приглашения</Typography>
-            {isCaptain && (
-              <Button 
-                variant="outlined" 
-                startIcon={<PersonAddIcon />}
-                onClick={handleInviteMembers}
-              >
-                Новое приглашение
-              </Button>
-            )}
-          </Box>
-          
-          {pendingInvitations.length > 0 ? (
-            <List>
-              {pendingInvitations.map((invitation) => (
-                <ListItem key={invitation.id}>
-                  <ListItemAvatar>
-                    <Avatar>
-                      {invitation.user?.username?.charAt(0).toUpperCase()}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={invitation.user?.username || "Неизвестный пользователь"}
-                    secondary={`Приглашение отправлено: ${new Date(invitation.joined_at).toLocaleString()}`}
-                  />
-                  
-                  {isCaptain ? (
-                    <Button 
-                      size="small" 
-                      color="error"
-                      onClick={() => handleRevokeInvitation(invitation.id)}
-                    >
-                      Отозвать
-                    </Button>
-                  ) : (
-                    <Box>
-                      <Button 
-                        size="small" 
-                        color="success"
-                        sx={{ mr: 1 }}
-                        onClick={() => handleRespondToInvitation(invitation.id, true)}
-                      >
-                        Принять
-                      </Button>
-                      <Button 
-                        size="small" 
-                        color="error"
-                        onClick={() => handleRespondToInvitation(invitation.id, false)}
-                      >
-                        Отклонить
-                      </Button>
-                    </Box>
-                  )}
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>Нет ожидающих приглашений</Typography>
-          )}
-        </Paper>
+        <Typography variant="h6" gutterBottom>Приглашения</Typography>
+        {pendingMembers.length > 0 ? (
+          <List>
+            {pendingMembers.map((member) => (
+              <ListItem key={member.id}>
+                <ListItemAvatar>
+                  <Avatar>
+                    {member.username?.charAt(0).toUpperCase()}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={member.username || "Неизвестный пользователь"}
+                  secondary={member.email || ""}
+                />
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography>В команде пока нет активных приглашений</Typography>
+        )}
+      </Paper>
       )}
 
       {activeTab === 2 && (

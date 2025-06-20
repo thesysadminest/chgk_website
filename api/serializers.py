@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification, TeamMember
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -22,25 +22,60 @@ class UserSerializer(serializers.ModelSerializer):
                 cleaned_data[key] = value
         return super().to_internal_value(cleaned_data)
 
+
 class TeamSerializer(serializers.ModelSerializer):
-    captain_username = serializers.SerializerMethodField()
+    captain_username = serializers.CharField(source='get_captain_username', read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    description = serializers.CharField()
+    active_members = UserSerializer(many=True, read_only=True)
+    pending_members = UserSerializer(many=True, read_only=True)
     members_count = serializers.SerializerMethodField()
-    pending_invitations_count = serializers.SerializerMethodField()
+    pending_members_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Team
-        fields = ('id', 'name', 'team_score', 'captain', 'captain_username', 
-                 'members_count', 'pending_invitations_count')
-
-    def get_captain_username(self, obj):
-        return obj.captain.username if obj.captain else None
+        fields = (
+            'id', 'name', 'description', 'team_score', 'captain', 'captain_username',
+            'created_at', 'active_members', 'pending_members',
+            'members_count', 'pending_members_count'
+        )
+        read_only_fields = (
+            'id', 'created_at', 'captain', 'active_members',
+            'pending_members', 'members_count', 'pending_members_count'
+        )
 
     def get_members_count(self, obj):
-        return obj.members.filter(is_active=True).count()
+        """Количество активных участников"""
+        return obj.active_members.count()
 
-    def get_pending_invitations_count(self, obj):
-        return obj.members.filter(is_active=False).count()
+    def get_pending_members_count(self, obj):
+        """Количество ожидающих приглашений"""
+        return obj.pending_members.count()
 
+    def create(self, validated_data):
+        """Создание команды с автоматическим назначением капитана"""
+        user = self.context['request'].user
+        team = Team.objects.create(**validated_data)
+        
+        # Добавляем создателя как активного участника и капитана
+        team.active_members.add(user)
+        team.captain = user
+        team.save()
+        
+        return team
+
+    def update(self, instance, validated_data):
+        """Обновление команды с защитой от изменения капитана напрямую"""
+        if 'captain' in validated_data:
+            # Проверяем, что новый капитан есть в active_members
+            new_captain = validated_data['captain']
+            if not instance.active_members.filter(id=new_captain.id).exists():
+                raise serializers.ValidationError(
+                    "Капитаном может быть только активный участник команды"
+                )
+        return super().update(instance, validated_data)
+    
+    
 class QuestionSerializer(serializers.ModelSerializer):
     author_q = UserSerializer(read_only=True)
     class Meta:
@@ -251,24 +286,3 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ('id', 'notification_type', 'message', 'related_team', 'is_read', 'created_at')
         read_only_fields = ('id', 'created_at')
-
-class TeamMemberSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
-    
-    class Meta:
-        model = TeamMember
-        fields = ('id', 'user', 'team', 'role', 'is_active', 'joined_at')
-        read_only_fields = ('id', 'joined_at')
-
-
-class TeamDetailSerializer(serializers.ModelSerializer):
-    captain_username = serializers.CharField(source='get_captain_username', read_only=True)
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-    members = TeamMemberSerializer(many=True, read_only=True, source='get_members')
-    pending_invitations = TeamMemberSerializer(many=True, read_only=True, source='get_pending_invitations')
-
-    class Meta:
-        model = Team
-        fields = ('id', 'name', 'team_score', 'captain', 'captain_username',
-                 'created_at', 'members', 'pending_invitations')

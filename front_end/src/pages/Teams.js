@@ -19,6 +19,7 @@ import { checkAuth, getAccessToken, clearAuthTokens } from "../utils/AuthUtils";
 const Teams = () => {
   const theme = useTheme();
   const [rows, setRows] = useState([]);
+  const [originalRows, setOriginalRows] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,12 +77,13 @@ const Teams = () => {
           team_score: team.team_score || 0,
           captain_username: team.captain_username || "Неизвестно",
           created_at: team.created_at 
-            ? new Date(team.created_at).toLocaleDateString("ru-RU") 
-            : "Неизвестно",
+                    ? new Date(team.created_at).toLocaleDateString("ru-RU") 
+                    : "Неизвестно",
           captainId: team.captain,
         }));
 
         setRows(formattedData);
+        setOriginalRows(formattedData);
       } catch (err) {
         console.error("Error fetching teams:", err);
         if (err.response?.status === 401) {
@@ -101,6 +103,19 @@ const Teams = () => {
       setLoading(false);
     }
   }, [authState.isAuthenticated, authState.isLoading]);
+
+  useEffect(() => {
+    if (searchText === "") {
+      setRows(originalRows);
+    } else {
+      const filteredRows = originalRows.filter(row => {
+        const searchLower = searchText.toLowerCase();
+        return (
+          row.name && row.name.toLowerCase().includes(searchLower))
+      });
+      setRows(filteredRows);
+    }
+  }, [searchText, originalRows]);
 
   const handleFindMyTeams = () => {
     if (authState.user) {
@@ -167,7 +182,7 @@ const Teams = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-between", flexDirection: 'column', mb: 3}}>
+    <Box sx={{ display: "flex", justifyContent: "space-between", height: '80vh', flexDirection: 'column', mb: 3}}>
       <Stack 
         direction="row" 
         spacing={2} 
@@ -195,7 +210,7 @@ const Teams = () => {
           >
             <span>
               <Button
-                variant={authState.isAuthenticated ? "contained" : "outlined"}
+                variant={authState.isAuthenticated ? "red" : "outlined"}
                 onClick={handleFindMyTeams}
                 disabled={!authState.isAuthenticated}
                 color="primary"
@@ -220,7 +235,7 @@ const Teams = () => {
           >
             <span>
               <Button
-                variant={authState.isAuthenticated ? "contained" : "outlined"}
+                variant={authState.isAuthenticated ? "red" : "outlined"}
                 onClick={handleCreateTeam}
                 disabled={!authState.isAuthenticated}
                 color="secondary"
@@ -232,9 +247,9 @@ const Teams = () => {
         </Stack>
         
         <TextField
-          variant="outlined"
+          variant_tf="dark"
           size="small"
-          placeholder="Поиск"
+          placeholder="Поиск по названию"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           sx={{ width: "300px" }}

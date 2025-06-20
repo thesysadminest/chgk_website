@@ -120,35 +120,40 @@ const AddTeam = () => {
   };
 
 const handleCreateTeam = async () => {
-    setIsCreating(true);
-    try {
-      if (!authState.isAuthenticated || !teamName.trim()) {
-        throw new Error("Не заполнены обязательные поля");
-      }
+  setIsCreating(true);
+  try {
+    if (!authState.isAuthenticated || !teamName.trim()) {
+      throw new Error("Не заполнены обязательные поля");
+    }
 
-      const token = getAccessToken();
-      if (!token) throw new Error("Токен доступа не найден");
+    const token = getAccessToken();
+    if (!token) throw new Error("Токен доступа не найден");
 
-      // Создаем команду
-      const teamResponse = await axios.post(
-        "http://127.0.0.1:8000/api/team/create/",
-        {
-          name: teamName.trim(),
-          description: teamDescription.trim() || null,
+    // Добавляем текущую дату для created_at
+    const currentDate = new Date().toISOString();
+    
+    // Создаем команду
+    const teamResponse = await axios.post(
+      "http://127.0.0.1:8000/api/team/create/",
+      {
+        name: teamName.trim(),
+        description: teamDescription.trim() || null,
+        created_at: currentDate, // Добавляем текущую дату
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      }
+    );
 
-      const teamId = teamResponse.data.id;
-      let successfulInvitations = 0;
+    const teamId = teamResponse.data.id;
+    let successfulInvitations = 0;
 
-      // Отправляем приглашения
-      if (selectedUsers.length > 0) {
+    // Отправляем приглашения
+    if (selectedUsers.length > 0) {
+      try {
         const inviteResponse = await axios.post(
           `http://127.0.0.1:8000/api/team/${teamId}/invite/`,
           { user_ids: selectedUsers },
@@ -160,28 +165,29 @@ const handleCreateTeam = async () => {
           }
         );
         successfulInvitations = inviteResponse.data.invitations?.length || 0;
+      } catch (inviteError) {
+        console.error("Ошибка при отправке приглашений:", inviteError);
+        // Можно продолжить, даже если приглашения не отправились
       }
-
-      // Обновляем состояние с данными команды
-      setTeam({
-        members_count: 1, // Капитан
-        captain: authState.user.id, // ID текущего пользователя
-        captain_username: authState.user.username, // Username текущего пользователя
-        pending_invitations_count: successfulInvitations
-      });
-      
-      setSuccessModalOpen(true);
-      
-    } catch (error) {
-      console.error("Ошибка:", error);
-      setAuthState(prev => ({
-        ...prev,
-        error: error.response?.data?.message || error.message || "Ошибка при создании команды"
-      }));
-    } finally {
-      setIsCreating(false);
     }
-  };
+
+    setTeam({
+      ...teamResponse.data, // Используем данные из ответа сервера
+      pending_invitations_count: successfulInvitations,
+    });
+    
+    setSuccessModalOpen(true);
+    
+  } catch (error) {
+    console.error("Ошибка:", error);
+    setAuthState(prev => ({
+      ...prev,
+      error: error.response?.data?.message || error.message || "Ошибка при создании команды"
+    }));
+  } finally {
+    setIsCreating(false);
+  }
+};
 
   const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
