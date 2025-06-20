@@ -10,7 +10,7 @@ from django.core.validators import FileExtensionValidator
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'password', 'bio', 'date_joined')
+        fields = ('id', 'username', 'email', 'password', 'bio', 'date_joined', 'elo_rating')
         extra_kwargs = {"password": {"write_only": True}}
     
     def to_internal_value(self, data):
@@ -45,7 +45,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     author_q = UserSerializer(read_only=True)
     class Meta:
         model = Question
-        fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q', 'pub_date_q')
+        fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q', 'pub_date_q', 'difficulty')
         #extra_kwargs = {"author_q": {"read_only": True}}
         depth = 1
         

@@ -31,6 +31,7 @@ import HelpInfo from './pages/HelpInfo.js';
 import Teams from './pages/Teams.js';
 import TeamDetail from './pages/TeamDetail.js';
 import AddTeam from './pages/AddTeam.js';
+import Rating from './pages/Rating.js';
 
 function MainContent() {
     const location = useLocation();
@@ -95,6 +96,7 @@ function MainContent() {
                 <Route path="/game/:pack_id/results" element={<GameResults />} />
                 <Route path="/help" element ={<HelpPage/>} />
                 <Route path="/help/:section" element={<HelpInfo />} />
+                <Route path="/rating" element={<Rating />} />
             </Routes>
         </NavBar>
     );

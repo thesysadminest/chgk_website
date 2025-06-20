@@ -99,7 +99,6 @@ const UserMenu = ({ onLogout }) => {
                 {[
                   ["Профиль", "/myprofile"],
                   ["Настройки", "/settings"],
-                  ["Мой рейтинг", "/myrating"],
                   ["Моя команда", "/myteam"],
                 ].map(([text, path]) => (
                   <ListItem disablePadding key={text} sx={{ display: "block", pb: 2 }}>

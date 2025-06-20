@@ -149,7 +149,7 @@ const Users = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-between", flexDirection: 'column', mb: 3}}>
+    <Box sx={{ display: "flex", justifyContent: "space-between", flexDirection: "column", mb: 3}}>
       <Stack 
         direction="row" 
         spacing={2} 
@@ -157,7 +157,7 @@ const Users = () => {
           justifyContent: "space-between", 
           alignItems: "center", 
           mb: 2,
-          flexWrap: 'wrap',
+          flexWrap: "wrap",
           gap: 2
         }}
       >
@@ -184,7 +184,6 @@ const Users = () => {
         <TextField
           variant="outlined"
           size="small"
-          placeholder="Поиск"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           sx={{ width: "300px" }}
@@ -207,7 +206,7 @@ const Users = () => {
           onRowClick={handleRowClick}
           apiRef={apiRef}
           getRowClassName={(params) => {
-            return params.id === selectedUserId ? 'highlighted-row' : '';
+            return params.id === selectedUserId ? "highlighted-row" : "";
           }}
         />
       </Box>

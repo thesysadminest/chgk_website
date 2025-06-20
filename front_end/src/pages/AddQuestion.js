@@ -8,6 +8,10 @@ import {
   Alert, 
   CircularProgress,
   Tooltip,
+  MenuItem,
+  FormControl,
+  Select,
+  InputLabel
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
@@ -20,7 +24,8 @@ const AddQuestion = () => {
   const [questionData, setQuestionData] = useState({
     text: "",
     answer: "",
-    comment: ""
+    comment: "",
+    difficulty: 1
   });
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
@@ -85,6 +90,7 @@ const AddQuestion = () => {
           question_text: questionData.text.trim(),
           answer_text: questionData.answer.trim(),
           question_note: questionData.comment.trim(),
+          difficulty: questionData.difficulty,
           author_q: user.id,
           pack_type: type
         },
@@ -98,7 +104,7 @@ const AddQuestion = () => {
 
       if (response.status === 201) {
         setSuccessModalOpen(true);
-        setQuestionData({ text: "", answer: "", comment: "" });
+        setQuestionData({ text: "", answer: "", comment: "", difficulty: 1});
       }
     } catch (error) {
       console.error("Ошибка при добавлении вопроса:", error);
@@ -175,7 +181,7 @@ const AddQuestion = () => {
         position: 'relative',
         pb: 8
       }}>
-        <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main, fontWeight: 'bold' }}>
+        <Typography variant="h4" sx={{ mb: 3, color: theme.palette.default.black1, fontWeight: 'bold' }}>
           Создание нового вопроса
         </Typography>
 
@@ -197,13 +203,17 @@ const AddQuestion = () => {
           правилам сообщества
         </Link>.
       </Alert>
-
+      <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          py: 2,
+      }}>
         <TextField
           label="Текст вопроса"
           fullWidth
           value={questionData.text}
           onChange={handleInputChange("text")}
-          margin="normal"
           multiline
           rows={4}
           required
@@ -212,8 +222,7 @@ const AddQuestion = () => {
             backgroundColor: theme.palette.background.white, 
             '& .MuiInputBase-input': {
               color: theme.palette.text.dark
-            },
-            mb: 1
+            }
           }}
         />
 
@@ -222,17 +231,42 @@ const AddQuestion = () => {
           fullWidth
           value={questionData.answer}
           onChange={handleInputChange("answer")}
-          margin="normal"
           required
           sx={{ 
             borderRadius: 1,
             backgroundColor: theme.palette.background.white,
             '& .MuiInputBase-input': {
               color: theme.palette.text.dark
-            },
-            mb: 1
+            }
           }}
         />
+
+        <FormControl 
+          fullWidth
+          sx={{ 
+            borderRadius: 1
+          }}
+        >
+          <InputLabel id="difficulty-label">Сложность вопроса</InputLabel>
+          <Select
+            labelId="difficulty-label"
+            value={questionData.difficulty}
+            onChange={handleInputChange("difficulty")}
+            label="Сложность вопроса"
+            sx={{
+              backgroundColor: theme.palette.background.white,
+              '& .MuiSelect-select': {
+                color: theme.palette.text.dark
+              }
+            }}
+          >
+            <MenuItem value={1}>Очень просто (1 звезда)</MenuItem>
+            <MenuItem value={2}>Просто (2 звезды)</MenuItem>
+            <MenuItem value={3}>Стандарт (3 звезды)</MenuItem>
+            <MenuItem value={4}>Сложно (4 звезды)</MenuItem>
+            <MenuItem value={5}>Очень сложно (5 звезд)</MenuItem>
+          </Select>
+        </FormControl>
 
         <TextField
           label="Авторский комментарий (необязательно)"
@@ -243,12 +277,12 @@ const AddQuestion = () => {
           multiline
           rows={2}
           sx={{ 
-            mb: 4,
             '& .MuiInputBase-input': {
               color: theme.palette.text.dark
             }
           }}
         />
+        </Box>
 
         <Box sx={{ 
           position: 'absolute',

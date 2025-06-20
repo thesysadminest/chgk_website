@@ -16,7 +16,7 @@ class CustomUser(AbstractUser):
     
     bio = models.TextField(blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True) 
-    personal_score = models.IntegerField(default=0)
+    elo_rating = models.IntegerField(default=1000)
 
     def has_unread_notifications(self):
         return self.notifications.filter(is_read=False).exists()
@@ -41,13 +41,26 @@ class Team(models.Model):
         return self.captain.username if self.captain else None
     
 class Question(models.Model):
-    question_text = models.TextField(default="")
-    answer_text = models.TextField(default="")
-    question_note = models.TextField(blank=True, null=True)
+    question_text = models.TextField(default="") # текст вопроса
+    answer_text = models.TextField(default="") # текст ответа
+
+    question_note = models.TextField(blank=True, null=True) # комментарий
+
     author_q = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
     #author_q = models.PrimaryKeyRelatedField(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
     pub_date_q = models.DateTimeField("date published", auto_now_add=True)
-    
+
+    DIFFICULTY_CHOICES = [
+        (1, 'Очень просто'),
+        (2, 'Просто'),
+        (3, 'Стандарт'),
+        (4, 'Сложно'),
+        (5, 'Очень сложно'),
+    ]
+
+    difficulty = models.IntegerField(choices=DIFFICULTY_CHOICES, default=1)  
+
+
     def get_question(self):
         return self.question_text
 
@@ -151,7 +164,7 @@ class ForumMessage(models.Model):
         super().save(*args, **kwargs)
         
         if is_new:
-            # ��������� ������� ��������� � ����
+            # ��������� ������� ��������� � ����
             self.thread.message_count = self.thread.messages.count()
             self.thread.save(update_fields=['message_count'])
 

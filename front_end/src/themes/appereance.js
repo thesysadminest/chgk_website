@@ -189,6 +189,10 @@ const darkTheme = createTheme({
           '& .MuiDataGrid-overlay': {
             backgroundColor: black2,
           },
+          '& .MuiRating-root': {
+            margin: "0.8rem 0px",
+            display: "flex",
+          },
         },
       },
     },
@@ -377,6 +381,7 @@ const darkTheme = createTheme({
           },
         },
       },
+      
     },
 
     MuiTextField: {
@@ -426,7 +431,36 @@ const darkTheme = createTheme({
       ],
     },
 
-    
+    MuiRating: {
+      styleOverrides: {
+        root: {
+          color: red4,
+          '& .MuiRating-iconEmpty': {
+            color: alpha(white3, 1),
+          },
+          '& .MuiRating-iconFilled': {
+            color: red4, 
+          },
+        },
+        icon: {
+          fontSize: '1.2rem',
+        },
+        iconEmpty: {
+          color: alpha(white4, 0.3), 
+        },
+        iconFilled: {
+          color: red3,
+        },
+      },
+    }
+  },
+
+  MuiTableCell: {
+    styleOverrides: {
+      root: {
+        borderBottom: 'none',
+      },
+    },
   },
 });
 
