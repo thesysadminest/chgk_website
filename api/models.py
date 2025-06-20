@@ -18,19 +18,28 @@ class CustomUser(AbstractUser):
     date_joined = models.DateTimeField(auto_now_add=True) 
     personal_score = models.IntegerField(default=0)
 
+    def has_unread_notifications(self):
+        return self.notifications.filter(is_read=False).exists()
+
+
 class Team(models.Model):
     name = models.TextField(default="", unique=True)
     team_score = models.IntegerField(default=0)
+    captain = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="captain_teams", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)  
     
-    captain = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="users", null=True, blank=True)
-    pub_date_t = models.DateTimeField("date published",auto_now_add=True)
+    def __str__(self):
+        return self.name
     
-    def get_name(self):
-      return self.name
+    def get_members(self):
+        return self.members.filter(is_active=True)
+        
+    def get_pending_invitations(self):
+        return self.members.filter(is_active=False)
     
-    def get_team_score(self):
-        return self.team_score
-
+    def get_captain_username(self):
+        return self.captain.username if self.captain else None
+    
 class Question(models.Model):
     question_text = models.TextField(default="")
     answer_text = models.TextField(default="")
@@ -189,3 +198,36 @@ class MessageVote(models.Model):
         self.message.upvotes_count = self.message.votes.filter(vote=1).count()
         self.message.downvotes_count = self.message.votes.filter(vote=-1).count()
         self.message.save()
+        
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('TEAM_INVITE', 'Team Invitation'),
+        ('TEAM_JOIN', 'Team Join Request'),
+        ('SYSTEM', 'System Notification'),
+    ]
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    message = models.TextField()
+    related_team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+
+class TeamMember(models.Model):
+    ROLES = [
+        ('CAPTAIN', 'Captain'),
+        ('MEMBER', 'Member'),
+    ]
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='members')
+    role = models.CharField(max_length=10, choices=ROLES, default='MEMBER')
+    joined_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=False)  # False until invitation is accepted
+    
+    class Meta:
+        unique_together = ('user', 'team')

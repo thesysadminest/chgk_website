@@ -23,7 +23,7 @@ urlpatterns = [
     path('team/create/', views.TeamCreate.as_view(), name="create-team"),
     path('team/update/<int:pk>/', views.TeamUpdate.as_view(), name="update-team"),
     path('team/delete/<int:pk>/', views.TeamDelete.as_view(), name="delete-team"),
-    
+    path('team/<int:pk>/invite/', views.TeamInvitationView.as_view(), name='team-invite'),
 
     path('user/<int:pk>/', views.UserView.as_view(), name="view-user"),
     path('user/list/', views.UserViewList.as_view(), name="user-list"),
@@ -43,4 +43,8 @@ urlpatterns = [
     path('threads/<int:pk>/messages/', views.ThreadMessagesViewList.as_view(), name='thread-detail'),
     path('threads/<int:thread_id>/messages/create/', views.MessageCreateView.as_view(), name='message-create'),
     path('messages/<int:message_id>/vote/', views.MessageVoteView.as_view(), name='message-vote'),
+    
+
+    path('invitations/<int:invitation_id>/respond/', views.InvitationResponseView.as_view(), name='invitation-respond'),
+    path('notifications/', views.NotificationViewList.as_view(), name='notification-list'),
 ]

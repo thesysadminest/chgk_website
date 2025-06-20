@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification, TeamMember
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -23,10 +23,23 @@ class UserSerializer(serializers.ModelSerializer):
         return super().to_internal_value(cleaned_data)
 
 class TeamSerializer(serializers.ModelSerializer):
+    captain_username = serializers.SerializerMethodField()
+    members_count = serializers.SerializerMethodField()
+    pending_invitations_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Team
-        fields = ('id', 'name', 'team_score', 'pub_date_t', 'captain')
-        extra_kwargs = {"captain": {"write_only": True}}
+        fields = ('id', 'name', 'team_score', 'captain', 'captain_username', 
+                 'members_count', 'pending_invitations_count')
+
+    def get_captain_username(self, obj):
+        return obj.captain.username if obj.captain else None
+
+    def get_members_count(self, obj):
+        return obj.members.filter(is_active=True).count()
+
+    def get_pending_invitations_count(self, obj):
+        return obj.members.filter(is_active=False).count()
 
 class QuestionSerializer(serializers.ModelSerializer):
     author_q = UserSerializer(read_only=True)
@@ -232,3 +245,30 @@ class MessageVoteSerializer(serializers.ModelSerializer):
         if value not in [-1, 1]: 
             raise serializers.ValidationError("Vote must be -1 or 1")
         return value
+    
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('id', 'notification_type', 'message', 'related_team', 'is_read', 'created_at')
+        read_only_fields = ('id', 'created_at')
+
+class TeamMemberSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
+    
+    class Meta:
+        model = TeamMember
+        fields = ('id', 'user', 'team', 'role', 'is_active', 'joined_at')
+        read_only_fields = ('id', 'joined_at')
+
+
+class TeamDetailSerializer(serializers.ModelSerializer):
+    captain_username = serializers.CharField(source='get_captain_username', read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    members = TeamMemberSerializer(many=True, read_only=True, source='get_members')
+    pending_invitations = TeamMemberSerializer(many=True, read_only=True, source='get_pending_invitations')
+
+    class Meta:
+        model = Team
+        fields = ('id', 'name', 'team_score', 'captain', 'captain_username',
+                 'created_at', 'members', 'pending_invitations')

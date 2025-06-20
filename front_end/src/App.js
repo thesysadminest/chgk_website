@@ -28,6 +28,9 @@ import GameRedirect from './pages/GameRedirect.js';
 import GameResults from './pages/GameResults.js';
 import HelpPage from './pages/HelpPage.js';
 import HelpInfo from './pages/HelpInfo.js';
+import Teams from './pages/Teams.js';
+import TeamDetail from './pages/TeamDetail.js';
+import AddTeam from './pages/AddTeam.js';
 
 function MainContent() {
     const location = useLocation();
@@ -77,6 +80,9 @@ function MainContent() {
                 <Route path="/pack/:id/question/:id" element={<QuestionDetail />} />
                 <Route path="/users" element={<Users />} />
                 <Route path="/user/:id" element={<UserDetail />} />
+                <Route path="/teams" element={<Teams / >} />
+                <Route path="/team/:id" element = {<TeamDetail />} />
+                <Route path="/add-team" element ={<AddTeam />} />
                 <Route path="/questions" element={<Question />} />
                 <Route path="/question/:id" element={<QuestionDetail />} />
                 <Route path="/add-question" element={<AddQuestion />} />

@@ -26,11 +26,13 @@ from .serializers import (
     RegisterSerializer, LoginSerializer,
     GameSessionSerializer,
     ForumThreadSerializer, ForumMessageSerializer, 
-    MessageVoteSerializer
+    MessageVoteSerializer,
+    NotificationSerializer,
+    TeamMemberSerializer, TeamDetailSerializer
 )
 
 from django.contrib.auth.models import AbstractUser
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification, TeamMember
 
 import uuid
 
@@ -171,12 +173,11 @@ class AddQuestionToPack(viewsets.ModelViewSet):
 
 ###     TEAM      ###
 
-class TeamView(generics.ListCreateAPIView):
-    serializer_class = TeamSerializer
+class TeamView(generics.RetrieveAPIView):
+    serializer_class = TeamDetailSerializer
     permission_classes = [permissions.AllowAny]
-
-    def get_queryset(self):
-        return Team.objects.filter(id=self.kwargs['pk']) 
+    queryset = Team.objects.all()
+   
     
 class TeamViewList(generics.ListCreateAPIView):
     serializer_class = TeamSerializer
@@ -189,6 +190,19 @@ class TeamCreate(generics.ListCreateAPIView):
     serializer_class = TeamSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Team.objects.all()
+
+    def perform_create(self, serializer):
+        team = serializer.save(captain=self.request.user)
+        # Автоматически добавляем капитана в участники
+        TeamMember.objects.create(
+            user=self.request.user,
+            team=team,
+            role='CAPTAIN',
+            is_active=True
+        )
+        # Обновляем счетчик команды
+        team.team_score = self.request.user.personal_score
+        team.save()
 
 class TeamDelete(generics.DestroyAPIView):
     serializer_class = TeamSerializer
@@ -620,6 +634,101 @@ class MessageVoteView(generics.CreateAPIView):
             'downvotes_count': message.downvotes_count,
             'message_id': message.id
         }, status=status.HTTP_201_CREATED)
+    
+class TeamInvitationView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):  # Изменяем team_id на pk
+        try:
+            team = Team.objects.get(id=pk)  # Используем pk вместо team_id
+            if team.captain != request.user:
+                return Response({"error": "Only team captain can send invitations"}, 
+                              status=status.HTTP_403_FORBIDDEN)
+                
+            user_ids = request.data.get('user_ids', [])
+            if not user_ids:
+                return Response({"error": "No users specified"}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+                
+            invitations = []
+            for user_id in user_ids:
+                try:
+                    user = CustomUser.objects.get(id=user_id)
+                    
+                    # Проверяем, не является ли пользователь уже членом команды
+                    if TeamMember.objects.filter(team=team, user=user, is_active=True).exists():
+                        continue
+                        
+                    # Создаем или обновляем приглашение
+                    team_member, created = TeamMember.objects.get_or_create(
+                        team=team,
+                        user=user,
+                        defaults={'role': 'MEMBER', 'is_active': False}
+                    )
+                    
+                    # Создаем уведомление
+                    notification = Notification.objects.create(
+                        user=user,
+                        notification_type='TEAM_INVITE',
+                        message=f"You've been invited to join team {team.name}",
+                        related_team=team
+                    )
+                    
+                    invitations.append({
+                        'user_id': user.id,
+                        'username': user.username,
+                        'invitation_id': team_member.id,
+                        'notification_id': notification.id
+                    })
+                except CustomUser.DoesNotExist:
+                    continue
+                    
+            return Response({"invitations": invitations}, 
+                          status=status.HTTP_201_CREATED)
+            
+        except Team.DoesNotExist:
+            return Response({"error": "Team not found"}, 
+                          status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class InvitationResponseView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, invitation_id):
+        try:
+            team_member = TeamMember.objects.get(id=invitation_id, user=request.user, is_active=False)
+            response = request.data.get('response')
+            
+            if response == 'accept':
+                team_member.is_active = True
+                team_member.save()
+                
+                # Создаем уведомление для капитана
+                Notification.objects.create(
+                    user=team_member.team.captain,
+                    notification_type='TEAM_JOIN',
+                    message=f"{request.user.username} has accepted your invitation to join {team_member.team.name}",
+                    related_team=team_member.team
+                )
+                
+                return Response({"message": "Invitation accepted"}, status=200)
+            elif response == 'reject':
+                team_member.delete()
+                return Response({"message": "Invitation rejected"}, status=200)
+            else:
+                return Response({"error": "Invalid response"}, status=400)
+                
+        except TeamMember.DoesNotExist:
+            return Response({"error": "Invitation not found"}, status=404)
+
+
+class NotificationViewList(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
 
