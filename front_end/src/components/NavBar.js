@@ -226,6 +226,7 @@ export default function NavBar({ children }) {
     case 2: return <img src="/user_w.ico" alt="user" style={{ width: size, height: size }} />;
     case 3: return <img src="/team_w.ico" alt="team" style={{ width: size, height: size }} />;
     case 4: return <img src="/home_w.ico" alt="home" style={{ width: size, height: size }} />;
+    case 5: return <img src="/rating_w.png" alt="rating" style={{ width: size, height: size }} />;
     default: return null;
     }
   };
@@ -247,6 +248,7 @@ export default function NavBar({ children }) {
     case "/add-pack": return "Добавить пак";
     case "/add-pack/add-question": return "Добавить пак";
     case "/myprofile": return "Мой профиль";
+    case "/rating": return "Рейтинг";
     default: return "";
     }
   };
@@ -333,6 +335,7 @@ export default function NavBar({ children }) {
               ["Пакеты", "/packs", 1],
               ["Пользователи", "/users", 2],
               ["Команды", "/teams", 3],
+              ["Рейтинг", "/rating", 5],
             ].map(([text, path, iconIndex]) => {
               const isActive = location.pathname === path;
               return (

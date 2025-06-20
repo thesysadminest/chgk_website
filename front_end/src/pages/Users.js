@@ -175,7 +175,7 @@ const Users = () => {
           justifyContent: "space-between", 
           alignItems: "center", 
           mb: 2,
-          flexWrap: 'wrap',
+          flexWrap: "wrap",
           gap: 2
         }}
       >
@@ -225,7 +225,7 @@ const Users = () => {
           onRowClick={handleRowClick}
           apiRef={apiRef}
           getRowClassName={(params) => {
-            return params.id === selectedUserId ? 'highlighted-row' : '';
+            return params.id === selectedUserId ? "highlighted-row" : "";
           }}
         />
       </Box>

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { DataGrid } from "@mui/x-data-grid";
-import { Box, Link as MuiLink, Button, TextField, Stack } from "@mui/material";
+
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { Box, Link as MuiLink, Button, TextField, Stack, Rating } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 
 const Questions = () => {
   const [rows, setRows] = useState([]);
@@ -19,7 +21,8 @@ const Questions = () => {
           question_text: item.question_text,
           answer_text: item.answer_text,
           author_q: item.author_q?.username || "Неизвестно",
-          pub_date_q: (item.pub_date_q ? new Date(item.pub_date_q).toLocaleDateString("ru-RU") : "Неизвестно")
+          pub_date_q: (item.pub_date_q ? new Date(item.pub_date_q).toLocaleDateString("ru-RU") : "Неизвестно"),
+          difficulty: item.difficulty || 1
         }));
         setRows(data);
         setOriginalRows(data);
@@ -50,8 +53,19 @@ const Questions = () => {
     setRows(filteredRows);
   };
 
+  const renderStars = (params) => {
+    return (
+      <Rating
+        name={"difficulty-${params.id}"}
+        value={params.value}
+        max={5}
+        readOnly
+      />
+    );
+  };
+
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <Stack 
         direction="row" 
         spacing={2} 
@@ -59,7 +73,7 @@ const Questions = () => {
           justifyContent: "space-between", 
           alignItems: "center", 
           mb: 2,
-          flexWrap: 'wrap',
+          flexWrap: "wrap",
           gap: 2
         }}
       >
@@ -90,6 +104,7 @@ const Questions = () => {
           { field: "question_text", headerName: "Вопрос", flex: 3 },
           { field: "author_q", headerName: "Автор", flex: 2 },
           { field: "pub_date_q", headerName: "Дата", flex: 2 },
+          { field: "difficulty", headerName: "Сложность", flex: 1.5, renderCell: renderStars}
         ]}
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}

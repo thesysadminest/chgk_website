@@ -303,9 +303,12 @@ class CurrentUserView(APIView):
     def get(self, request):
         try:
             user = request.user
+            print(f"Current user: {user.username}, auth: {request.auth}")
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        
         except Exception as e:
+            print(f"Error in /api/user/me/: {str(e)}")
             return Response(
                 {"error": "Не удалось получить данные пользователя", "details": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
@@ -387,14 +390,23 @@ class SubmitAnswerView(APIView):
             correct_answer = (question.answer_text or "").strip().lower()
             is_correct = user_answer == correct_answer
 
+            rating_change = question.difficulty * 10
+
             if is_correct:
                 session.correct_answers += 1
-                session.save()
+                request.user.elo_rating += rating_change
+            else:
+                request.user.elo_rating = max(500, request.user.elo_rating - rating_change) # минимум ело: 500
+            
+            request.user.save()
+            session.save()
 
             return Response({
                 "is_correct": is_correct,
                 "correct_answer": correct_answer,
                 "current_score": session.correct_answers,
+                "rating_change": rating_change,
+                "new_rating": request.user.elo_rating,
                 "session": GameSessionSerializer(session).data
             })
 
