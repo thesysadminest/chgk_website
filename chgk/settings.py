@@ -13,7 +13,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 from django.conf import settings
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -94,27 +97,31 @@ WSGI_APPLICATION = 'chgk.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# settings for virtual machine; currently not working
-'''
+
+# first one = deployment ver
+# second one = development ver
+# make sure you have the right one !
+# hashtag change
+
 DATABASES = {
       "default": {
         "ENGINE": "django.db.backends.postgresql",
-        'NAME': 'django_db',
-        'USER': 'django_app',
-        'PASSWORD': 'superpass',
-        'HOST': '51.250.11.44',
-        'PORT': '5432',
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PWD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }  
 }
-'''
 
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
         
     }
-}
+} '''
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -161,7 +168,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWS_CREDENTIALS = True
+'''
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',  
     'http://localhost:3000',
 ]
+'''
