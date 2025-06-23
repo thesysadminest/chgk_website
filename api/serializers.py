@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification
+from .models import Question, Pack, Team, TeamMember, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -78,9 +78,11 @@ class TeamSerializer(serializers.ModelSerializer):
     
 class QuestionSerializer(serializers.ModelSerializer):
     author_q = UserSerializer(read_only=True)
+    image_attached = serializers.SerializerMethodField()
+    
     class Meta:
         model = Question
-        fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q', 'pub_date_q', 'difficulty')
+        fields = ('id', 'question_text', 'answer_text', 'question_note', 'image_attached', 'author_q', 'pub_date_q', 'difficulty')
         #extra_kwargs = {"author_q": {"read_only": True}}
         depth = 1
         
@@ -89,6 +91,9 @@ class QuestionSerializer(serializers.ModelSerializer):
             'id': obj.author_q.id if obj.author_q else None,
             'username': obj.author_q.username if obj.author_q else 'Неизвестно'
         }
+    
+    def get_image_attached(self, obj):
+        return bool(obj.image)
     
     def create(self, validated_data):
         questions = validated_data.pop('questions', [])
@@ -286,3 +291,24 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ('id', 'notification_type', 'message', 'related_team', 'is_read', 'created_at')
         read_only_fields = ('id', 'created_at')
+
+class TeamMemberSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
+    
+    class Meta:
+        model = TeamMember
+        fields = ('id', 'user', 'team', 'role', 'is_active', 'joined_at')
+        read_only_fields = ('id', 'joined_at')
+
+
+class TeamDetailSerializer(serializers.ModelSerializer):
+    captain_username = serializers.CharField(source='get_captain_username', read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    members = TeamMemberSerializer(many=True, read_only=True, source='get_members')
+    pending_invitations = TeamMemberSerializer(many=True, read_only=True, source='get_pending_invitations')
+
+    class Meta:
+        model = Team
+        fields = ('id', 'name', 'team_score', 'captain', 'captain_username',
+                 'created_at', 'members', 'pending_invitations')

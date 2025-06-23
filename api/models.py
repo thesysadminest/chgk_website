@@ -66,9 +66,8 @@ class Team(models.Model):
 class Question(models.Model):
     question_text = models.TextField(default="") # текст вопроса
     answer_text = models.TextField(default="") # текст ответа
-
     question_note = models.TextField(blank=True, null=True) # комментарий
-
+    image = models.ImageField(upload_to='media/questions', null=True)
     author_q = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
     #author_q = models.PrimaryKeyRelatedField(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
     pub_date_q = models.DateTimeField("date published", auto_now_add=True)
@@ -81,7 +80,25 @@ class Question(models.Model):
         (5, 'Очень сложно'),
     ]
 
-    difficulty = models.IntegerField(choices=DIFFICULTY_CHOICES, default=1)  
+    difficulty = models.IntegerField(choices=DIFFICULTY_CHOICES, default=1)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old = Question.objects.get(pk=self.pk)
+            if old.image and old.image != self.image:
+                old.image.delete(save=False)
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete(save=False)
+        super().delete(*args, **kwargs)
+
+    def delete_image(self):
+        if self.image:
+            self.image.delete(save=False)
+            self.image = None
+            self.save()
 
 
     def get_question(self):
@@ -93,7 +110,6 @@ class Question(models.Model):
     def get_authorq(self):
         return self.author_q.username if self.author_q else "Unknown"
 
-    
     def get_dateq(self):
       return self.pub_date_q  
     
@@ -252,3 +268,17 @@ class Notification(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+class TeamMember(models.Model):
+    ROLES = [
+        ('CAPTAIN', 'Captain'),
+        ('MEMBER', 'Member'),
+    ]
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='members')
+    role = models.CharField(max_length=10, choices=ROLES, default='MEMBER')
+    joined_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=False)  # False until invitation is accepted
+    
+    class Meta:
+        unique_together = ('user', 'team')

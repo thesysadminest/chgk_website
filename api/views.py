@@ -2,10 +2,15 @@ from django.shortcuts import render
 from rest_framework import generics, viewsets, status, permissions
 
 import random
+import os
+from PIL import Image
+from io import BytesIO
 
 from django.db import transaction
 from django.db.models import Sum, Count, Max
 
+import mimetypes
+from django.http import FileResponse
 from django.core.exceptions import ValidationError
 
 from django.shortcuts import get_object_or_404
@@ -56,6 +61,36 @@ class QuestionView(generics.RetrieveAPIView):
     queryset = Question.objects.all()  
     serializer_class = QuestionSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if request.query_params.get('image') == 'true':
+            return self._return_image(instance)
+        
+        return self.retrieve(request, *args, **kwargs)
+
+    def _return_image(self, instance):
+        if not instance.image:
+            return Response(
+                {'error': 'This question has no any image!'},
+                status=404
+            )
+        
+        try:
+            image_file = instance.image.open('rb')
+            content_type = mimetypes.guess_type(instance.image.name)[0] or 'application/octet-stream'
+            
+            return FileResponse(
+                image_file,
+                content_type=content_type,
+                as_attachment=False
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=500
+            )
    
     
 class QuestionCreate(generics.ListCreateAPIView):
@@ -79,12 +114,21 @@ class QuestionDelete(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Question.objects.all()
 
+    def delete(self, request, pk=None):
+        if request.query_params.get('image') == 'true':
+            instance = self.get_object()
+            instance.delete_image()
+            return Response({"message" : "Image removed successfully!"}, status=204)
+
 class QuestionUpdate(generics.UpdateAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def update_text(self, request):
+    def update(self, request, pk=None):
+        if request.query_params.get('image') == 'true':
+            return self.update_image(request, pk)
+        
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         
@@ -93,6 +137,55 @@ class QuestionUpdate(generics.UpdateAPIView):
             return Response({"message" : "Data updated successfully!"})
         else:
             return Response({"message" : "Data update failed."})
+        
+    def update_image(self, request, pk=None):
+        instance = self.get_object()
+        if 'image' not in request.FILES:
+            return Response(
+                {'error': 'No image provided'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        image_file = request.FILES['image']
+        
+        try:
+            # Валидация размера (макс 5MB)
+            if image_file.size > 5 * 1024 * 1024:
+                raise ValidationError("Максимальный размер файла - 5MB")
+            
+            # Валидация типа файла
+            valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+            ext = os.path.splitext(image_file.name)[1].lower()
+            if ext not in valid_extensions:
+                raise ValidationError("Неподдерживаемый формат изображения")
+            
+            # Оптимизация изображения (если JPEG)
+            if ext in ['.jpg', '.jpeg']:
+                img = Image.open(image_file)
+                output = BytesIO()
+                img.save(output, format='JPEG', quality=85, optimize=True)
+                output.seek(0)
+                image_file.file = output
+                image_file.size = output.getbuffer().nbytes
+            
+            # Сохраняем новое изображение (старое удалится автоматически через модель)
+            instance.image = image_file
+            instance.save()
+            
+            return Response({
+                'status': 'Изображение обновлено',
+            }, status=status.HTTP_200_OK)
+            
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Ошибка обработки изображения: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 ###     PACK      ###
 
