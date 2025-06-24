@@ -3,3 +3,4 @@ django-cors-headers
 djangorestframework-simplejwt 
 psycopg2-binary>=2.9.0
 dotenv
+pillow
