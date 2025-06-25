@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
@@ -65,7 +66,7 @@ const AddPack = () => {
         if (!token) throw new Error("Токен доступа не найден");
 
         const questionsResponse = await axios.get(
-          "http://127.0.0.1:8000/api/question/list/",
+          "${API_BASE_URL}/api/question/list/",
           { headers: { "Authorization": `Bearer ${token}` } }
         );
 
@@ -128,7 +129,7 @@ const AddPack = () => {
       if (!token) throw new Error("Токен доступа не найден");
 
       const packResponse = await axios.post(
-        "http://127.0.0.1:8000/api/pack/create/",
+        "${API_BASE_URL}/api/pack/create/",
         {
           name: packName.trim(),
           description: packDescription.trim()
@@ -149,7 +150,7 @@ const AddPack = () => {
 
       for (const questionId of selectedQuestions) {
         await axios.post(
-          `http://127.0.0.1:8000/api/pack/question/${packId}/`,
+          `${API_BASE_URL}/api/pack/question/${packId}/`,
           { question_id: questionId },
           {
             headers: {

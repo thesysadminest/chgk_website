@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import axios from "axios";
 
 import React, { useState, useEffect } from "react";
@@ -14,7 +15,7 @@ const Questions = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/question/list/")
+    axios.get("${API_BASE_URL}/api/question/list/")
       .then(response => {
         const data = response.data.map((item) => ({
           id: item.id,

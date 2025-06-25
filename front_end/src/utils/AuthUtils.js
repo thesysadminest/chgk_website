@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 export const setAuthTokens = ({ access, refresh }) => {
   localStorage.setItem('access_token', access);
   localStorage.setItem('refresh_token', refresh);
@@ -60,7 +61,7 @@ export const getUserData = () => {
  */
 export const refreshAccessToken = async (refreshToken) => {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/token/refresh/', {
+    const response = await fetch('${API_BASE_URL}/api/token/refresh/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +90,7 @@ export const refreshAccessToken = async (refreshToken) => {
  */
 export const verifyToken = async (token) => {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/user/me/', {
+    const response = await fetch('${API_BASE_URL}/api/user/me/', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

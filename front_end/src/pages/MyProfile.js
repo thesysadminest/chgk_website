@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import { 
   Box, 
@@ -48,7 +49,7 @@ const MyProfile = () => {
         }
 
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userData.id}/`,
+          `${API_BASE_URL}/api/user/${userData.id}/`,
           {
             headers: {
               "Authorization": `Bearer ${token}`

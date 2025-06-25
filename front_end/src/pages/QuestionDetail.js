@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getAccessToken, getUserData } from "../utils/AuthUtils";
@@ -30,7 +31,7 @@ const QuestionDetail = () => {
   const [isMyQuestion, setIsMyQuestion] = useState(false);
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:8000/api/question/${question.id}/`)
+    axios.get(`${API_BASE_URL}/api/question/${question.id}/`)
       .then(response => {
         const data = Array.isArray(response.data) ? response.data[0] : response.data;
         console.log("Полученные данные вопроса:", data); // Добавим лог для отладки
@@ -145,7 +146,7 @@ const QuestionDetail = () => {
       const token = getAccessToken();
       if (!token) throw new Error("Токен доступа не найден");
       const questionResponse = await axios.put(
-        `http://127.0.0.1:8000/api/question/update/${question.id}/`,
+        `${API_BASE_URL}/api/question/update/${question.id}/`,
         {
           question_text: questionTextEdit.trim(),
           answer_text: questionAnsEdit.trim()
@@ -164,7 +165,7 @@ const QuestionDetail = () => {
 
       if (deleteImage) {
         const imgDeleteResponse = await axios.delete(
-          `http://127.0.0.1:8000/api/question/delete/${question.id}/?image=true`,
+          `${API_BASE_URL}/api/question/delete/${question.id}/?image=true`,
           {
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -185,7 +186,7 @@ const QuestionDetail = () => {
         formData.append('image', newImage);
 
         const imgReplaceResponse = await axios.put(
-          `http://127.0.0.1:8000/api/question/update/${question.id}/?image=true`, formData,
+          `${API_BASE_URL}/api/question/update/${question.id}/?image=true`, formData,
           {
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -230,7 +231,7 @@ const QuestionDetail = () => {
       const token = getAccessToken();
       if (!token) throw new Error("Токен доступа не найден");
       const questionResponse = await axios.delete(
-        `http://127.0.0.1:8000/api/question/delete/${question.id}/`,
+        `${API_BASE_URL}/api/question/delete/${question.id}/`,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -382,7 +383,7 @@ const QuestionDetail = () => {
                 src={deleteImage ? "/side_owl.jpg"
                      : (newImageUrl ? newImageUrl
                         : (finalImageUrl ? finalImageUrl
-                           : (question.image_attached ? `http://127.0.0.1:8000/api/question/${question.id}/?image=true` : "/side_owl.jpg")))}
+                           : (question.image_attached ? `${API_BASE_URL}/api/question/${question.id}/?image=true` : "/side_owl.jpg")))}
                 style={{
                   maxHeight: "50vh", maxWidth: "40vw",
                   borderRadius: "20px",

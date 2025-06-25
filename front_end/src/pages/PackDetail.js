@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
@@ -33,7 +34,7 @@ const PackDetail = () => {
     if (authorsCache[authorId]) return authorsCache[authorId];
     
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/user/${authorId}/`);
+      const response = await axios.get(`${API_BASE_URL}/api/user/${authorId}/`);
       const username = response.data.username;
       // Сохраняем в кэш
       setAuthorsCache(prev => ({ ...prev, [authorId]: username }));
@@ -48,7 +49,7 @@ const PackDetail = () => {
     //if (!pack.id) return;
     const fetchPackData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/pack/${pack.id}/`);
+        const response = await axios.get(`${API_BASE_URL}/api/pack/${pack.id}/`);
         console.log("Raw response data:", response.data);
         
         // Упрощенная обработка
@@ -122,7 +123,7 @@ const PackDetail = () => {
       const token = getAccessToken();
       if (!token) throw new Error("Токен доступа не найден");
       const packResponse = await axios.put(
-        `http://127.0.0.1:8000/api/pack/update/${pack.id}/`,
+        `${API_BASE_URL}/api/pack/update/${pack.id}/`,
         {
           name: packNameEdit.trim(),
           description: packDescrEdit.trim()
@@ -160,7 +161,7 @@ const PackDetail = () => {
       const token = getAccessToken();
       if (!token) throw new Error("Токен доступа не найден");
       const packResponse = await axios.delete(
-        `http://127.0.0.1:8000/api/pack/delete/${pack.id}/`,
+        `${API_BASE_URL}/api/pack/delete/${pack.id}/`,
         {
           headers: {
             "Authorization": `Bearer ${token}`,

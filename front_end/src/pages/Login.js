@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState } from "react";
 import { 
   Box, 
@@ -41,7 +42,7 @@ const Login = () => {
       setError(null);
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/user/login/", 
+        "${API_BASE_URL}/api/user/login/", 
         {
           username: formData.username,
           password: formData.password

@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Typography, Avatar, Divider, List, ListItem, ListItemText, 
@@ -32,7 +33,7 @@ const UserDetail = () => {
       try {
        
         const userResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/`
+          `${API_BASE_URL}/api/user/${userId}/`
         );
         
         setUserData(userResponse.data[0]);
