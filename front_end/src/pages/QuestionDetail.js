@@ -1,9 +1,10 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getAccessToken, getUserData } from "../utils/AuthUtils";
 import { Box, Typography, TextField, Button, Stack, Paper, Link as MuiLink, Alert, CircularProgress, Tooltip } from "@mui/material";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
-import { RotateLeft, Edit, Delete, DeleteForever, Done, Close, Face, Event } from "@mui/icons-material";
+import { RotateLeft, Edit, Delete, DeleteForever, Done, Close, Face, Event, AddPhotoAlternate, HideImage, Undo } from "@mui/icons-material";
 
 const QuestionDetail = () => {
   const location = useLocation();
@@ -13,6 +14,7 @@ const QuestionDetail = () => {
     author_q: "",
     author_id: "",
     pub_date_q: "",
+    image_attached: "",
     question_text: "",
     answer_text: ""
   });
@@ -29,7 +31,7 @@ const QuestionDetail = () => {
   const [isMyQuestion, setIsMyQuestion] = useState(false);
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:8000/api/question/${question.id}/`)
+    axios.get(`${API_BASE_URL}/api/question/${question.id}/`)
       .then(response => {
         const data = Array.isArray(response.data) ? response.data[0] : response.data;
         console.log("Полученные данные вопроса:", data); // Добавим лог для отладки
@@ -52,6 +54,7 @@ const QuestionDetail = () => {
           question_text: data.question_text || "Неизвестно",
           answer_text: data.answer_text || "",
           author_q: authorName, // Используем обработанное имя автора
+          image_attached: data.image_attached || false,
           author_id: data.author_q?.id || "Неизвестно",
           pub_date_q: data.pub_date_q || "Неизвестно"
         });
@@ -69,6 +72,12 @@ const QuestionDetail = () => {
   const [buttonsPending, setButtonsPending] = useState(false);
   const [buttonsEdit, setButtonsEdit] = useState(false);
   const [buttonsDelete, setButtonsDelete] = useState(false);
+  
+  const [newImage, setNewImage] = useState("");
+  const [newImageUrl, setNewImageUrl] = useState("");
+  const [deleteImage, setDeleteImage] = useState(false);
+
+  const [finalImageUrl, setFinalImageUrl] = useState("");
 
   const [goodState, setGoodState] = useState("");
   const [errState, setErrState] = useState("");
@@ -80,6 +89,10 @@ const QuestionDetail = () => {
     setQuestionTextEdit(question.question_text);
     setQuestionAnsEdit(question.answer_text);
     setButtonsEdit(true);
+    
+    setGoodState("");
+    setErrState("");
+    setDeletedState(false);
   };
 
   const handleDeleteButton = () => {
@@ -90,6 +103,39 @@ const QuestionDetail = () => {
     if (buttonsPending) return;
     setButtonsEdit(false);
     setButtonsDelete(false);
+    setNewImage("");
+    setDeleteImage(false);
+    setNewImageUrl("");
+  };
+
+  const handleImgEditButton = () => {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = "image/*";
+
+    input.onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      setNewImage(file);
+
+      const imageUrl = URL.createObjectURL(file);
+      setNewImageUrl(imageUrl);
+    }
+
+    
+    input.click();
+    // setButtonsImgEdit(true);
+  };
+
+  const handleImgDeleteButton = () => {
+    setDeleteImage(true);
+  };
+
+  const handleImgUndoButton = () => {
+    setNewImage("");
+    setNewImageUrl("");
+    setDeleteImage(false);
   };
 
   const handleEditQuestion = async () => {
@@ -100,7 +146,7 @@ const QuestionDetail = () => {
       const token = getAccessToken();
       if (!token) throw new Error("Токен доступа не найден");
       const questionResponse = await axios.put(
-        `http://127.0.0.1:8000/api/question/update/${question.id}/`,
+        `${API_BASE_URL}/api/question/update/${question.id}/`,
         {
           question_text: questionTextEdit.trim(),
           answer_text: questionAnsEdit.trim()
@@ -117,6 +163,44 @@ const QuestionDetail = () => {
         throw new Error("Ошибка при редактировании вопроса");
       }
 
+      if (deleteImage) {
+        const imgDeleteResponse = await axios.delete(
+          `${API_BASE_URL}/api/question/delete/${question.id}/?image=true`,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (imgDeleteResponse.status !== 204) {
+          throw new Error("Ошибка при удалении изображения");
+        }
+
+        question.image_attached = false;
+      }
+
+      if (newImage) {
+        const formData = new FormData();
+        formData.append('image', newImage);
+
+        const imgReplaceResponse = await axios.put(
+          `${API_BASE_URL}/api/question/update/${question.id}/?image=true`, formData,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+            },
+          });
+
+        if (imgReplaceResponse.status !== 200) {
+          throw new Error("Ошибка при редактировании изображения");
+        }
+
+        question.image_attached = true;
+      }
+
       question.question_text = questionTextEdit.trim();
       question.answer_text = questionAnsEdit.trim();
       setGoodState("Информация обновлена!");
@@ -128,9 +212,17 @@ const QuestionDetail = () => {
       setButtonsPending(false);
       handleRetry();
       handleCloseButton();
+
+      setDeleteImage(false);
+      setFinalImageUrl("");
+      if (newImage) {
+        setFinalImageUrl(newImageUrl);
+        setNewImage("");
+        setNewImageUrl("");
+      }
     }
   };
-
+  
   const handleDeleteQuestion = async () => {
     if (buttonsPending) return;
     setButtonsPending(true);
@@ -139,7 +231,7 @@ const QuestionDetail = () => {
       const token = getAccessToken();
       if (!token) throw new Error("Токен доступа не найден");
       const questionResponse = await axios.delete(
-        `http://127.0.0.1:8000/api/question/delete/${question.id}/`,
+        `${API_BASE_URL}/api/question/delete/${question.id}/`,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -276,82 +368,132 @@ const QuestionDetail = () => {
             )}
         </Stack>
 
-        {!(buttonsEdit) && (
-          <>
-            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+        <Stack
+          direction="row" 
+          sx={{ 
+            mb: 2,
+            gap: 4
+          }}
+        >
+          {question.author_id && (
+            <Box sx={{position: "relative"}}>
+              <img
+
+                
+                src={deleteImage ? "/side_owl.jpg"
+                     : (newImageUrl ? newImageUrl
+                        : (finalImageUrl ? finalImageUrl
+                           : (question.image_attached ? `${API_BASE_URL}/api/question/${question.id}/?image=true` : "/side_owl.jpg")))}
+                style={{
+                  maxHeight: "50vh", maxWidth: "40vw",
+                  borderRadius: "20px",
+                  filter: buttonsEdit ? "blur(5px) brightness(60%)" : "blur(0px) brightness(100%)",
+                  transition: "filter 0.3s ease-in-out"}}
+                alt="Раздатка"
+              />
+              <Stack spacing={2} direction="row" sx={{position: "absolute", top: "16px", left: "16px"}}>
+                {buttonsEdit && (
+                  <>
+                    {!(newImage || deleteImage) && (
+                      <>
+                        <Button onClick={handleImgEditButton} variant="grey"> 
+                          <AddPhotoAlternate />
+                        </Button>
+
+                        <Button onClick={handleImgDeleteButton} variant="grey" disabled={!question.image_attached}>
+                          <HideImage />
+                        </Button>
+                      </>
+                    )}
+
+                    {(newImage || deleteImage) && (
+                      <Button onClick={handleImgUndoButton} variant="grey">
+                        <Undo />
+                      </Button>
+                    )}
+                  </>
+                )}
+              </Stack>
+            </Box>
+          )}
+
+          {!(buttonsEdit) && (
+            <Typography variant="h5" gutterBottom>
               Текст вопроса: {question.question_text}
             </Typography>
-
-            <Tooltip disableHoverListener={user.username} disableFocusListener disableTouchListener title={
-                       <Typography variant="h6">
-                         Для ввода и проверки ответа необходимо{" "}
-                         <MuiLink component={Link} to="/login" state={{ redirect: location }}>
-                           авторизоваться
-                         </MuiLink>.
-                       </Typography>
-                     }>
-              <span>
-                <TextField
-                  disabled={!user.username}
-                  InputLabelProps={{ shrink: true }}
-                  label="Ваш ответ"
-                  multiline
-                  rows={3}
-                  value={answer}
-                  onChange={handleAnswerChange}
-                  variant="filled"
-                  fullWidth
-                  sx={{ mt: 2, mb: 2 }}
-                  style={{ backgroundColor: answerColor }}
-                />
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Button
-                    disabled={!user.username}
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSubmit}
-                    sx={{ mr: 2 }}
-                  >
-                    Отправить ответ
-                  </Button>
-                  {feedback === "Ответ неверный" && (
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      startIcon={<RotateLeft />}
-                      onClick={handleRetry}
-                    >
-                      Попробовать снова
-                    </Button>
-                  )}
-                </Box>
-              </span>
-            </Tooltip>
-          </>
-        )}
-        
-        {buttonsEdit && (
-          <>
-            <TextField
-              label="Текст вопроса *"
-              fullWidth
-              disabled={buttonsPending}
-              defaultValue={question.question_text}
-              onChange={(e) => setQuestionTextEdit(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              label="Правильный ответ *"
-              fullWidth
-              disabled={buttonsPending}
-              defaultValue={question.answer_text}
-              onChange={(e) => setQuestionAnsEdit(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-          </>
-        )}
+          )}
+          
+          {buttonsEdit && (          
+            <Box>
+              <TextField
+                label="Текст вопроса *"
+                fullWidth
+                disabled={buttonsPending}
+                defaultValue={question.question_text}
+                onChange={(e) => setQuestionTextEdit(e.target.value)}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                label="Правильный ответ *"
+                fullWidth
+                disabled={buttonsPending}
+                defaultValue={question.answer_text}
+                onChange={(e) => setQuestionAnsEdit(e.target.value)}
+                sx={{ mb: 2 }}
+              />
+            </Box>
+          )}
+        </Stack>
         </>
       )}
+
+    {!(buttonsEdit) && (
+      <Tooltip disableHoverListener={user.username} disableFocusListener disableTouchListener title={
+                 <Typography variant="h6">
+                   Для ввода и проверки ответа необходимо{" "}
+                   <MuiLink component={Link} to="/login" state={{ redirect: location }}>
+                     авторизоваться
+                   </MuiLink>.
+                 </Typography>
+               }>
+        <span>
+          <TextField
+            disabled={!user.username}
+            InputLabelProps={{ shrink: true }}
+            label="Ваш ответ"
+            multiline
+            rows={3}
+            value={answer}
+            onChange={handleAnswerChange}
+            variant="filled"
+            fullWidth
+            sx={{ mt: 2, mb: 2 }}
+            style={{ backgroundColor: answerColor }}
+          />
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Button
+              disabled={!user.username}
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              sx={{ mr: 2 }}
+            >
+              Отправить ответ
+            </Button>
+            {feedback === "Ответ неверный" && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<RotateLeft />}
+                onClick={handleRetry}
+              >
+                Попробовать снова
+              </Button>
+            )}
+          </Box>
+        </span>
+      </Tooltip>
+    )}
     
     {feedback && (
       <Typography variant="subtitle1" sx={{ mt: 2, color: answerColor }}>

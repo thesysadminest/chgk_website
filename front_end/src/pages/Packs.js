@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
@@ -12,7 +13,7 @@ const Packs = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/pack/list/")
+    axios.get("${API_BASE_URL}/api/pack/list/")
       .then(response => {
         const data = response.data.map((item) => ({
           id: item.id,

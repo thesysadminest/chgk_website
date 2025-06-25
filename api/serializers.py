@@ -78,9 +78,11 @@ class TeamSerializer(serializers.ModelSerializer):
     
 class QuestionSerializer(serializers.ModelSerializer):
     author_q = UserSerializer(read_only=True)
+    image_attached = serializers.SerializerMethodField()
+    
     class Meta:
         model = Question
-        fields = ('id', 'question_text', 'answer_text', 'question_note', 'author_q', 'pub_date_q', 'difficulty')
+        fields = ('id', 'question_text', 'answer_text', 'question_note', 'image_attached', 'author_q', 'pub_date_q', 'difficulty')
         #extra_kwargs = {"author_q": {"read_only": True}}
         depth = 1
         
@@ -89,7 +91,16 @@ class QuestionSerializer(serializers.ModelSerializer):
             'id': obj.author_q.id if obj.author_q else None,
             'username': obj.author_q.username if obj.author_q else 'Неизвестно'
         }
- 
+    
+    def get_image_attached(self, obj):
+        return bool(obj.image)
+    
+    def create(self, validated_data):
+        questions = validated_data.pop('questions', [])
+        question = Question.objects.create(**validated_data)
+        question.questions.set(questions)
+        return question
+
     def update(self, instance, validated_data):
         questions = validated_data.pop('questions', None)
         if questions is not None:

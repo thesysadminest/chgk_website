@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from "react";
+import API_BASE_URL from '../config';
+import React, { useState, useEffect } from "react";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
@@ -64,7 +65,7 @@ const Teams = () => {
           throw new Error("Требуется авторизация");
         }
 
-        const response = await axios.get("http://127.0.0.1:8000/api/team/list/", {
+        const response = await axios.get("${API_BASE_URL}/api/team/list/", {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",

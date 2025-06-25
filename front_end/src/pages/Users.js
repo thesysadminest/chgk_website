@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
@@ -54,7 +55,7 @@ const Users = () => {
           throw new Error("Требуется авторизация");
         }
 
-        const response = await axios.get("http://127.0.0.1:8000/api/user/list/", {
+        const response = await axios.get("${API_BASE_URL}/api/user/list/", {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",

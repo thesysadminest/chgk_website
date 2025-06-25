@@ -215,7 +215,7 @@ const darkTheme = createTheme({
           props: { variant: 'grey' },
           style: {
             backgroundColor: greyButton,
-            color: black4,
+            color: white5,
           },
         },
         {

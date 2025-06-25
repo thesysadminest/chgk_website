@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { 
@@ -101,7 +102,7 @@ const NewsPage = () => {
     const fetchThreads = async () => {
       try {
         setForumLoading(true);
-        const response = await axios.get("http://127.0.0.1:8000/api/threads/", {
+        const response = await axios.get("${API_BASE_URL}/api/threads/", {
           timeout: 5000
         });
         setThreads(response.data || []);
@@ -125,7 +126,7 @@ useEffect(() => {
   try {
     setForumLoading(true);
     const response = await axios.get(
-      `http://127.0.0.1:8000/api/threads/${activeThread.id}/messages/`,
+      `${API_BASE_URL}/api/threads/${activeThread.id}/messages/`,
       { 
         timeout: 5000,
         headers: {
@@ -172,7 +173,7 @@ useEffect(() => {
     }
 
     const response = await axios.post(
-      "http://127.0.0.1:8000/api/threads/",
+      "${API_BASE_URL}/api/threads/",
       { title: newThreadTitle },
       {
         headers: {
@@ -248,7 +249,7 @@ const handleSendMessage = async () => {
     }
 
     const response = await axios.post(
-      `http://127.0.0.1:8000/api/threads/${activeThread.id}/messages/create/`,
+      `${API_BASE_URL}/api/threads/${activeThread.id}/messages/create/`,
       postData,
       {
         headers: {
@@ -339,7 +340,7 @@ const handleSendMessage = async () => {
       setVotingStates(prev => ({ ...prev, [messageId]: voteValue }));
 
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/messages/${messageId}/vote/`,
+        `${API_BASE_URL}/api/messages/${messageId}/vote/`,
         { vote: voteValue },
         {
           headers: {

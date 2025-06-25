@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { 
@@ -66,8 +67,7 @@ const UserDetail = () => {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         
         const userResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/`,
-          { headers }
+          `${API_BASE_URL}/api/user/${userId}/`
         );
         
         setUserData(userResponse.data[0]);

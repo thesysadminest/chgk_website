@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from "react";
+import API_BASE_URL from '../config';
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   Box, 
@@ -66,8 +67,8 @@ const TeamDetail = () => {
     const token = getAccessToken();
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     
-    const teamResponse = await axios.get(
-      `http://127.0.0.1:8000/api/team/${teamId}/`,
+    const response = await axios.get(
+      `${API_BASE_URL}/api/team/${teamId}/`,
       { headers }
     );
     
@@ -76,7 +77,7 @@ const TeamDetail = () => {
 
     if (token) {
       const userResponse = await axios.get(
-        `http://127.0.0.1:8000/api/user/me/`,
+        `${API_BASE_URL}/api/user/me/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setCurrentUserId(userResponse.data.id);

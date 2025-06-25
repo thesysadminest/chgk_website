@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from "react";
+import API_BASE_URL from '../config';
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Box, 
@@ -71,7 +72,7 @@ const AddTeam = () => {
 
         // Получаем список пользователей (исключая текущего)
         const usersResponse = await axios.get(
-          "http://127.0.0.1:8000/api/user/list/",
+          "${API_BASE_URL}/api/user/list/",
           { headers: { "Authorization": `Bearer ${token}` } }
         );
 
@@ -134,7 +135,7 @@ const handleCreateTeam = async () => {
     
     // Создаем команду
     const teamResponse = await axios.post(
-      "http://127.0.0.1:8000/api/team/create/",
+      "${API_BASE_URL}/api/team/create/",
       {
         name: teamName.trim(),
         description: teamDescription.trim() || null,
@@ -155,7 +156,7 @@ const handleCreateTeam = async () => {
     if (selectedUsers.length > 0) {
       try {
         const inviteResponse = await axios.post(
-          `http://127.0.0.1:8000/api/team/${teamId}/invite/`,
+          `${API_BASE_URL}/api/team/${teamId}/invite/`,
           { user_ids: selectedUsers },
           {
             headers: {

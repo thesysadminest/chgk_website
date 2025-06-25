@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import { 
   Box, 
@@ -59,87 +60,23 @@ const MyProfile = () => {
         return;
       }
 
-      // Загружаем данные пользователя
-      const userResponse = await axios.get(
-        `http://127.0.0.1:8000/api/user/${userData.id}/`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`
+        const response = await axios.get(
+          `${API_BASE_URL}/api/user/${userData.id}/`,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
           }
-        }
-      );
-      
-      setUser(userResponse.data[0]);
-      
-      // Загружаем ресурсы пользователя
-      await loadUserResources(userData.id, token);
-      
-    } catch (error) {
-      console.error("Ошибка загрузки данных:", error);
-      setError(error.response?.data?.detail || "Ошибка загрузки данных");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const loadUserResources = async (userId, token) => {
-    try {
-      setResourcesLoading(true);
-      
-      // Получаем вопросы пользователя
-      const questionsResponse = await axios.get(
-        `http://127.0.0.1:8000/api/question/list/`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          },
-          params: {
-            author_q: userId
-          }
-        }
-      );
-
-      // Получаем пакеты пользователя
-      const packsResponse = await axios.get(
-        `http://127.0.0.1:8000/api/pack/list/`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          },
-          params: {
-            author_p: userId
-          }
-        }
-      );
-
-      // Получаем ВСЕ команды (как в MyTeams)
-      const teamsResponse = await axios.get(
-        `http://127.0.0.1:8000/api/team/list/`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        }
-      );
-
-      // Фильтруем команды, где пользователь является активным участником
-      const userTeams = teamsResponse.data.filter(team => 
-        team.active_members.some(member => member.id === userId)
-      );
-
-      setUserResources({
-        questions: questionsResponse.data || [],
-        packs: packsResponse.data || [],
-        teams: userTeams // Используем отфильтрованный список
-      });
-      
-    } catch (error) {
-      console.error("Ошибка загрузки ресурсов:", error);
-      setError("Ошибка загрузки ресурсов пользователя");
-    } finally {
-      setResourcesLoading(false);
-    }
-  };
+        );
+        
+        setUser(response.data[0]);
+      } catch (error) {
+        console.error("Ошибка загрузки данных:", error);
+        navigate("/login", { state:{redirect: location} });
+      } finally {
+        setLoading(false);
+      }
+    };
 
   fetchUserData(); // Вызываем функцию загрузки данных
 }, []); // Пустой массив зависимостей для однократного выполнения

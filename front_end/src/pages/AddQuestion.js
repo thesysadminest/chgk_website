@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
@@ -85,7 +86,7 @@ const AddQuestion = () => {
       }
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/question/create/",
+        "${API_BASE_URL}/api/question/create/",
         {
           question_text: questionData.text.trim(),
           answer_text: questionData.answer.trim(),
