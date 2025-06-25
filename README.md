@@ -14,3 +14,6 @@
 ### front-end
 * run `npm run-script start` from `./front_end/`
 
+## Filling DB with generated .json
+* *(optional)* run selenium_parser.py
+* run `python manage.py loaddata questions.json`
