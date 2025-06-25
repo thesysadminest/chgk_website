@@ -525,29 +525,53 @@ class InvitationViewList(generics.ListAPIView):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
+from rest_framework.views import exception_handler
+from rest_framework import status
+from rest_framework.response import Response
+
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
+    def handle_exception(self, exc):
+        # Переопределяем обработку исключений для возврата JSON
+        response = exception_handler(exc, self.request)
+        
+        if response is not None:
+            return response
+            
+        # Для всех остальных исключений возвращаем JSON
+        return Response(
+            {'error': str(exc)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
         
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'bio': user.bio,
-            },
-            'tokens': {
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
-            }
-        }, status=status.HTTP_201_CREATED)
+        try:
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'bio': user.bio,
+                },
+                'tokens': {
+                    'access': str(refresh.access_token),
+                    'refresh': str(refresh),
+                }
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            # Логируем ошибку для отладки
+            print(f"Registration error: {str(e)}")
+            return self.handle_exception(e)
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]

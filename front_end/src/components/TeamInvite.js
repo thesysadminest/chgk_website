@@ -310,10 +310,10 @@ const TeamInvite = ({ open, onClose, teamId }) => {
                           member ? (
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <Check
-                                color="success" 
-                                sx={{ fontSize: 30, mr: 1 }} 
+                                
+                                sx={{ fontSize: 30, mr: 1, color: "primary.main" }} 
                               />
-                              <Typography variant="body2" color="secondary.main">
+                              <Typography variant="body2" color="primary.main">
                                 В команде
                               </Typography>
                             </Box>

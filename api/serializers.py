@@ -130,17 +130,21 @@ class RegisterSerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueValidator(queryset=CustomUser.objects.all())]
     )
+    confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'password', 'bio')
+        fields = ('username', 'email', 'password', 'confirm_password', 'bio')
 
     def validate(self, attrs):
-        if CustomUser.objects.filter(username=attrs['username']).exists():
-            raise serializers.ValidationError({"username": "This username already exists."})
+        if attrs['password'] != attrs['confirm_password']:
+            raise serializers.ValidationError(
+                {"password": "Password fields didn't match."}
+            )
         return attrs
 
     def create(self, validated_data):
+        validated_data.pop('confirm_password')  # Удаляем confirm_password
         user = CustomUser.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],

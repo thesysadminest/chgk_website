@@ -29,9 +29,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$)d-+e9*yzk8x7x&qb-z-s)!r88unop7ohpw-^&3g+6*v+qp)3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+#DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["82.202.139.37"]
+#ALLOWED_HOSTS = ["82.202.139.37"]
+ALLOWED_HOSTS = ["*"]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
@@ -40,6 +42,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         # 'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
 }
 
 SIMPLE_JWT = {

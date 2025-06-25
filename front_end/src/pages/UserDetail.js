@@ -219,22 +219,16 @@ const UserDetail = () => {
             icon={<QuizIcon />} 
             label={`Вопросов: ${userResources.questions.length}`} 
             variant="outlined" 
-            color={activeTab === 0 ? 'primary' : 'default'}
-            onClick={() => setActiveTab(0)}
           />
           <Chip 
             icon={<GroupIcon />} 
             label={`Пакетов: ${userResources.packs.length}`} 
             variant="outlined" 
-            color={activeTab === 1 ? 'primary' : 'default'}
-            onClick={() => setActiveTab(1)}
           />
           <Chip 
             icon={<GroupsIcon />} 
             label={`Команд: ${userResources.teams.length}`} 
             variant="outlined" 
-            color={activeTab === 2 ? 'primary' : 'default'}
-            onClick={() => setActiveTab(2)}
           />
         </Box>
       </StyledProfileBox>

@@ -91,7 +91,7 @@ const UserMenu = ({ onLogout }) => {
             PaperProps={{
               sx: {
                 width: "260px",
-                height: "350px",
+                height: "300px",
               },
             }}>
             <Box sx={{ p: 2 }}>
@@ -100,7 +100,6 @@ const UserMenu = ({ onLogout }) => {
                   ["Профиль", "/myprofile"],
                   ["Мои команды", "/myteams"],
                   ["Мои приглашения", "/invitations"],
-                  ["Настройки", "/settings"],
                  
                 ].map(([text, path]) => (
                   <ListItem disablePadding key={text} sx={{ display: "block", pb: 2 }}>

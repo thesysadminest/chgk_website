@@ -1,10 +1,10 @@
 import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { 
-  Box, 
-  Typography, 
-  CircularProgress, 
+import {
+  Box,
+  Typography,
+  CircularProgress,
   Alert,
   TextField,
   Button,
@@ -20,13 +20,13 @@ import {
   Tooltip,
   Collapse
 } from "@mui/material";
-import { 
-  ThumbUp, 
+import {
+  ThumbUp,
   ThumbDown,
   Send,
   Reply,
   Fullscreen,
-  FullscreenExit 
+  FullscreenExit
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import {
@@ -39,13 +39,18 @@ import {
   getCachedVote
 } from "../utils/AuthUtils";
 
+// Добавляем функцию getCookie
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+};
+
 const NewsPage = () => {
   const theme = useTheme();
-
   const [error, setError] = useState(null);
   const [authAlert, setAuthAlert] = useState(false);
   const [expanded, setExpanded] = useState(false);
-
   const [threads, setThreads] = useState([]);
   const [activeThread, setActiveThread] = useState(null);
   const [messages, setMessages] = useState({});
@@ -55,15 +60,32 @@ const NewsPage = () => {
   const [showThreadForm, setShowThreadForm] = useState(false);
   const [forumLoading, setForumLoading] = useState(true);
   const [votingStates, setVotingStates] = useState({});
-  const [currentUser, setCurrentUser] = useState(getUserData());
+  const [currentUser, setCurrentUser] = useState(null);
 
+  // Проверка авторизации и загрузка пользователя
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const { isAuthorized, user } = await checkAuth();
+        if (!isAuthorized) {
+          setAuthAlert(true);
+        }
+        setCurrentUser(user || null);
+      } catch (err) {
+        console.error("Auth check error:", err);
+        setAuthAlert(true);
+      }
+    };
+    verifyAuth();
+  }, []);
+
+  // Интерсептор для обработки ошибок сети
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       response => response,
       error => {
         if (error.message === "Network Error") {
           setError("Проблемы с подключением к серверу");
-          setForumLoading(false);
         }
         return Promise.reject(error);
       }
@@ -74,28 +96,25 @@ const NewsPage = () => {
     };
   }, []);
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-  }
+  const getAuthHeaders = () => {
+    const token = getAccessToken();
+    if (!token) {
+      throw new Error("Token not found");
+    }
 
-  // Проверка авторизации при загрузке
-  useEffect(() => {
-    const verifyAuth = async () => {
-      try {
-        const { isAuthorized, user } = await checkAuth();
-        if (!isAuthorized) {
-          setAuthAlert(true);
-        } else {
-          setCurrentUser(user);
-        }
-      } catch (err) {
-        console.error("Ошибка проверки авторизации:", err);
-      }
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
     };
-    verifyAuth();
-  }, []);
+
+    // Добавляем CSRF токен только если он есть
+    const csrfToken = getCookie('csrftoken');
+    if (csrfToken) {
+      headers['X-CSRFToken'] = csrfToken;
+    }
+
+    return headers;
+  };
 
   // Загрузка тем форума
   useEffect(() => {
@@ -107,9 +126,8 @@ const NewsPage = () => {
         });
         setThreads(response.data || []);
       } catch (err) {
-        console.error("Ошибка при загрузке тем форума:", err);
-        setError("Ошибка при загрузке тем форума");
-        setThreads([]);
+        console.error("Threads load error:", err);
+        setError(err.message || "Ошибка загрузки тем");
       } finally {
         setForumLoading(false);
       }
@@ -119,100 +137,80 @@ const NewsPage = () => {
   }, []);
 
   // Загрузка сообщений при выборе темы
+  useEffect(() => {
+    if (!activeThread) return;
 
-useEffect(() => {
-  if (activeThread) {
     const fetchMessages = async () => {
-  try {
-    setForumLoading(true);
-    const response = await axios.get(
-      `${API_BASE_URL}/api/threads/${activeThread.id}/messages/`,
-      { 
-        timeout: 5000,
-        headers: {
-          'Authorization': `Bearer ${getAccessToken()}`
+      try {
+        setForumLoading(true);
+        const response = await axios.get(
+          `${API_BASE_URL}/api/threads/${activeThread.id}/messages/`,
+          {
+            timeout: 5000,
+            headers: getAuthHeaders()
+          }
+        );
+
+        setMessages(prev => ({
+          ...prev,
+          [activeThread.id]: response.data
+        }));
+      } catch (err) {
+        console.error("Messages load error:", err);
+        if (err.message === "Token not found" || err.response?.status === 401) {
+          handleAuthRedirect();
+        } else {
+          setError(err.message || "Ошибка загрузки сообщений");
         }
+      } finally {
+        setForumLoading(false);
       }
-    );
-    
-    setMessages(prev => ({ 
-      ...prev, 
-      [activeThread.id]: response.data 
-    }));
-    
-  } catch (err) {
-    console.error("Ошибка при загрузке сообщений:", err);
-    setError(err.message || "Ошибка при загрузке сообщений");
-  } finally {
-    setForumLoading(false);
-  }
-};
+    };
 
     fetchMessages();
-  }
-}, [activeThread]);
+  }, [activeThread]);
 
   const handleAuthRedirect = () => {
     setAuthAlert(true);
+    clearAuthTokens();
     setTimeout(() => {
       window.location.href = '/login';
     }, 2000);
   };
 
   const handleCreateThread = async () => {
-  if (!isAuthenticated()) {
-    handleAuthRedirect();
-    return;
-  }
-
-  try {
-    setForumLoading(true);
-    const csrfToken = getCookie('csrftoken');
-    if (!csrfToken) {
-      throw new Error('CSRF token not found');
-    }
-
-    const response = await axios.post(
-      `${API_BASE_URL}/api/threads/`,
-      { title: newThreadTitle },
-      {
-        headers: {
-          'Authorization': `Bearer ${getAccessToken()}`,
-          'X-CSRFToken': csrfToken,
-          'Content-Type': 'application/json'
-        },
-        withCredentials: true,
-        timeout: 5000
-      }
-    );
-
-    setThreads([...threads, response.data]);
-    setNewThreadTitle("");
-    setShowThreadForm(false);
-    setActiveThread(response.data);
-  } catch (err) {
-    console.error("Ошибка при создании темы:", err);
-    
-    // Enhanced error handling
-    if (err.response?.data) {
-      const errorData = err.response.data;
-      if (typeof errorData === 'object') {
-        setError(`Ошибка: ${JSON.stringify(errorData)}`);
-      } else {
-        setError(`Ошибка: ${errorData}`);
-      }
-    } else {
-      setError(err.message || "Ошибка при создании темы");
-    }
-    
-    if (err.response?.status === 401) {
-      clearAuthTokens();
+    if (!isAuthenticated()) {
       handleAuthRedirect();
+      return;
     }
-  } finally {
-    setForumLoading(false);
-  }
-};
+
+    try {
+      setForumLoading(true);
+      const response = await axios.post(
+        `${API_BASE_URL}/api/threads/`,
+        { title: newThreadTitle },
+        {
+          headers: getAuthHeaders(),
+          withCredentials: true,
+          timeout: 5000
+        }
+      );
+
+      setThreads([...threads, response.data]);
+      setNewThreadTitle("");
+      setShowThreadForm(false);
+      setActiveThread(response.data);
+    } catch (err) {
+      console.error("Thread create error:", err);
+      if (err.message === "Token not found" || err.response?.status === 401) {
+        handleAuthRedirect();
+      } else {
+        setError(err.response?.data || err.message || "Ошибка создания темы");
+      }
+    } finally {
+      setForumLoading(false);
+    }
+  };
 
   const handleReply = (message) => {
     if (!isAuthenticated()) {
@@ -224,108 +222,116 @@ useEffect(() => {
                      (typeof message.author === 'string' ? message.author : 'Anonymous')}, `);
   };
 
-const handleSendMessage = async () => {
-  if (!isAuthenticated()) {
-    handleAuthRedirect();
-    return;
-  }
-
-  if (!newMessage.trim()) return;
-
-  try {
-    setForumLoading(true);
-    
-    const csrfToken = getCookie('csrftoken');
-    if (!csrfToken) {
-      throw new Error('CSRF token not found');
-    }
-
-    const postData = {
-      content: newMessage.trim()
-    };
-    
-    if (replyTo?.id) {
-      postData.parent_message = replyTo.id;
-    }
-
-    const response = await axios.post(
-      `${API_BASE_URL}/api/threads/${activeThread.id}/messages/create/`,
-      postData,
-      {
-        headers: {
-          'Authorization': `Bearer ${getAccessToken()}`,
-          'X-CSRFToken': csrfToken,
-          'Content-Type': 'application/json'
-        },
-        withCredentials: true,
-        timeout: 5000
-      }
-    );
-
-    // Обработка успешного ответа
-    const normalizedResponse = {
-      ...response.data,
-      author: typeof response.data.author === 'string' 
-        ? { username: response.data.author } 
-        : response.data.author,
-      parent_message: replyTo?.id || null
-    };
-
-    setMessages(prev => {
-      const threadMessages = prev[activeThread.id] || [];
-      
-      if (replyTo) {
-        const updateReplies = (messages) => {
-          return messages.map(msg => {
-            if (msg.id === replyTo.id) {
-              return {
-                ...msg,
-                replies: [...(msg.replies || []), normalizedResponse]
-              };
-            }
-            if (msg.replies?.length > 0) {
-              return {
-                ...msg,
-                replies: updateReplies(msg.replies)
-              };
-            }
-            return msg;
-          });
-        };
-        
-        return {
-          ...prev,
-          [activeThread.id]: updateReplies(threadMessages)
-        };
-      } else {
-        return {
-          ...prev,
-          [activeThread.id]: [...threadMessages, normalizedResponse]
-        };
-      }
-    });
-
-    setNewMessage("");
-    setReplyTo(null);
-    
-  } catch (err) {
-    console.error("Ошибка при отправке сообщения:", err);
-    
-    // Улучшенная обработка ошибок
-    if (err.response?.data) {
-      const errorData = err.response.data;
-    } else {
-      setError(err.message || "Ошибка при отправке сообщения");
-    }
-    
-    if (err.response?.status === 401) {
-      clearAuthTokens();
+  const handleSendMessage = async () => {
+    if (!isAuthenticated()) {
       handleAuthRedirect();
+      return;
     }
-  } finally {
-    setForumLoading(false);
-  }
-};
+
+    if (!newMessage.trim()) return;
+
+    try {
+      setForumLoading(true);
+
+      // Получаем токен доступа
+      const token = getAccessToken();
+      if (!token) {
+        throw new Error('Токен не найден');
+      }
+
+      const postData = {
+        content: newMessage.trim()
+      };
+
+      if (replyTo?.id) {
+        postData.parent_message = replyTo.id;
+      }
+
+      // Формируем заголовки
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      // Добавляем CSRF токен, если он есть (необязательно для JWT)
+      const csrfToken = getCookie('csrftoken');
+      if (csrfToken) {
+        headers['X-CSRFToken'] = csrfToken;
+      }
+
+      const response = await axios.post(
+        `${API_BASE_URL}/api/threads/${activeThread.id}/messages/create/`,
+        postData,
+        {
+          headers,
+          withCredentials: true,
+          timeout: 5000
+        }
+      );
+
+      // Обработка успешного ответа
+      const normalizedResponse = {
+        ...response.data,
+        author: {
+          username: currentUser.username // Используем данные текущего пользователя
+        },
+        parent_message: replyTo?.id || null
+      };
+
+      // Обновляем состояние сообщений
+      setMessages(prev => {
+        const threadMessages = prev[activeThread.id] || [];
+
+        if (replyTo) {
+          // Обновляем цепочку ответов
+          const updateReplies = (messages) => {
+            return messages.map(msg => {
+              if (msg.id === replyTo.id) {
+                return {
+                  ...msg,
+                  replies: [...(msg.replies || []), normalizedResponse]
+                };
+              }
+              if (msg.replies?.length > 0) {
+                return {
+                  ...msg,
+                  replies: updateReplies(msg.replies)
+                };
+              }
+              return msg;
+            });
+          };
+
+          return {
+            ...prev,
+            [activeThread.id]: updateReplies(threadMessages)
+          };
+        } else {
+          // Добавляем новое сообщение
+          return {
+            ...prev,
+            [activeThread.id]: [...threadMessages, normalizedResponse]
+          };
+        }
+      });
+
+      setNewMessage("");
+      setReplyTo(null);
+
+    } catch (err) {
+      console.error("Ошибка при отправке сообщения:", err);
+
+      if (err.response?.status === 401) {
+        // Если токен недействителен
+        clearAuthTokens();
+        handleAuthRedirect();
+      } else {
+        setError(err.response?.data?.message || err.message || "Ошибка при отправке сообщения");
+      }
+    } finally {
+      setForumLoading(false);
+    }
+  };
 
   const handleVote = async (messageId, voteValue) => {
     if (!isAuthenticated()) {
@@ -482,6 +488,17 @@ const handleSendMessage = async () => {
       </Box>
     );
   };
+
+  if (authAlert) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Требуется авторизация. Перенаправляем на страницу входа...
+        </Alert>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ 

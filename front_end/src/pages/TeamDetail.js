@@ -72,7 +72,7 @@ const TeamDetail = () => {
       { headers }
     );
     
-    const teamData = Array.isArray(teamResponse.data) ? teamResponse.data[0] : teamResponse.data;
+    const teamData = Array.isArray(response.data) ? response.data[0] : response.data;
     setTeam(teamData);
 
     if (token) {

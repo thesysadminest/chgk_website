@@ -72,7 +72,7 @@ const MyProfile = () => {
         setUser(response.data[0]);
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
-        navigate("/login", { state:{redirect: location} });
+        navigate("/login");
       } finally {
         setLoading(false);
       }
