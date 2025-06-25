@@ -24,6 +24,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from django.contrib.auth import authenticate
 
+from django.utils import timezone
+
 from .serializers import ( 
     QuestionSerializer, PackSerializer, 
     UserSerializer, TeamSerializer, 
@@ -32,11 +34,12 @@ from .serializers import (
     GameSessionSerializer,
     ForumThreadSerializer, ForumMessageSerializer, 
     MessageVoteSerializer,
-    InvitationSerializer
+    InvitationSerializer,
+    UserRatingHistorySerializer
 )
 
 from django.contrib.auth.models import AbstractUser
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Invitation
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Invitation, UserRatingHistory
 
 import uuid
 
@@ -994,4 +997,14 @@ class MessageVoteView(generics.CreateAPIView):
             'message_id': message.id
         }, status=status.HTTP_201_CREATED)
 
+class UserRatingHistoryView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request):
+        three_days_ago = timezone.now() - timezone.timedelta(days=30)
+        history = UserRatingHistory.objects.filter(
+            user=request.user,
+            date__gte=three_days_ago
+        ).order_by('date')
+        serializer = UserRatingHistorySerializer(history, many=True)
+        return Response(serializer.data)

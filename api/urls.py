@@ -33,6 +33,7 @@ urlpatterns = [
     path('user/me/', views.CurrentUserView.as_view(), name='current-user'),
     path('user/<int:pk>/invitations/', views.InvitationViewList.as_view(), name='invitation-list'),
     path('user/<int:pk>/invitations/<int:invitation_id>/respond/', views.InvitationResponseView.as_view(), name='invitation-respond'),
+    path('user/rating-history/', views.UserRatingHistoryView.as_view(), name='rating-history'),
     
     path('game/<int:pack_id>/start/', views.GameStartView.as_view(), name='start-game'),
     path('game/<int:pack_id>/questions/', views.PackQuestionViewList.as_view(), name='pack-questions'),

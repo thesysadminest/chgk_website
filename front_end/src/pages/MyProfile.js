@@ -11,15 +11,14 @@ import {
   ListItemText,
   ListItemButton,
   ListItemAvatar,
-  Popover,
   Chip,
   Paper,
   Tabs,
   Tab,
   CircularProgress,
   Alert,
-  styled,
-  Skeleton
+  Skeleton,
+  ClickAwayListener
 } from "@mui/material";
 import { 
   Add, 
@@ -28,16 +27,18 @@ import {
   People,
   Email,
   MilitaryTech,
-  History
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+import { LineChart } from '@mui/x-charts/LineChart';
+
 const MyProfile = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [ratingData, setRatingData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -70,6 +71,29 @@ const MyProfile = () => {
         );
         
         setUser(response.data[0]);
+
+        const ratingResponse = await axios.get(
+          `${API_BASE_URL}/api/user/rating-history`,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
+        )
+
+        if (ratingResponse.data && Array.isArray(ratingResponse.data)) {
+          const endDate = new Date();
+          const startDate = new Date(userData.date_joined);
+          
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(endDate.getDate() - 30);
+          
+          const chartStartDate = startDate > thirtyDaysAgo ? startDate : thirtyDaysAgo;
+          
+          const processedData = processRatingData(ratingResponse.data, chartStartDate, endDate);
+          setRatingData(processedData);
+        }
+
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
         navigate("/login");
@@ -80,6 +104,28 @@ const MyProfile = () => {
 
   fetchUserData(); // Вызываем функцию загрузки данных
 }, []); // Пустой массив зависимостей для однократного выполнения
+
+  const processRatingData = (data, startDate, endDate) => {
+    const dateMap = {};
+    const result = [];
+    
+    data.forEach(item => {
+      const date = new Date(item.date).toISOString().split('T')[0];
+      dateMap[date] = item.rating;
+    });
+
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      result.push({
+        date: new Date(currentDate),
+        rating: dateMap[dateStr] || (result.length > 0 ? result[result.length - 1].rating : 1000)
+      });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return result;
+  };
 
   const handleCreateClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -128,6 +174,23 @@ const MyProfile = () => {
       </Box>
     );
   }
+
+  const ratingZones = [
+    { min: 0, max: 200, color: '#CCCCCC'}, //1
+    { min: 200, max: 400, color: '#77FF77'}, // 2
+    { min: 400, max: 600, color: '#77DDBB'}, // 3 
+    { min: 600, max: 800, color: '#AAAAFF'}, // 4
+    { min: 800, max: 1000, color: '#FF88FF'}, // 5
+    { min: 1000, max: 1200, color: '#FFCC88'}, // 6
+    { min: 1200, max: 1400, color: '#FFBB55'}, // 7
+    { min: 1400, max: 1600, color: '#FF7777'}, // 8
+    { min: 1600, max: 1800, color: '#FF3333'}, // 9
+    { min: 1800, max: 2000, color: '#AA0000'} // 10
+  ];
+
+  const chartData = ratingData.length > 0 ? ratingData : [];
+  const minRating = chartData.length > 0 ? Math.max(0, Math.min(...chartData.map(d => d.rating)) - 200) : 0;
+  const maxRating = chartData.length > 0 ? Math.max(...chartData.map(d => d.rating)) + 200 : 3000;
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
@@ -209,6 +272,120 @@ const MyProfile = () => {
           >
             Редактировать профиль
           </Button>
+        </Box>
+      </Paper>
+
+      <Paper 
+        sx={{ 
+          padding: theme.spacing(3),
+          marginBottom: theme.spacing(8),
+          backgroundColor: theme.palette.background.light,
+          borderRadius: 2
+        }}
+      >
+        <Box sx={{ height: 300, width: '100%' , mb: 4}}>
+          <Typography variant="h6" gutterBottom>История рейтинга</Typography>
+          
+          {chartData.length > 0 ? (
+            <Box sx={{ 
+              position: 'relative', 
+              height: '100%',
+              width: '100%'
+            }}>
+              {/* Цветные зоны - фиксированные от 0 до 2000 */}
+              <Box sx={{
+                position: 'absolute',
+                top: '30px',
+                left: '70px',
+                right: '30px',
+                bottom: '30px',
+                zIndex: 0,
+                display: 'flex',
+                flexDirection: 'column-reverse',
+                borderRadius: '4px',
+                overflow: 'hidden'
+              }}>
+                {ratingZones.map((zone, index) => {
+                  // Фиксированные значения для всех зон (0-2000)
+                  const top = ((2000 - zone.max) / 2000) * 100;
+                  const bottom = ((2000 - zone.min) / 2000) * 100;
+                  
+                  return (
+                    <Box 
+                      key={index}
+                      sx={{
+                        position: 'absolute',
+                        top: `${top}%`,
+                        bottom: `${100 - bottom}%`,
+                        left: 0,
+                        right: 0,
+                        backgroundColor: zone.color,
+                        borderBottom: index !== ratingZones.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none'
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+
+              {/* График с фиксированным масштабом 0-2000 */}
+              <Box sx={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0 
+              }}>
+                <LineChart
+                  xAxis={[{
+                    dataKey: 'date',
+                    scaleType: 'time',
+                    valueFormatter: (date) => date.toLocaleDateString(),
+                  }]}
+                  yAxis={[{
+                    min: 0,
+                    max: 2000,
+                    tickInterval: ratingZones.map(zone => zone.min).concat(2000),
+                  }]}
+                  series={[{
+                    dataKey: 'rating',
+                    area: false,
+                    color: '#EDC240',
+                    showMark: ({ index }) => index === 0 || index === chartData.length - 1,
+                  }]}
+                  dataset={chartData}
+                  height={300}
+                  margin={{ left: 70, right: 30, top: 30, bottom: 30 }}
+                  sx={{
+                    '& .MuiLineElement-root': {
+                      strokeWidth: 3,
+                      filter: 'drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.3))', // Тень для линии
+                    },
+                    '& .MuiChartsAxis-line': {
+                      stroke: 'white',
+                      strokeWidth: 2,
+                    },
+                    '& .MuiChartsAxis-tick': {
+                      stroke: 'white',
+                      strokeWidth: 2,
+                    },
+                    '& .MuiChartsAxis-tickLabel': {
+                      fill: 'white',
+                      fontSize: '0.75rem',
+                    },
+                    '& .MuiMarkElement-root': {
+                      fill: 'white !important',
+                      fillOpacity: 1,
+                      filter: 'drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2))', // Тень для маркеров
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+          ) : (
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+              Нет данных о рейтинге
+            </Typography>
+          )}
         </Box>
       </Paper>
 

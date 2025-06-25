@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Invitation
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Invitation, UserRatingHistory
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -298,3 +298,10 @@ class InvitationSerializer(serializers.ModelSerializer):
         model = Invitation
         fields = ('id', 'user', 'message', 'created_at', 'team', 'status')
         read_only_fields = ('id', 'created_at', 'user', 'message')
+
+class UserRatingHistorySerializer(serializers.ModelSerializer):
+    date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
+    
+    class Meta:
+        model = UserRatingHistory
+        fields = ['rating', 'date']

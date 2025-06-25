@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db.models import Sum, Count
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 class CustomUser(AbstractUser):
@@ -292,3 +292,17 @@ class TeamMember(models.Model):
     
     class Meta:
         unique_together = ('user', 'team')
+
+class UserRatingHistory(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='rating_history')
+    rating = models.IntegerField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date']
+
+@receiver(post_save, sender=CustomUser)
+def save_rating_history(sender, instance, **kwargs):
+    update_fields = kwargs.get('update_fields') or set()
+    if kwargs.get('created', False) or 'elo_rating' in update_fields:
+        UserRatingHistory.objects.create(user=instance, rating=instance.elo_rating)
