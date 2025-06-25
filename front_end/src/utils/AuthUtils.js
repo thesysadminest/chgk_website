@@ -61,7 +61,7 @@ export const getUserData = () => {
  */
 export const refreshAccessToken = async (refreshToken) => {
   try {
-    const response = await fetch('${API_BASE_URL}/api/token/refresh/', {
+    const response = await fetch(`${API_BASE_URL}/api/token/refresh/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ export const refreshAccessToken = async (refreshToken) => {
  */
 export const verifyToken = async (token) => {
   try {
-    const response = await fetch('${API_BASE_URL}/api/user/me/', {
+    const response = await fetch(`${API_BASE_URL}/api/user/me/`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

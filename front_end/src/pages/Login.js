@@ -42,7 +42,7 @@ const Login = () => {
       setError(null);
 
       const response = await axios.post(
-        "${API_BASE_URL}/api/user/login/", 
+        `${API_BASE_URL}/api/user/login/`, 
         {
           username: formData.username,
           password: formData.password

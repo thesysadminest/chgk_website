@@ -15,7 +15,7 @@ const Questions = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("${API_BASE_URL}/api/question/list/")
+    axios.get(`${API_BASE_URL}/api/question/list/`)
       .then(response => {
         const data = response.data.map((item) => ({
           id: item.id,

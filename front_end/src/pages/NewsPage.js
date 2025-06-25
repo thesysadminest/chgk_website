@@ -102,7 +102,7 @@ const NewsPage = () => {
     const fetchThreads = async () => {
       try {
         setForumLoading(true);
-        const response = await axios.get("${API_BASE_URL}/api/threads/", {
+        const response = await axios.get(`${API_BASE_URL}/api/threads/`, {
           timeout: 5000
         });
         setThreads(response.data || []);
@@ -173,7 +173,7 @@ useEffect(() => {
     }
 
     const response = await axios.post(
-      "${API_BASE_URL}/api/threads/",
+      `${API_BASE_URL}/api/threads/`,
       { title: newThreadTitle },
       {
         headers: {

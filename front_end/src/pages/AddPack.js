@@ -66,7 +66,7 @@ const AddPack = () => {
         if (!token) throw new Error("Токен доступа не найден");
 
         const questionsResponse = await axios.get(
-          "${API_BASE_URL}/api/question/list/",
+          `${API_BASE_URL}/api/question/list/`,
           { headers: { "Authorization": `Bearer ${token}` } }
         );
 
@@ -129,7 +129,7 @@ const AddPack = () => {
       if (!token) throw new Error("Токен доступа не найден");
 
       const packResponse = await axios.post(
-        "${API_BASE_URL}/api/pack/create/",
+        `${API_BASE_URL}/api/pack/create/`,
         {
           name: packName.trim(),
           description: packDescription.trim()

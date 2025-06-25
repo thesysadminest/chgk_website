@@ -86,7 +86,7 @@ const AddQuestion = () => {
       }
 
       const response = await axios.post(
-        "${API_BASE_URL}/api/question/create/",
+        `${API_BASE_URL}/api/question/create/`,
         {
           question_text: questionData.text.trim(),
           answer_text: questionData.answer.trim(),

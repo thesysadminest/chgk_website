@@ -102,7 +102,7 @@ WSGI_APPLICATION = 'chgk.wsgi.application'
 # second one = development ver
 # make sure you have the right one !
 # hashtag change
-
+'''
 DATABASES = {
       "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -121,7 +121,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
         
     }
-} '''
+} 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

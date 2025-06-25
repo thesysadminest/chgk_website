@@ -72,7 +72,7 @@ const AddTeam = () => {
 
         // Получаем список пользователей (исключая текущего)
         const usersResponse = await axios.get(
-          "${API_BASE_URL}/api/user/list/",
+          `${API_BASE_URL}/api/user/list/`,
           { headers: { "Authorization": `Bearer ${token}` } }
         );
 
@@ -135,7 +135,7 @@ const handleCreateTeam = async () => {
     
     // Создаем команду
     const teamResponse = await axios.post(
-      "${API_BASE_URL}/api/team/create/",
+      `${API_BASE_URL}/api/team/create/`,
       {
         name: teamName.trim(),
         description: teamDescription.trim() || null,
