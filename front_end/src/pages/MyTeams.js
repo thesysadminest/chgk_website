@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import API_BASE_URL from '../config';
 import {
   Box,
   Typography,
@@ -59,7 +60,7 @@ const MyTeams = () => {
         }
         setCurrentUser(userData);
 
-        const response = await axios.get('http://127.0.0.1:8000/api/team/list/', {
+        const response = await axios.get('${API_BASE_URL}/api/team/list/', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

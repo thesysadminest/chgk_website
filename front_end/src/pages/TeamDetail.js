@@ -118,7 +118,7 @@ const handleResponse = async (response) => {
 
     // 1. Получаем все приглашения пользователя
     const invitationsResponse = await axios.get(
-      `http://127.0.0.1:8000/api/user/${currentUserId}/invitations/`, 
+      `${API_BASE_URL}/api/user/${currentUserId}/invitations/`, 
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
@@ -144,7 +144,7 @@ const handleResponse = async (response) => {
 
     // 3. Отправляем ответ на приглашение
     const result = await axios.post(
-      `http://127.0.0.1:8000/api/user/${currentUserId}/invitations/${userInvitation.id}/respond/`,
+      `${API_BASE_URL}/api/user/${currentUserId}/invitations/${userInvitation.id}/respond/`,
       { response: response ? 'accept' : 'reject' },
       {
         headers: {
@@ -194,14 +194,14 @@ const handleLeaveTeam = async () => {
 
     // 1. Отправляем запрос на выход из команды
     await axios.post(
-      `http://127.0.0.1:8000/api/team/${teamId}/leave/`,
+      `${API_BASE_URL}/api/team/${teamId}/leave/`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
     // 2. Обновляем данные команды
     const teamResponse = await axios.get(
-      `http://127.0.0.1:8000/api/team/${teamId}/`,
+      `${API_BASE_URL}/api/team/${teamId}/`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     

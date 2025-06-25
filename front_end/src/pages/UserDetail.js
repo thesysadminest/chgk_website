@@ -74,14 +74,14 @@ const UserDetail = () => {
 
         if (token) {
           const currentUserResponse = await axios.get(
-            `http://127.0.0.1:8000/api/user/me/`,
+            `${API_BASE_URL}/api/user/me/`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setCurrentUserId(currentUserResponse.data.id);
         }
 
         const resourcesResponse = await axios.get(
-          `http://127.0.0.1:8000/api/user/${userId}/`,
+          `${API_BASE_URL}/api/user/${userId}/`,
           { headers }
         );
         

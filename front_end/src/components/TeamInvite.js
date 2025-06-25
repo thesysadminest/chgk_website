@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import API_BASE_URL from '../config';
 import {
   Dialog,
   DialogTitle,
@@ -46,7 +47,7 @@ const TeamInvite = ({ open, onClose, teamId }) => {
     try {
       const token = getAccessToken();
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/team/${teamId}/`,
+        `&{API_BASE_URL}/api/team/${teamId}/`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -85,7 +86,7 @@ const TeamInvite = ({ open, onClose, teamId }) => {
       const token = getAccessToken();
       
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/user/list`,
+        `${API_BASE_URL}/api/user/list`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -128,7 +129,7 @@ const TeamInvite = ({ open, onClose, teamId }) => {
       const token = getAccessToken();
 
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/team/${teamId}/invite/`,
+        `${API_BASE_URL}/api/team/${teamId}/invite/`,
         { user_ids: usersToInvite },
         {
           headers: {

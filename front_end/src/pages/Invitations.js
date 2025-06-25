@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import API_BASE_URL from '../config';
 import {
   Box,
   Typography,
@@ -69,7 +70,7 @@ const Invitations = () => {
       setLoading(true);
       const accessToken = getAccessToken();
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/user/${userId}/invitations/`, 
+        `${API_BASE_URL} /api/user/${userId}/invitations/`, 
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`
@@ -107,7 +108,7 @@ const Invitations = () => {
       setLoading(true);
       const accessToken = getAccessToken();
       await axios.post(
-        `http://127.0.0.1:8000/api/user/${authState.user?.id}/invitations/${invitationId}/respond/`,
+        `${API_BASE_URL} /api/user/${authState.user?.id}/invitations/${invitationId}/respond/`,
         { response: response ? 'accept' : 'reject' },
         {
           headers: {
