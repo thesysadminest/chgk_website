@@ -32,11 +32,11 @@ from .serializers import (
     GameSessionSerializer,
     ForumThreadSerializer, ForumMessageSerializer, 
     MessageVoteSerializer,
-    NotificationSerializer
+    InvitationSerializer
 )
 
 from django.contrib.auth.models import AbstractUser
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Invitation
 
 import uuid
 
@@ -290,7 +290,53 @@ class TeamDelete(generics.DestroyAPIView):
     serializer_class = TeamSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Team.objects.all()
+ 
     
+class TeamLeave(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, pk):
+        try:
+            with transaction.atomic():
+                team = Team.objects.get(id=pk)
+                
+                # Проверяем, что пользователь действительно состоит в команде
+                if not team.active_members.filter(id=request.user.id).exists():
+                    return Response(
+                        {"error": "User is not a member of this team"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                # Удаляем из активных участников
+                team.active_members.remove(request.user)
+                
+                # Если пользователь был в pending, удаляем и оттуда
+                if team.pending_members.filter(id=request.user.id).exists():
+                    team.pending_members.remove(request.user)
+                
+                # Отменяем все его приглашения в эту команду
+                Invitation.objects.filter(
+                    user=request.user,
+                    team=team,
+                    status='pending'
+                ).update(status='canceled')
+                
+                return Response(
+                    {"message": "Successfully left the team"},
+                    status=status.HTTP_200_OK
+                )
+                
+        except Team.DoesNotExist:
+            return Response(
+                {"error": "Team not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 class TeamUpdate(generics.UpdateAPIView):
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
@@ -301,13 +347,181 @@ class TeamUpdate(generics.UpdateAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         if (serializer.is_valid()):
           serializer.save()
-          return Response({"message": "pack updated successfully"})
+          return Response({"message": "team updated successfully"})
         else:
           return  Response({"message": "update failed"})
 
+class InvitationView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            team = Team.objects.get(id=pk)
+            
+            # Check if user is team captain
+            if team.captain != request.user:
+                return Response(
+                    {"error": "Only team captain can send invitations"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+                
+            user_ids = request.data.get('user_ids', [])
+            if not user_ids:
+                return Response(
+                    {"error": "No users specified"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            # Get all users at once for efficiency
+            users = CustomUser.objects.filter(id__in=user_ids)
+            existing_user_ids = set(users.values_list('id', flat=True))
+            
+            # Check for invalid user IDs
+            invalid_ids = set(user_ids) - existing_user_ids
+            if invalid_ids:
+                return Response(
+                    {"error": f"Invalid user IDs: {invalid_ids}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            # Filter out users already in team or with pending invites
+            valid_users = []
+            errors = []
+            
+            for user in users:
+                if team.active_members.filter(id=user.id).exists():
+                    errors.append(f"User {user.username} is already a team member")
+                elif team.pending_members.filter(id=user.id).exists():
+                    errors.append(f"Invitation already sent to {user.username}")
+                elif Invitation.objects.filter(user=user, team=team, status='pending').exists():
+                    errors.append(f"Pending invitation already exists for {user.username}")
+                else:
+                    valid_users.append(user)
+            
+            if errors and not valid_users:
+                return Response(
+                    {"errors": errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Add valid users to pending_members
+            team.pending_members.add(*valid_users)
+            
+            # Create invitations
+            invitations = []
+            for user in valid_users:
+                invitations.append(
+                    Invitation(
+                        user=user,
+                        team=team,
+                        status='pending'
+                    )
+                )
+            
+            Invitation.objects.bulk_create(invitations)
+            
+            response_data = {
+                "message": f"Invitations created for {len(valid_users)} users",
+                "invited_count": len(valid_users),
+            }
+            
+            if errors:
+                response_data["errors"] = errors
+                response_data["partial_success"] = True
+            
+            return Response(
+                response_data,
+                status=status.HTTP_201_CREATED
+            )
+            
+        except Team.DoesNotExist:
+            return Response(
+                {"error": "Team not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class InvitationResponseView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, pk, invitation_id):  # Изменено здесь
+        try:
+            # Проверяем, что текущий пользователь соответствует user_id в URL
+            if request.user.id != pk:
+                return Response(
+                    {"error": "You can only respond to your own invitations"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+                
+            invitation = Invitation.objects.get(
+                id=invitation_id,
+                user=request.user,
+                status='pending'
+            )
+            
+            team = invitation.team
+            response = request.data.get('response')
+            
+            if response == 'accept':
+                if team.pending_members.filter(id=request.user.id).exists():
+                    team.pending_members.remove(request.user)
+                    team.active_members.add(request.user)
+                
+                invitation.status = 'accepted'
+                invitation.save()
+                
+                return Response(
+                    {"message": "Invitation accepted"}, 
+                    status=status.HTTP_200_OK
+                )
+                
+            elif response == 'reject':
+                if team.pending_members.filter(id=request.user.id).exists():
+                    team.pending_members.remove(request.user)
+                
+                invitation.status = 'rejected'
+                invitation.save()
+                
+                return Response(
+                    {"message": "Invitation rejected"}, 
+                    status=status.HTTP_200_OK
+                )
+                
+            else:
+                return Response(
+                    {"error": "Invalid response. Use 'accept' or 'reject'"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except Invitation.DoesNotExist:
+            return Response(
+                {"error": "Invitation not found or already processed"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class InvitationViewList(generics.ListAPIView):
+    serializer_class = InvitationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Invitation.objects.filter(
+            user=self.request.user,
+        ).order_by('-created_at')
+    
+
 ###     USER      ###
 
-#Login CustomUser
+
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
@@ -369,6 +583,33 @@ class UserView(generics.ListCreateAPIView):
     def get_queryset(self):
       queryset = CustomUser.objects.all().filter(id=self.kwargs['pk'])
       return queryset
+
+      @action(detail=True, methods=['GET'])
+      def user_resources(self, request, pk=None):
+        user = self.get_object()
+        
+        # Получаем вопросы пользователя
+        user_questions = Question.objects.filter(author_q=user)
+        questions_serializer = QuestionSerializer(user_questions, many=True)
+        
+        # Получаем пакеты пользователя
+        user_packs = Pack.objects.filter(author_p=user)
+        packs_serializer = PackSerializer(user_packs, many=True)
+        
+        # Получаем команды пользователя (где он активный участник)
+        user_teams = Team.objects.filter(active_members.contains(user))
+        teams_serializer = TeamSerializer(user_teams, many=True)
+        
+        # Получаем приглашения пользователя
+        user_invitations = Invitation.objects.filter(user=user, status='pending')
+        invitations_serializer = InvitationSerializer(user_invitations, many=True)
+        
+        return Response({
+            'questions': questions_serializer.data,
+            'packs': packs_serializer.data,
+            'teams': teams_serializer.data,
+            'pending_invitations': invitations_serializer.data
+        })
     
 class UserUpdate(generics.UpdateAPIView):
     serializer_class = UserSerializer
@@ -728,101 +969,5 @@ class MessageVoteView(generics.CreateAPIView):
             'downvotes_count': message.downvotes_count,
             'message_id': message.id
         }, status=status.HTTP_201_CREATED)
-    
-class TeamInvitationView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, pk):  # Изменяем team_id на pk
-        try:
-            team = Team.objects.get(id=pk)  # Используем pk вместо team_id
-            if team.captain != request.user:
-                return Response({"error": "Only team captain can send invitations"}, 
-                              status=status.HTTP_403_FORBIDDEN)
-                
-            user_ids = request.data.get('user_ids', [])
-            if not user_ids:
-                return Response({"error": "No users specified"}, 
-                              status=status.HTTP_400_BAD_REQUEST)
-                
-            invitations = []
-            for user_id in user_ids:
-                try:
-                    user = CustomUser.objects.get(id=user_id)
-                    
-                    # Проверяем, не является ли пользователь уже членом команды
-                    if TeamMember.objects.filter(team=team, user=user, is_active=True).exists():
-                        continue
-                        
-                    # Создаем или обновляем приглашение
-                    team_member, created = TeamMember.objects.get_or_create(
-                        team=team,
-                        user=user,
-                        defaults={'role': 'MEMBER', 'is_active': False}
-                    )
-                    
-                    # Создаем уведомление
-                    notification = Notification.objects.create(
-                        user=user,
-                        notification_type='TEAM_INVITE',
-                        message=f"You've been invited to join team {team.name}",
-                        related_team=team
-                    )
-                    
-                    invitations.append({
-                        'user_id': user.id,
-                        'username': user.username,
-                        'invitation_id': team_member.id,
-                        'notification_id': notification.id
-                    })
-                except CustomUser.DoesNotExist:
-                    continue
-                    
-            return Response({"invitations": invitations}, 
-                          status=status.HTTP_201_CREATED)
-            
-        except Team.DoesNotExist:
-            return Response({"error": "Team not found"}, 
-                          status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({"error": str(e)}, 
-                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class InvitationResponseView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self, request, invitation_id):
-        try:
-            team_member = TeamMember.objects.get(id=invitation_id, user=request.user, is_active=False)
-            response = request.data.get('response')
-            
-            if response == 'accept':
-                team_member.is_active = True
-                team_member.save()
-                
-                # Создаем уведомление для капитана
-                Notification.objects.create(
-                    user=team_member.team.captain,
-                    notification_type='TEAM_JOIN',
-                    message=f"{request.user.username} has accepted your invitation to join {team_member.team.name}",
-                    related_team=team_member.team
-                )
-                
-                return Response({"message": "Invitation accepted"}, status=200)
-            elif response == 'reject':
-                team_member.delete()
-                return Response({"message": "Invitation rejected"}, status=200)
-            else:
-                return Response({"error": "Invalid response"}, status=400)
-                
-        except TeamMember.DoesNotExist:
-            return Response({"error": "Invitation not found"}, status=404)
-
-
-class NotificationViewList(generics.ListAPIView):
-    serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
 

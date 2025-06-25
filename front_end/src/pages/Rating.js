@@ -164,7 +164,8 @@ const Rating = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-between", flexDirection: "column", mb: 3}}>
+    <Box sx={{alignItems: 'center'}}>
+    <Box sx={{ display: "flex", justifyContent: "center", flexDirection: "column", mb: 3, maxWidth: 800, maxHeight: 600}}>
       <Stack 
         direction="row" 
         spacing={2} 
@@ -186,23 +187,16 @@ const Rating = () => {
                  }>
         </Tooltip>
         
-        <TextField
-          variant="outlined"
-          size="small"
-          placeholder="Поиск"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          sx={{ width: "300px" }}
-        />
+       
       </Stack>
 
       <Box sx={{ height: 600 }}>
         <DataGrid
             rows={rows}
             columns={[
-                { field: "position", headerName: "Позиция", flex: 0.5 },
+                { field: "position", headerName: "Позиция", flex: 0.9 },
                 { field: "username", headerName: "Имя", flex: 1 },
-                { field: "elo_rating", headerName: "Рейтинг", flex: 1.5 },
+                { field: "elo_rating", headerName: "Рейтинг", flex: 1 },
             ]}
             pageSize={10}
             rowsPerPageOptions={[10, 20, 50]}
@@ -225,6 +219,7 @@ const Rating = () => {
           }
         `}
       </style>
+    </Box>
     </Box>
   );
 };

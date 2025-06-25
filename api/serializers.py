@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from .models import Question, Pack, Team, TeamMember, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Invitation
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -286,29 +286,11 @@ class MessageVoteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Vote must be -1 or 1")
         return value
     
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = ('id', 'notification_type', 'message', 'related_team', 'is_read', 'created_at')
-        read_only_fields = ('id', 'created_at')
 
-class TeamMemberSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
+class InvitationSerializer(serializers.ModelSerializer):
+    team = TeamSerializer() 
     
     class Meta:
-        model = TeamMember
-        fields = ('id', 'user', 'team', 'role', 'is_active', 'joined_at')
-        read_only_fields = ('id', 'joined_at')
-
-
-class TeamDetailSerializer(serializers.ModelSerializer):
-    captain_username = serializers.CharField(source='get_captain_username', read_only=True)
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-    members = TeamMemberSerializer(many=True, read_only=True, source='get_members')
-    pending_invitations = TeamMemberSerializer(many=True, read_only=True, source='get_pending_invitations')
-
-    class Meta:
-        model = Team
-        fields = ('id', 'name', 'team_score', 'captain', 'captain_username',
-                 'created_at', 'members', 'pending_invitations')
+        model = Invitation
+        fields = ('id', 'user', 'message', 'created_at', 'team', 'status')
+        read_only_fields = ('id', 'created_at', 'user', 'message')

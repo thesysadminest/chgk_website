@@ -32,6 +32,8 @@ import Teams from './pages/Teams.js';
 import TeamDetail from './pages/TeamDetail.js';
 import AddTeam from './pages/AddTeam.js';
 import Rating from './pages/Rating.js';
+import Invitations from './pages/Invitations.js';
+import MyTeams from './pages/MyTeams.js';
 
 function MainContent() {
     const location = useLocation();
@@ -97,6 +99,8 @@ function MainContent() {
                 <Route path="/help" element ={<HelpPage/>} />
                 <Route path="/help/:section" element={<HelpInfo />} />
                 <Route path="/rating" element={<Rating />} />
+                <Route path="/invitations" element={<Invitations />} />
+                <Route path="/myteams" element={<MyTeams />} />
             </Routes>
         </NavBar>
     );

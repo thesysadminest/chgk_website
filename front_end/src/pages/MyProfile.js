@@ -10,43 +10,55 @@ import {
   ListItem, 
   ListItemText,
   ListItemButton,
+  ListItemAvatar,
   Popover,
   Chip,
   Paper,
-  styled
+  Tabs,
+  Tab,
+  CircularProgress,
+  Alert,
+  styled,
+  Skeleton
 } from "@mui/material";
 import { 
   Add, 
   Quiz, 
   Group, 
-  People 
+  People,
+  Email,
+  MilitaryTech,
+  History
 } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 import axios from "axios";
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
-  backgroundColor: theme.palette.background.paper,
-}));
+import { useNavigate } from "react-router-dom";
 
 const MyProfile = () => {
+  const theme = useTheme();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(0);
+  const [userResources, setUserResources] = useState({
+    questions: [],
+    packs: [],
+    teams: []
+  });
+  const [resourcesLoading, setResourcesLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const userData = JSON.parse(localStorage.getItem("user"));
-        
-        if (!token || !userData) {
-          navigate("/login", { state:{redirect: location} });
-          return;
-        }
+ useEffect(() => {
+  const fetchUserData = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const userData = JSON.parse(localStorage.getItem("user"));
+      
+      if (!token || !userData) {
+        setError("Требуется авторизация");
+        return;
+      }
 
         const response = await axios.get(
           `${API_BASE_URL}/api/user/${userData.id}/`,
@@ -66,8 +78,8 @@ const MyProfile = () => {
       }
     };
 
-    fetchUserData();
-  }, [navigate, location]);
+  fetchUserData(); // Вызываем функцию загрузки данных
+}, []); // Пустой массив зависимостей для однократного выполнения
 
   const handleCreateClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -77,121 +89,293 @@ const MyProfile = () => {
     setAnchorEl(null);
   };
 
-  const handleCreateItem = (type) => {
-    handleCreateClose();
-    switch(type) {
-      case "question":
-        navigate("/add-question");
-        break;
-      case "pack":
-        navigate("/add-pack");
-        break;
-      case "team":
-        navigate("/create-team");
-        break;
-      default:
-        break;
-    }
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const handleQuestionClick = (questionId) => {
+    navigate(`/question/${questionId}`);
+  };
+
+  const handlePackClick = (packId) => {
+    navigate(`/pack/${packId}`);
+  };
+
+  const handleTeamClick = (teamId) => {
+    navigate(`/team/${teamId}`);
   };
 
   if (loading) {
-    return <Typography>Загрузка...</Typography>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
   }
 
   if (!user) {
-    return <Typography>Пользователь не найден</Typography>;
+    return (
+      <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
+        <Alert severity="warning">Пользователь не найден</Alert>
+      </Box>
+    );
   }
-  
 
   return (
-    <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
-      <StyledPaper>
+    <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
+      <Paper 
+        sx={{ 
+          padding: theme.spacing(3),
+          marginBottom: theme.spacing(3),
+          backgroundColor: theme.palette.background.light,
+          borderRadius: 2
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-          <Avatar sx={{ width: 100, height: 100, mr: 3 }}>
+          <Avatar 
+            sx={{ width: 100, height: 100, mr: 3, bgcolor: 'primary.main' }}
+          >
             {user.username.charAt(0).toUpperCase()}
           </Avatar>
-          <Box>
-            <Typography variant="h4">{user.username}</Typography>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>
-              {user.email}
-            </Typography>
-            {user.bio && (
-              <Typography variant="body1" sx={{ mt: 2 }}>
-                {user.bio}
-              </Typography>
+          <Box sx={{ flexGrow: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="h4">{user.username}</Typography>
+              <Chip 
+                icon={<MilitaryTech />} 
+                label={`Рейтинг: ${user.rating || 0}`} 
+                color="primary"
+              />
+            </Box>
+            
+            {user.email && (
+              <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+                <Email sx={{ mr: 1 }} />
+                <Typography variant="body1" color="text.secondary">
+                  {user.email}
+                </Typography>
+              </Box>
             )}
+
+            <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Зарегистрирован: {user.date_joined 
+                  ? new Date(user.date_joined).toLocaleDateString("ru-RU") 
+                  : "Неизвестно"}
+              </Typography>
+            </Box>
           </Box>
         </Box>
 
         <Divider sx={{ my: 3 }} />
 
+        {user.bio && (
+          <Box sx={{ mt: 2, mb: 3 }}>
+            <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+              {user.bio}
+            </Typography>
+          </Box>
+        )}
+
+        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: 'wrap' }}>
+          <Chip 
+            icon={<Quiz />} 
+            label={`Вопросов: ${userResources.questions.length}`} 
+            variant="outlined" 
+          />
+          <Chip 
+            icon={<Group />} 
+            label={`Пакетов: ${userResources.packs.length}`} 
+            variant="outlined" 
+          />
+          <Chip 
+            icon={<People />} 
+            label={`Команд: ${userResources.teams.length}`} 
+            variant="outlined" 
+          />
+        </Box>
+
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Button 
-            variant="main_button" 
-            startIcon={<Add />}
-            onClick={handleCreateClick}
-            sx={{ mr: 2 }}
-          >
-            Создать
-          </Button>
-
-          <Popover
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            onClose={handleCreateClose}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "left",
-            }}
-          >
-            <List>
-              <ListItemButton onClick={() => handleCreateItem("question")}>
-                <ListItemText primary="Вопрос" />
-                <Quiz sx={{ ml: 2 }} />
-              </ListItemButton>
-              <ListItemButton onClick={() => handleCreateItem("pack")}>
-                <ListItemText primary="Пакет" />
-                <Group sx={{ ml: 2 }} />
-              </ListItemButton>
-              <ListItemButton onClick={() => handleCreateItem("team")}>
-                <ListItemText primary="Команду" />
-                <People sx={{ ml: 2 }} />
-              </ListItemButton>
-            </List>
-          </Popover>
-
-          <Button 
             variant="outlined" 
-            onClick={() => navigate(`/user/${user.id}/edit`)}
+            onClick={() => {}}
           >
             Редактировать профиль
           </Button>
         </Box>
-      </StyledPaper>
+      </Paper>
 
-      <StyledPaper>
-        <Typography variant="h5" gutterBottom>Моя активность</Typography>
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-          <Chip 
-            label={`Вопросов: ${user.questions_count || 0}`} 
-            variant="outlined" 
-            onClick={() => navigate("/my-questions")}
-            clickable
-          />
-          <Chip 
-            label={`Пакетов: ${user.packs_count || 0}`} 
-            variant="outlined" 
-            onClick={() => navigate("/my-packs")}
-            clickable
-          />
-          <Chip 
-            label={`Команд: ${user.teams_count || 0}`} 
-            variant="outlined" 
-            onClick={() => navigate("/my-teams")}
-            clickable
-          />
-        </Box>
-      </StyledPaper>
+      <Tabs 
+        value={activeTab} 
+        onChange={handleTabChange}
+        variant="fullWidth"
+        indicatorColor="primary"
+        textColor="primary"
+        sx={{ mb: 3 }}
+      >
+        <Tab label="Мои вопросы" icon={<Quiz />} />
+        <Tab label="Мои пакеты" icon={<Group />} />
+        <Tab label="Мои команды" icon={<People />} />
+      </Tabs>
+
+      <Box sx={{ display: 'flex', gap: 3 }}>
+        {/* Вопросы */}
+        <Paper sx={{ 
+          p: 3, 
+          flex: 1, 
+          display: activeTab === 0 ? 'block' : 'none' 
+        }}>
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            Мои вопросы
+          </Typography>
+          {resourcesLoading ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} height={72} />
+              ))}
+            </Box>
+          ) : userResources.questions.length > 0 ? (
+            <List disablePadding>
+              {userResources.questions.map((question) => (
+                <ListItem 
+                  key={question.id} 
+                  disablePadding
+                  sx={{
+                    borderRadius: 1,
+                    mb: 1,
+                    backgroundColor: 'background.paper'
+                  }}
+                >
+                  <ListItemButton onClick={() => handleQuestionClick(question.id)}>
+                    <ListItemText
+                      primary={question.question_text}
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                      secondary={`Опубликовано: ${new Date(question.pub_date_q).toLocaleDateString()}`}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography color="text.secondary" sx={{ py: 2 }}>
+              Вы еще не создали вопросов
+            </Typography>
+          )}
+        </Paper>
+
+        {/* Пакеты */}
+        <Paper sx={{ 
+          p: 3, 
+          flex: 1, 
+          display: activeTab === 1 ? 'block' : 'none' 
+        }}>
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            Мои пакеты
+          </Typography>
+          {resourcesLoading ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} variant="rectangular" height={72} />
+              ))}
+            </Box>
+          ) : userResources.packs.length > 0 ? (
+            <List disablePadding>
+              {userResources.packs.map((pack) => (
+                <ListItem 
+                  key={pack.id}
+                  disablePadding
+                  sx={{
+                    borderRadius: 1,
+                    mb: 1,
+                    backgroundColor: 'background.paper'
+                  }}
+                >
+                  <ListItemButton onClick={() => handlePackClick(pack.id)}>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'primary.main' }}>
+                        <Group />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={pack.name}
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                      secondary={`${pack.questions_count || 0} вопросов • Рейтинг: ${pack.rating || 0}`}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography color="text.secondary" sx={{ py: 2 }}>
+              Вы еще не создали пакетов
+            </Typography>
+          )}
+        </Paper>
+
+        {/* Команды */}
+        <Paper sx={{ 
+          p: 3, 
+          flex: 1, 
+          display: activeTab === 2 ? 'block' : 'none' 
+        }}>
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            Мои команды
+          </Typography>
+          {resourcesLoading ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} variant="rectangular" height={72} />
+              ))}
+            </Box>
+          ) : userResources.teams.length > 0 ? (
+            <List disablePadding>
+              {userResources.teams.map((team) => (
+                <ListItem 
+                  key={team.id}
+                  disablePadding
+                  sx={{
+                    borderRadius: 1,
+                    mb: 1,
+                    backgroundColor: 'background.paper'
+                  }}
+                >
+                  <ListItemButton onClick={() => handleTeamClick(team.id)}>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'primary.main' }}>
+                        <People />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={team.name}
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                      secondary={`${team.members_count || 0} участников • Очки: ${team.team_score || 0}`}
+                    />
+                    {team.captain === user.id && (
+                      <Chip 
+                        label="Капитан" 
+                        size="small" 
+                        color="primary" 
+                        sx={{ ml: 1 }}
+                      />
+                    )}
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography color="text.secondary" sx={{ py: 2 }}>
+              Вы не состоите ни в одной команде
+            </Typography>
+          )}
+        </Paper>
+      </Box>
     </Box>
   );
 };

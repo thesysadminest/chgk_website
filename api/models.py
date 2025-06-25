@@ -18,9 +18,6 @@ class CustomUser(AbstractUser):
     date_joined = models.DateTimeField(auto_now_add=True) 
     elo_rating = models.IntegerField(default=1000)
 
-    def has_unread_notifications(self):
-        return self.notifications.filter(is_read=False).exists()
-
 
 class Team(models.Model):
     name = models.TextField(default="", unique=True)
@@ -62,6 +59,34 @@ class Team(models.Model):
             self.active_members.add(user)
             return True
         return False
+    
+
+class Invitation(models.Model):
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='notifications'
+    )
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    team = models.ForeignKey(
+        Team, 
+        on_delete=models.CASCADE, 
+        null=True,
+        blank=True,
+    )
+    status = models.CharField(
+        max_length=10, 
+        choices=[
+            ('pending', 'Pending'),
+            ('accepted', 'Accepted'),
+            ('rejected', 'Rejected')
+        ],
+        default='pending'
+    )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.notification_type}"
     
 class Question(models.Model):
     question_text = models.TextField(default="") # текст вопроса
@@ -251,22 +276,7 @@ class MessageVote(models.Model):
         self.message.save()
         
 
-class Notification(models.Model):
-    NOTIFICATION_TYPES = [
-        ('TEAM_INVITE', 'Team Invitation'),
-        ('TEAM_JOIN', 'Team Join Request'),
-        ('SYSTEM', 'System Notification'),
-    ]
-    
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
-    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
-    message = models.TextField()
-    related_team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
-    is_read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        ordering = ['-created_at']
+   
 
 class TeamMember(models.Model):
     ROLES = [
