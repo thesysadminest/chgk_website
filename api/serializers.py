@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Notification
+from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Invitation
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -89,13 +89,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'id': obj.author_q.id if obj.author_q else None,
             'username': obj.author_q.username if obj.author_q else 'Неизвестно'
         }
-    
-    def create(self, validated_data):
-        questions = validated_data.pop('questions', [])
-        question = Question.objects.create(**validated_data)
-        question.questions.set(questions)
-        return question
-
+ 
     def update(self, instance, validated_data):
         questions = validated_data.pop('questions', None)
         if questions is not None:
@@ -281,8 +275,11 @@ class MessageVoteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Vote must be -1 or 1")
         return value
     
-class NotificationSerializer(serializers.ModelSerializer):
+
+class InvitationSerializer(serializers.ModelSerializer):
+    team = TeamSerializer() 
+    
     class Meta:
-        model = Notification
-        fields = ('id', 'notification_type', 'message', 'related_team', 'is_read', 'created_at')
-        read_only_fields = ('id', 'created_at')
+        model = Invitation
+        fields = ('id', 'user', 'message', 'created_at', 'team', 'status')
+        read_only_fields = ('id', 'created_at', 'user', 'message')

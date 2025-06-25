@@ -23,13 +23,16 @@ urlpatterns = [
     path('team/create/', views.TeamCreate.as_view(), name="create-team"),
     path('team/update/<int:pk>/', views.TeamUpdate.as_view(), name="update-team"),
     path('team/delete/<int:pk>/', views.TeamDelete.as_view(), name="delete-team"),
-    path('team/<int:pk>/invite/', views.TeamInvitationView.as_view(), name='team-invite'),
-
+    path('team/<int:pk>/invite/', views.InvitationView.as_view(), name='team-invite'),
+    path('team/<int:pk>/leave/', views.TeamLeave.as_view(), name='team-leave'),
+    
     path('user/<int:pk>/', views.UserView.as_view(), name="view-user"),
     path('user/list/', views.UserViewList.as_view(), name="user-list"),
     path('user/update/<int:pk>/', views.UserUpdate.as_view(),name="update-profile"),
     path('user/delete/<int:pk>/', views.UserDelete.as_view(), name="delete-user"),
     path('user/me/', views.CurrentUserView.as_view(), name='current-user'),
+    path('user/<int:pk>/invitations/', views.InvitationViewList.as_view(), name='invitation-list'),
+    path('user/<int:pk>/invitations/<int:invitation_id>/respond/', views.InvitationResponseView.as_view(), name='invitation-respond'),
     
     path('game/<int:pack_id>/start/', views.GameStartView.as_view(), name='start-game'),
     path('game/<int:pack_id>/questions/', views.PackQuestionViewList.as_view(), name='pack-questions'),
@@ -44,7 +47,4 @@ urlpatterns = [
     path('threads/<int:thread_id>/messages/create/', views.MessageCreateView.as_view(), name='message-create'),
     path('messages/<int:message_id>/vote/', views.MessageVoteView.as_view(), name='message-vote'),
     
-
-    path('invitations/<int:invitation_id>/respond/', views.InvitationResponseView.as_view(), name='invitation-respond'),
-    path('notifications/', views.NotificationViewList.as_view(), name='notification-list'),
 ]

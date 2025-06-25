@@ -248,7 +248,9 @@ export default function NavBar({ children }) {
     case "/add-pack": return "Добавить пак";
     case "/add-pack/add-question": return "Добавить пак";
     case "/myprofile": return "Мой профиль";
+    case "/myteams": return "Мои команды";
     case "/rating": return "Рейтинг";
+    case "/invitations": return "Мои приглашения"
     default: return "";
     }
   };
