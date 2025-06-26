@@ -183,3 +183,6 @@ nginx
 package-lock.json
 static
 venv
+
+/chgk/settings.py
+.env

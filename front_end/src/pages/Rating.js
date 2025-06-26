@@ -58,7 +58,7 @@ const Rating = () => {
             throw new Error("Требуется авторизация");
           }
   
-          const response = await axios.get(`$[API_BASE_URL}/api/user/list/`, {
+          const response = await axios.get(`${API_BASE_URL}/api/user/list/`, {
             headers: {
               "Authorization": `Bearer ${token}`,
               "Content-Type": "application/json",
