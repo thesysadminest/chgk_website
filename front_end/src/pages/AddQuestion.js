@@ -182,7 +182,7 @@ const AddQuestion = () => {
         position: 'relative',
         pb: 8
       }}>
-        <Typography variant="h4" sx={{ mb: 3, color: theme.palette.default.black1, fontWeight: 'bold' }}>
+        <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main, fontWeight: 'bold' }}>
           Создание нового вопроса
         </Typography>
 
@@ -331,44 +331,6 @@ const AddQuestion = () => {
             </span>
           </Tooltip>
 
-          <Tooltip 
-            title={!isFormValid ? "Заполните текст вопроса и правильный ответ" : ""} 
-            arrow
-            placement="top"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: theme.palette.background.tooltip,
-                  color: theme.palette.text.tooltip,
-                  '& .MuiTooltip-arrow': {
-                    color: theme.palette.background.tooltip,
-                  }
-                }
-              }
-            }}
-          >
-            <span>
-              <Button
-                variant="contained"
-                disabled={isButtonDisabled}
-                onClick={() => handleAddQuestion("my")}
-                sx={{
-                  py: 1.5,
-                  px: 3,
-                  backgroundColor: isButtonDisabled ? 
-                    theme.palette.action.disabled : 
-                    theme.palette.primary.main,
-                  '&:hover': {
-                    backgroundColor: isButtonDisabled ? 
-                      theme.palette.action.disabled : 
-                      theme.palette.primary.main,
-                  }
-                }}
-              >
-                Добавить в мой пак
-              </Button>
-            </span>
-          </Tooltip>
         </Box>
       </Box>
 

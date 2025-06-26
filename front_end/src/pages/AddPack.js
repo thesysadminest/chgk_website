@@ -370,7 +370,7 @@ const AddPack = () => {
               />
             </Box>
           ) : (
-            <Alert severity="info" sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mt: 2, mb: 3 }}>
               {searchText 
                 ? "Вопросы по вашему запросу не найдены"
                 : "У вас пока нет созданных вопросов"}
@@ -379,10 +379,8 @@ const AddPack = () => {
         </Box>
 
         <Box sx={{ 
-          position: 'absolute',
-          right: 24,
-          bottom: 24,
           display: "flex", 
+          justifyContent: 'flex-end',
           gap: 2 
         }}>
           <Button
@@ -390,7 +388,7 @@ const AddPack = () => {
             onClick={() => navigate("/add-question")}
             sx={{
               py: 1.5,
-              px: 3,
+              px: 2.5,
               borderColor: theme.palette.primary.main,
               color: theme.palette.primary.main,
               '&:hover': {

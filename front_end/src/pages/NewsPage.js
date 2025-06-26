@@ -1,5 +1,5 @@
 import API_BASE_URL from '../config';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import {
   Box,
@@ -18,7 +18,8 @@ import {
   Badge,
   alpha,
   Tooltip,
-  Collapse
+  Collapse,
+  Link
 } from "@mui/material";
 import {
   ThumbUp,
@@ -39,7 +40,6 @@ import {
   getCachedVote
 } from "../utils/AuthUtils";
 
-// Добавляем функцию getCookie
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -62,7 +62,6 @@ const NewsPage = () => {
   const [votingStates, setVotingStates] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Проверка авторизации и загрузка пользователя
   useEffect(() => {
     const verifyAuth = async () => {
       try {
@@ -79,7 +78,6 @@ const NewsPage = () => {
     verifyAuth();
   }, []);
 
-  // Интерсептор для обработки ошибок сети
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       response => response,
@@ -107,7 +105,6 @@ const NewsPage = () => {
       'Content-Type': 'application/json'
     };
 
-    // Добавляем CSRF токен только если он есть
     const csrfToken = getCookie('csrftoken');
     if (csrfToken) {
       headers['X-CSRFToken'] = csrfToken;
@@ -116,7 +113,6 @@ const NewsPage = () => {
     return headers;
   };
 
-  // Загрузка тем форума
   useEffect(() => {
     const fetchThreads = async () => {
       try {
@@ -136,7 +132,6 @@ const NewsPage = () => {
     fetchThreads();
   }, []);
 
-  // Загрузка сообщений при выборе темы
   useEffect(() => {
     if (!activeThread) return;
 
@@ -232,8 +227,6 @@ const NewsPage = () => {
 
     try {
       setForumLoading(true);
-
-      // Получаем токен доступа
       const token = getAccessToken();
       if (!token) {
         throw new Error('Токен не найден');
@@ -247,13 +240,11 @@ const NewsPage = () => {
         postData.parent_message = replyTo.id;
       }
 
-      // Формируем заголовки
       const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       };
 
-      // Добавляем CSRF токен, если он есть (необязательно для JWT)
       const csrfToken = getCookie('csrftoken');
       if (csrfToken) {
         headers['X-CSRFToken'] = csrfToken;
@@ -269,21 +260,18 @@ const NewsPage = () => {
         }
       );
 
-      // Обработка успешного ответа
       const normalizedResponse = {
         ...response.data,
         author: {
-          username: currentUser.username // Используем данные текущего пользователя
+          username: currentUser.username
         },
         parent_message: replyTo?.id || null
       };
 
-      // Обновляем состояние сообщений
       setMessages(prev => {
         const threadMessages = prev[activeThread.id] || [];
 
         if (replyTo) {
-          // Обновляем цепочку ответов
           const updateReplies = (messages) => {
             return messages.map(msg => {
               if (msg.id === replyTo.id) {
@@ -307,7 +295,6 @@ const NewsPage = () => {
             [activeThread.id]: updateReplies(threadMessages)
           };
         } else {
-          // Добавляем новое сообщение
           return {
             ...prev,
             [activeThread.id]: [...threadMessages, normalizedResponse]
@@ -322,7 +309,6 @@ const NewsPage = () => {
       console.error("Ошибка при отправке сообщения:", err);
 
       if (err.response?.status === 401) {
-        // Если токен недействителен
         clearAuthTokens();
         handleAuthRedirect();
       } else {
@@ -333,69 +319,76 @@ const NewsPage = () => {
     }
   };
 
-  const handleVote = async (messageId, voteValue) => {
-    if (!isAuthenticated()) {
-      handleAuthRedirect();
-      return;
-    }
-    cacheVote(messageId, voteValue);
-    try {
-      const csrfToken = getCookie('csrftoken');
-      if (!csrfToken) throw new Error('CSRF token not found');
+ const handleVote = async (messageId, voteValue) => {
+  if (!isAuthenticated()) {
+    handleAuthRedirect();
+    return;
+  }
 
-      setVotingStates(prev => ({ ...prev, [messageId]: voteValue }));
+  try {
+    const csrfToken = getCookie('csrftoken');
+    if (!csrfToken) throw new Error('CSRF token not found');
 
-      const response = await axios.post(
-        `${API_BASE_URL}/api/messages/${messageId}/vote/`,
-        { vote: voteValue },
-        {
-          headers: {
-            'Authorization': `Bearer ${getAccessToken()}`,
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-          },
-          withCredentials: true,
-          timeout: 5000
-        }
-      );
+    // Получаем текущий голос пользователя
+    const currentVote = getCachedVote(messageId) || 0;
+    
+    // Если повторное нажатие на ту же кнопку - снимаем голос
+    const newVoteValue = currentVote === voteValue ? 0 : voteValue;
 
-      const updateMessageVote = (messages) => {
-        return messages.map(msg => {
-          if (msg.id === messageId) {
-            return {
-              ...msg,
-              rating: response.data.current_rating,
-              user_vote: response.data.vote,
-              upvotes_count: response.data.upvotes_count,
-              downvotes_count: response.data.downvotes_count
-            };
-          }
-          if (msg.replies && msg.replies.length > 0) {
-            return {
-              ...msg,
-              replies: updateMessageVote(msg.replies)
-            };
-          }
-          return msg;
-        });
-      };
+    setVotingStates(prev => ({ ...prev, [messageId]: newVoteValue }));
+    cacheVote(messageId, newVoteValue);
 
-      setMessages(prev => ({
-        ...prev,
-        [activeThread.id]: updateMessageVote(prev[activeThread.id])
-      }));
-    } catch (err) {
-      if (err.response?.status === 401) {
-        clearAuthTokens();
-        handleAuthRedirect();
-      } else {
-        console.error('Vote error:', err);
-        setError(err.message || "Vote failed. Please try again.");
+    const response = await axios.post(
+      `${API_BASE_URL}/api/messages/${messageId}/vote/`,
+      { vote: newVoteValue },
+      {
+        headers: {
+          'Authorization': `Bearer ${getAccessToken()}`,
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        withCredentials: true,
+        timeout: 5000
       }
-    } finally {
-      setVotingStates(prev => ({ ...prev, [messageId]: null }));
+    );
+
+    const updateMessageVote = (messages) => {
+      return messages.map(msg => {
+        if (msg.id === messageId) {
+          return {
+            ...msg,
+            rating: response.data.current_rating,
+            user_vote: response.data.vote,
+            upvotes_count: response.data.upvotes_count,
+            downvotes_count: response.data.downvotes_count
+          };
+        }
+        if (msg.replies && msg.replies.length > 0) {
+          return {
+            ...msg,
+            replies: updateMessageVote(msg.replies)
+          };
+        }
+        return msg;
+      });
+    };
+
+    setMessages(prev => ({
+      ...prev,
+      [activeThread.id]: updateMessageVote(prev[activeThread.id])
+    }));
+  } catch (err) {
+    if (err.response?.status === 401) {
+      clearAuthTokens();
+      handleAuthRedirect();
+    } else {
+      console.error('Vote error:', err);
+      setError(err.message || "Vote failed. Please try again.");
     }
-  };
+  } finally {
+    setVotingStates(prev => ({ ...prev, [messageId]: null }));
+  }
+};
 
   const MessageTree = ({ message, depth = 0 }) => {
     const theme = useTheme();
@@ -410,7 +403,7 @@ const NewsPage = () => {
 
     return (
       <Box sx={{ 
-        ml: depth > 0 ? 4 : 0, // Сдвиг для вложенных сообщений
+        ml: depth > 0 ? 4 : 0,
         mt: 1,
         position: 'relative',
         '&:before': depth > 0 ? {
@@ -422,13 +415,13 @@ const NewsPage = () => {
           width: '2px',
         } : null
       }}>
-        <Paper sx={{ p: 2, mb: 2, backgroundColor: theme.palette.default.black5 }}>
+        <Paper sx={{ p: 2, mb: 2, backgroundColor: theme.palette.background.default }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Avatar sx={{ 
               width: 32, 
               height: 32, 
               mr: 1,
-              bgcolor: theme.palette.primary.hover
+              bgcolor: theme.palette.primary.main
             }}>
               {authorInitial}
             </Avatar>
@@ -446,10 +439,10 @@ const NewsPage = () => {
               size="small"
               onClick={() => handleVote(message.id, 1)}
             >
-              <ThumbUp fontSize="small" sx={{color: isUpvoted ? theme.palette.primary.hover : theme.palette.text.dark}}/>
+              <ThumbUp fontSize="small" sx={{color: isUpvoted ? theme.palette.primary.main : theme.palette.default.black5}}/>
               <Badge 
                 badgeContent={message.upvotes_count || 0} 
-                sx={{ ml: 2, color: isUpvoted ? theme.palette.primary.hover : theme.palette.text.dark }}
+                sx={{ ml: 2, color: isUpvoted ? theme.palette.primary.main : theme.palette.default.black5 }}
               />
             </IconButton>
             
@@ -457,10 +450,10 @@ const NewsPage = () => {
               size="small"
               onClick={() => handleVote(message.id, -1)}
             >
-              <ThumbDown fontSize="small" sx={{color: isDownvoted ? theme.palette.primary.hover : theme.palette.text.dark}} />
+              <ThumbDown fontSize="small" sx={{color: isDownvoted ? theme.palette.primary.main : theme.palette.default.black5}} />
               <Badge 
                 badgeContent={message.downvotes_count || 0} 
-                sx={{ ml: 2, color: isDownvoted ? theme.palette.primary.hover : theme.palette.text.dark}}
+                sx={{ ml: 2, color: isDownvoted ? theme.palette.primary.main : theme.palette.default.black5}}
               />
             </IconButton>
 
@@ -469,7 +462,7 @@ const NewsPage = () => {
               onClick={() => handleReply(message)}
               sx={{ ml: 'auto' }}
             >
-              <Reply fontSize="small" sx={{ color: theme.palette.text.dark }} />
+              <Reply fontSize="small" sx={{ color: theme.palette.default.black5 }} />
             </IconButton>
           </Box>
         </Paper>
@@ -501,193 +494,262 @@ const NewsPage = () => {
   }
 
   return (
-    <Box sx={{ 
-      backgroundColor: theme.palette.background.window,
-      p: 3,
-      position: 'fixed',
-      right: 20,
-      width: expanded ? '80vw' : '350px',
-      height: '87vh',
-      top: 80,
-      zIndex: 1000,
-      boxShadow: 3,
-      transition: 'width 0.3s ease',
-      overflow: 'auto'
-    }}>
-      <Box sx={{ 
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        mb: 1
-      }}>
-          <Typography variant="h4" sx={{ textAlign: 'center', fontWeight: 'bold', color: theme.palette.primary.main }}>
-            ЧГК Форум
+    <>
+      {!isAuthenticated() ? (
+        <>
+          <Typography variant="h6" sx={{ color: theme.palette.text.primary, mb: 2, textAlign: 'center' }}>
+            Для просмотра страницы необходимо авторизоваться
           </Typography>
-          <IconButton onClick={() => setExpanded(!expanded)}>
-              {expanded ? <FullscreenExit /> : <Fullscreen />}
-            </IconButton>
-
-      </Box>
-
-      {forumLoading && !activeThread ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <CircularProgress />
-        </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              href="/login"
+              sx={{
+                backgroundColor: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.dark,
+                }
+              }}
+            >
+              Войти
+            </Button>
+          </Box>
+        </>
       ) : (
         <>
-          {!activeThread ? (
-            <>
-              <Button 
-                variant="contained" 
-                sx={{ mb: 2 }}
-                onClick={() => setShowThreadForm(true)}
-              >
-                Новая тема
-              </Button>
-              
-              {showThreadForm && (
-                <Box sx={{ mb: 3, p: 2, borderRadius: 1 }}>
-                  <TextField
-                    fullWidth
-                    label="Название темы"
-                    value={newThreadTitle}
-                    onChange={(e) => setNewThreadTitle(e.target.value)}
-                    sx={{ mb: 1, backgroundColor: theme.palette.background.white, '& .MuiInputBase-input': {
-                      color: theme.palette.text.dark
-                    } }}
-                  />
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                    <Button 
-                      variant="outlined" 
-                      onClick={() => setShowThreadForm(false)}
-                    >
-                      Отмена
-                    </Button>
+          {currentUser && (
+            <Box sx={{ 
+              textAlign: 'center', 
+              mb: 2,
+              backgroundColor: theme.palette.background.paper,
+              p: 2,
+              borderRadius: 1,
+              maxWidth: '70vw',
+              mx: 'auto'
+            }}>
+              <Typography variant="h4" sx={{ color: theme.palette.text.primary }}>
+                Добро пожаловать, {currentUser.username}!
+              </Typography>
+
+              <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                Играйте, соревнуйтесь и общайтесь
+              </Typography>
+            </Box>
+          )}
+         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}> 
+          <Box sx={{ 
+            backgroundColor: theme.palette.background.light,
+            p: 4,
+           
+            width: '70vw',
+            top: currentUser ? 150 : 80,
+            zIndex: 1000,
+            boxShadow: 3,
+            overflow: 'auto',
+            borderRadius: 2,
+            maxHeight: 'calc(100vh - 200px)',
+            justifyContent: 'center',
+            
+          }}>
+            <Typography variant="h4" sx={{ textAlign: 'center', fontWeight: 'bold', color: theme.palette.primary.main, mb: 1 }}>
+              ЧГК Форум
+            </Typography>
+            
+            {forumLoading && !activeThread ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                {!activeThread ? (
+                  <>
                     <Button 
                       variant="contained" 
-                      onClick={handleCreateThread}
-                      disabled={!newThreadTitle.trim() || forumLoading}
+                      sx={{ mb: 2 }}
+                      onClick={() => setShowThreadForm(true)}
                     >
-                      {forumLoading ? <CircularProgress size={24} /> : 'Создать'}
+                      Новая тема
                     </Button>
-                  </Box>
-                </Box>
-              )}
-              
-              <List sx={{ backgroundColor: theme.palette.background.white, borderRadius: 2 }}>
-                {threads.map(thread => (
-                  <React.Fragment key={thread.id}>
-                    <ListItem 
-                      button 
-                      onClick={() => setActiveThread(thread)}
-                      sx={{
-                        color: theme.palette.text.dark,
-                        '&:hover': { backgroundColor: theme.palette.action.hover }
-                      }}
-                    >
-                      <ListItemText 
-                        primary={thread.title}
-                        secondary={`Создано: ${new Date(thread.created_at).toLocaleDateString()}\n` +
-                        `Обновлено: ${new Date(thread.updated_at).toLocaleDateString()}`}
-                        primaryTypographyProps={{ fontWeight: 'medium' }}
-                        secondaryTypographyProps={{ style: { whiteSpace: 'pre-line' } }} // ключевое свойство
-                      />
-                    </ListItem>
-                    <Divider />
-                  </React.Fragment>
-                ))}
-              </List>
-            </>
-          ) : (
-            <>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}>
-                <Typography variant="h6" sx={{ color: theme.palette.text.dark }}>
-                  {activeThread.title}
-                </Typography>
-                <Button 
-                  size="small" 
-                  variant="outlined"
-                  onClick={() => setActiveThread(null)}
-                  disabled={forumLoading}
-                >
-                  Назад к темам
-                </Button>
-              </Box>
-              
-              {replyTo && (
-                <Box sx={{ mb: 2, p: 2, backgroundColor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.text.dark, borderRadius: 1 }}>
-                  <Typography variant="body2">
-                    Ответ на сообщение от {replyTo.author?.username || 
-                     (typeof replyTo.author === 'string' ? replyTo.author : 'Anonymous')}
-                  </Typography>
-                  <Button 
-                    size="small" 
-                    onClick={() => setReplyTo(null)}
-                    sx={{ mt: 1 }}
-                  >
-                    Отменить ответ
-                  </Button>
-                </Box>
-              )}
-              
-              <Box sx={{ 
-                maxHeight: '50vh', 
-                overflow: 'auto',
-                mb: 2,
-                backdroundColor: theme.palette.background.disabled
-              }}>
-                {forumLoading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                    <CircularProgress />
-                  </Box>
-                ) : messages[activeThread.id]?.length > 0 ? (
-                  messages[activeThread.id].map(message => (
-                    message ? <MessageTree key={message.id} message={message} /> : null
-                  ))
+                    
+                    {showThreadForm && (
+                      <Box sx={{ mb: 3, borderRadius: 1 }}>
+                        <TextField
+                          fullWidth
+                          label="Название темы"
+                          value={newThreadTitle}
+                          onChange={(e) => setNewThreadTitle(e.target.value)}
+                          sx={{ mb: 1, borderRadius: 1, backgroundColor: theme.palette.background.white, '& .MuiInputBase-input': {
+              color: theme.palette.text.dark
+            } }}
+                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                          <Button 
+                            variant="outlined" 
+                            onClick={() => setShowThreadForm(false)}
+                          >
+                            Отмена
+                          </Button>
+                          <Button 
+                            variant="contained" 
+                            onClick={handleCreateThread}
+                            disabled={!newThreadTitle.trim() || forumLoading}
+                          >
+                            {forumLoading ? <CircularProgress size={24} /> : 'Создать'}
+                          </Button>
+                        </Box>
+                      </Box>
+                    )}
+                    
+                    {threads.length === 0 ? (
+                      <Box sx={{ 
+                        p: 3, 
+                        textAlign: 'center',
+            
+                      }}>
+                        <Typography variant="h6" sx={{ mb: 2 }}>
+                          На форуме пока нет ни одной темы
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                          Будьте первым, кто создаст новую тему для обсуждения!
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <List sx={{ backgroundColor: theme.palette.background.default, borderRadius: 1  }}>
+                        {threads.map(thread => (
+                          <React.Fragment key={thread.id}>
+                            <ListItem 
+                              button 
+                              onClick={() => setActiveThread(thread)}
+                              sx={{
+                              
+                                '&:hover': { backgroundColor: theme.palette.action.hover }
+                              }}
+                            >
+                              <ListItemText 
+                                primary={thread.title}
+                                secondary={`Создано: ${new Date(thread.created_at).toLocaleDateString()}\n` +
+                                `Обновлено: ${new Date(thread.updated_at).toLocaleDateString()}`}
+                                primaryTypographyProps={{ fontWeight: 'medium' }}
+                                secondaryTypographyProps={{ style: { whiteSpace: 'pre-line' } }}
+                              />
+                            </ListItem>
+                            <Divider />
+                          </React.Fragment>
+                        ))}
+                      </List>
+                    )}
+                  </>
                 ) : (
-                  <Typography variant="body2" color="textSecondary">
-                    Нет сообщений. Будьте первым!
-                  </Typography>
+                  <>
+                    <Box sx={{ 
+                      display: 'column', 
+                      alignItems: 'center',
+                      mb: 1,
+                      p: 2
+                    }}>
+                    <Box sx={{display: 'flex', mb: 1, justifyContent: 'space-between'}}>
+                      <Typography variant="h6" sx={{ color: theme.palette.background.white }}>
+                        {activeThread.title}
+                      </Typography>
+                      <Button 
+                        size="small" 
+                        variant="outlined"
+                        onClick={() => setActiveThread(null)}
+                        disabled={forumLoading}
+                      >
+                        Назад к темам
+                      </Button>
+                    </Box>
+                   
+                    
+                    {replyTo && (
+                      <Box sx={{ mb: 2, p: 2, backgroundColor: alpha(theme.palette.primary.main, 0.4), borderRadius: 1 }}>
+                        <Typography variant="body2">
+                          Ответ на сообщение от {replyTo.author?.username || 
+                            (typeof replyTo.author === 'string' ? replyTo.author : 'Anonymous')}
+                        </Typography>
+                        <Button 
+                          size="small" 
+                          onClick={() => setReplyTo(null)}
+                          sx={{ mt: 1 }}
+                        >
+                          Отменить ответ
+                        </Button>
+                      </Box>
+                    )}
+                    
+                    <Box sx={{ 
+                      maxHeight: '50vh', 
+                      overflow: 'auto',
+                      mb: 2,
+                      
+                    }}>
+                      {forumLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                          <CircularProgress />
+                        </Box>
+                      ) : messages[activeThread.id]?.length > 0 ? (
+                        messages[activeThread.id].map(message => (
+                          message ? <MessageTree key={message.id} message={message} /> : null
+                        ))
+                      ) : (
+                        <Typography variant="body2" color="textSecondary">
+                          Нет сообщений. Будьте первым!
+                        </Typography>
+                      )}
+                    </Box>
+                    
+                    <Box sx={{ 
+  borderRadius: 2,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end' // Добавляем выравнивание по правому краю
+}}>
+  <TextField
+    fullWidth
+    multiline
+    rows={3}
+    value={newMessage}
+    onChange={(e) => setNewMessage(e.target.value)}
+    placeholder={replyTo ? `Ответ ${replyTo.author.username}` : "Ваше сообщение..."}
+    sx={{ 
+      mb: 2, 
+      borderRadius: 1,
+
+      backgroundColor: theme.palette.background.white,
+      '& .MuiInputBase-input': {
+        color: theme.palette.text.dark
+      }
+    }}
+    disabled={forumLoading}
+  />
+  
+  <Button 
+    variant="contained" 
+    onClick={handleSendMessage}
+    disabled={!newMessage.trim() || forumLoading}
+    endIcon={forumLoading ? <CircularProgress size={24} /> : <Send />}
+    size="large"
+    sx={{ 
+      alignSelf: 'flex-end' // Убедитесь, что кнопка выравнивается по правому краю
+    }}
+  >
+    {forumLoading ? 'Отправка...' : 'Отправить'}
+  </Button>
+
+</Box>
+
+                    </Box>
+                  </>
                 )}
-              </Box>
-              
-              <Box sx={{ borderRadius: 2 }}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={replyTo ? `Ответ ${replyTo.author.username}` : "Ваше сообщение..."}
-                  sx={{ 
-                    mb: 1, 
-                    backgroundColor: theme.palette.background.white,
-                    '& .MuiInputBase-input': {
-                      color: theme.palette.text.dark
-                    }
-                  }}
-                  disabled={forumLoading}
-                />
-                <Button 
-                  variant="contained" 
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || forumLoading}
-                  endIcon={forumLoading ? <CircularProgress size={24} /> : <Send />}
-                  size="large"
-                >
-                  {forumLoading ? 'Отправка...' : 'Отправить'}
-                </Button>
-              </Box>
-            </>
-          )}
+              </>
+            )}
+          </Box>
+          </Box>
         </>
       )}
-    </Box>
+    </>
   );
 };
 

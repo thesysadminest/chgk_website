@@ -451,9 +451,9 @@ const QuestionDetail = () => {
       <Tooltip disableHoverListener={user.username} disableFocusListener disableTouchListener title={
                  <Typography variant="h6">
                    Для ввода и проверки ответа необходимо{" "}
-                   <MuiLink component={Link} to="/login" state={{ redirect: location }}>
+                   <Link component={Link} to="/login" state={{ redirect: location }}>
                      авторизоваться
-                   </MuiLink>.
+                   </Link>.
                  </Typography>
                }>
         <span>
