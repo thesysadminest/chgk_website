@@ -145,7 +145,7 @@ class Pack(models.Model):
     name = models.TextField(default="Name")
     questions = models.ManyToManyField(Question, related_name="questions")
     author_p = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="packs", null=True, blank=True)
-    description = models.TextField(default="")
+    description = models.TextField(default="", null=True, blank=True)
     pub_date_p = models.DateTimeField("date published", auto_now_add=True)
     
     def get_authorp(self):
@@ -203,7 +203,6 @@ class ForumThread(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_closed = models.BooleanField(default=False)
     message_count = models.IntegerField(default=0)  
-
 
     def get_all_messages(self):
         return self.messages.select_related('author').prefetch_related('replies').all()
@@ -265,8 +264,7 @@ class MessageVote(models.Model):
             old_vote = MessageVote.objects.get(pk=self.pk).vote
         
         super().save(*args, **kwargs)
-        
-        # Update message rating and counts
+      
         self.message.rating = self.message.votes.aggregate(
             Sum('vote')
         )['vote__sum'] or 0
@@ -275,9 +273,6 @@ class MessageVote(models.Model):
         self.message.downvotes_count = self.message.votes.filter(vote=-1).count()
         self.message.save()
         
-
-   
-
 class TeamMember(models.Model):
     ROLES = [
         ('CAPTAIN', 'Captain'),
@@ -288,7 +283,7 @@ class TeamMember(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='members')
     role = models.CharField(max_length=10, choices=ROLES, default='MEMBER')
     joined_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=False)  # False until invitation is accepted
+    is_active = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ('user', 'team')

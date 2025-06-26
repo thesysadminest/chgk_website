@@ -263,7 +263,7 @@ const NewGame = ({ onClose }) => {
                   variant="lightRed"
                   onClick={handleSelectQuestions}
                 >
-                  <Typography variant="h6">ВЫБРАТЬ ВОПРОСЫ</Typography>
+                  <Typography variant="h6">ВЫБРАТЬ ПАК</Typography>
                 </Button>
                 <Typography
                   variant="body2"
@@ -294,7 +294,7 @@ const NewGame = ({ onClose }) => {
         open={selectPackOpen}
         onClose={() => {
           setselectPackOpen(false);
-          onClose(); // Дополнительно закрываем родительское окно 
+          onClose();
         }}
         onStartGame={handleStartRandomPack}
       />

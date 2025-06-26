@@ -15,12 +15,12 @@ const AddTeamSuccess = ({ open, onClose, teamName, invitedCount, membersCount })
   const navigate = useNavigate();
 
   const handleGoToTeams = () => {
-    onClose(); // Закрывает модальное окно и перенаправляет на /teams
+    onClose(); 
   };
 
   const handleAddAnother = () => {
     onClose();
-    navigate("/add-team"); // Перенаправляет на страницу создания новой команды
+    navigate("/add-team");
   };
 
   return (

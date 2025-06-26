@@ -30,7 +30,6 @@ const SelectPackWindow = ({ open, onClose }) => {
   });
   const [packs, setPacks] = useState([]);
 
-  // Проверка авторизации и загрузка пакетов
   useEffect(() => {
     const verifyAuthentication = async () => {
       try {
@@ -70,7 +69,6 @@ const SelectPackWindow = ({ open, onClose }) => {
   const handleStartGame = async (packId) => {
     try {
       setLoading(true);
-      // Перенаправляем на маршрут, который запустит игру
       navigate(`/game/${packId}`);
       onClose();
     } catch (error) {

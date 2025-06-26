@@ -13,7 +13,7 @@ import { styled } from "@mui/material/styles";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Person, PersonAdd } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import { clearAuthTokens, getUserData } from "../utils/AuthUtils"; // Импортируем нужные функции
+import { clearAuthTokens, getUserData } from "../utils/AuthUtils";
 
 const UserMenuItem = styled(Button)(({ theme }) => ({
   textAlign: "center",
@@ -27,7 +27,6 @@ const UserMenu = ({ onLogout }) => {
   const location = useLocation();
   const fontSize = "2vh";
 
-  // Получаем данные пользователя через AuthUtils
   const user = getUserData() || { username: null, id: null };
 
   const handleClick = (event) => {
@@ -39,16 +38,13 @@ const UserMenu = ({ onLogout }) => {
   };
 
   const handleLogout = () => {
-    // Очищаем токены через AuthUtils
     clearAuthTokens();
     handleClose();
     
-    // Вызываем колбэк onLogout, если он передан
     if (onLogout) {
       onLogout();
     }
     
-    // Перенаправляем на главную и обновляем страницу
     navigate("/");
     window.location.reload();
   };

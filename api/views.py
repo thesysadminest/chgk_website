@@ -1,29 +1,25 @@
-from django.shortcuts import render
 from rest_framework import generics, viewsets, status, permissions
+from rest_framework.response import Response
+from rest_framework.decorators import action, APIView, action, permission_classes
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.views import exception_handler
 
 import random
 import os
+import mimetypes
 from PIL import Image
 from io import BytesIO
 
 from django.db import transaction
 from django.db.models import Sum, Count, Max
 
-import mimetypes
 from django.http import FileResponse
 from django.core.exceptions import ValidationError
-
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.hashers import make_password
-
-from rest_framework.response import Response
-from rest_framework.decorators import action, APIView, action, permission_classes
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from django.contrib.auth import authenticate
-
 from django.utils import timezone
 
 from .serializers import ( 
@@ -42,11 +38,6 @@ from django.contrib.auth.models import AbstractUser
 from .models import Question, Pack, Team, CustomUser, GameSession, ForumThread, ForumMessage, MessageVote, Invitation, UserRatingHistory
 
 import uuid
-
-# will delete if no errors happen
-#from rest_framework.views import APIView
-#from rest_framework.decorators import api_view
-#from django.http import JsonResponse
 
 ###     QUESTION      ###
 
@@ -76,7 +67,7 @@ class QuestionView(generics.RetrieveAPIView):
     def _return_image(self, instance):
         if not instance.image:
             return Response(
-                {'error': 'This question has no any image!'},
+                {'error': 'This question has no image!'},
                 status=404
             )
         
@@ -171,7 +162,6 @@ class QuestionUpdate(generics.UpdateAPIView):
                 image_file.file = output
                 image_file.size = output.getbuffer().nbytes
             
-            # Сохраняем новое изображение (старое удалится автоматически через модель)
             instance.image = image_file
             instance.save()
             
@@ -303,21 +293,17 @@ class TeamLeave(APIView):
             with transaction.atomic():
                 team = Team.objects.get(id=pk)
                 
-                # Проверяем, что пользователь действительно состоит в команде
                 if not team.active_members.filter(id=request.user.id).exists():
                     return Response(
                         {"error": "User is not a member of this team"},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
-                # Удаляем из активных участников
                 team.active_members.remove(request.user)
                 
-                # Если пользователь был в pending, удаляем и оттуда
                 if team.pending_members.filter(id=request.user.id).exists():
                     team.pending_members.remove(request.user)
                 
-                # Отменяем все его приглашения в эту команду
                 Invitation.objects.filter(
                     user=request.user,
                     team=team,
@@ -361,7 +347,6 @@ class InvitationView(APIView):
         try:
             team = Team.objects.get(id=pk)
             
-            # Check if user is team captain
             if team.captain != request.user:
                 return Response(
                     {"error": "Only team captain can send invitations"}, 
@@ -375,11 +360,9 @@ class InvitationView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
                 
-            # Get all users at once for efficiency
             users = CustomUser.objects.filter(id__in=user_ids)
             existing_user_ids = set(users.values_list('id', flat=True))
             
-            # Check for invalid user IDs
             invalid_ids = set(user_ids) - existing_user_ids
             if invalid_ids:
                 return Response(
@@ -387,7 +370,6 @@ class InvitationView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
                 
-            # Filter out users already in team or with pending invites
             valid_users = []
             errors = []
             
@@ -407,10 +389,8 @@ class InvitationView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Add valid users to pending_members
             team.pending_members.add(*valid_users)
             
-            # Create invitations
             invitations = []
             for user in valid_users:
                 invitations.append(
@@ -454,7 +434,6 @@ class InvitationResponseView(APIView):
     
     def post(self, request, pk, invitation_id):  # Изменено здесь
         try:
-            # Проверяем, что текущий пользователь соответствует user_id в URL
             if request.user.id != pk:
                 return Response(
                     {"error": "You can only respond to your own invitations"},
@@ -615,19 +594,15 @@ class UserView(generics.ListCreateAPIView):
       def user_resources(self, request, pk=None):
         user = self.get_object()
         
-        # Получаем вопросы пользователя
         user_questions = Question.objects.filter(author_q=user)
         questions_serializer = QuestionSerializer(user_questions, many=True)
         
-        # Получаем пакеты пользователя
         user_packs = Pack.objects.filter(author_p=user)
         packs_serializer = PackSerializer(user_packs, many=True)
         
-        # Получаем команды пользователя (где он активный участник)
         user_teams = Team.objects.filter(active_members.contains(user))
         teams_serializer = TeamSerializer(user_teams, many=True)
         
-        # Получаем приглашения пользователя
         user_invitations = Invitation.objects.filter(user=user, status='pending')
         invitations_serializer = InvitationSerializer(user_invitations, many=True)
         
@@ -677,6 +652,8 @@ class CurrentUserView(APIView):
   
  
 ###     GAME INTERFACE      ###     
+
+
 class GameStartView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
@@ -874,16 +851,57 @@ class QuestionDetailView(APIView):
 class GameResultsView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]  
+    
     def get(self, request, pack_id):
         pack = get_object_or_404(Pack, id=pack_id)
-        attempt = GameSession.objects.filter(user=request.user, pack=pack).first()
+        
+        # Получаем последнюю завершенную сессию
+        session = GameSession.objects.filter(
+            user=request.user,
+            pack=pack,
+            is_completed=True
+        ).order_by('-created_at').first()
+        
+        if not session:
+            return Response({
+                "correct_answers": 0,
+                "total_questions": pack.questions.count(),
+                "previous_rating": request.user.elo_rating,
+                "current_rating": request.user.elo_rating,
+                "rating_change": 0,
+                "pack": {
+                    "id": pack.id,
+                    "name": pack.name
+                }
+            })
+        
+        # Вычисляем изменение рейтинга
+        rating_change = 0
+        questions = session.questions.all().order_by('id')
+        
+        for i in range(session.current_question_index + 1):
+            question = questions[i]
+            is_correct = i < session.correct_answers
+            question_diff = question.difficulty * 10
+            rating_change += question_diff if is_correct else -question_diff
+        
+        previous_rating = request.user.elo_rating - rating_change
+        
         return Response({
-            "correct_answers": attempt.correct_answers if attempt else 0,
-            "total_questions": pack.questions.count()
+            "correct_answers": session.correct_answers,
+            "total_questions": session.questions.count(),
+            "previous_rating": max(500, previous_rating),
+            "current_rating": request.user.elo_rating,
+            "rating_change": rating_change,
+            "pack": {
+                "id": pack.id,
+                "name": pack.name
+            }
         })
     
 
 ###     FORUM INTERFACE      ###   
+
 
 class ThreadViewList(generics.ListCreateAPIView):
     serializer_class = ForumThreadSerializer
@@ -895,10 +913,8 @@ class ThreadViewList(generics.ListCreateAPIView):
             last_activity=Max('messages__created_at')
         ).select_related('created_by').prefetch_related('messages')
         
-        # Сортировка по дате обновления (новые сначала)
         queryset = queryset.order_by('-updated_at')
         
-        # Фильтрация
         is_closed = self.request.query_params.get('is_closed')
         if is_closed is not None:
             queryset = queryset.filter(is_closed=is_closed.lower() == 'true')
@@ -917,10 +933,8 @@ class ThreadMessagesViewList(generics.ListAPIView):
     serializer_class = ForumMessageSerializer
     
     def get_queryset(self):
-        # Теперь используем self.kwargs['pk'] вместо thread_id
         thread = get_object_or_404(ForumThread, pk=self.kwargs['pk'])
         
-        # Получаем сообщения с предзагрузкой связанных данных
         return thread.messages.filter(
             parent_message__isnull=True
         ).select_related(
@@ -982,7 +996,6 @@ class MessageVoteView(generics.CreateAPIView):
                 defaults={'vote': vote_value}
             )
             
-            # Обновляем рейтинг и счетчики
             message.rating = message.votes.aggregate(Sum('vote'))['vote__sum'] or 0
             message.upvotes_count = message.votes.filter(vote=1).count()
             message.downvotes_count = message.votes.filter(vote=-1).count()
@@ -996,6 +1009,10 @@ class MessageVoteView(generics.CreateAPIView):
             'downvotes_count': message.downvotes_count,
             'message_id': message.id
         }, status=status.HTTP_201_CREATED)
+
+
+###     РЕЙТИНГ     ###
+
 
 class UserRatingHistoryView(APIView):
     permission_classes = [permissions.IsAuthenticated]

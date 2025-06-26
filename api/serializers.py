@@ -57,7 +57,6 @@ class TeamSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         team = Team.objects.create(**validated_data)
         
-        # Добавляем создателя как активного участника и капитана
         team.active_members.add(user)
         team.captain = user
         team.save()
@@ -67,7 +66,6 @@ class TeamSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Обновление команды с защитой от изменения капитана напрямую"""
         if 'captain' in validated_data:
-            # Проверяем, что новый капитан есть в active_members
             new_captain = validated_data['captain']
             if not instance.active_members.filter(id=new_captain.id).exists():
                 raise serializers.ValidationError(
@@ -144,7 +142,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password')  # Удаляем confirm_password
+        validated_data.pop('confirm_password')
         user = CustomUser.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -265,8 +263,8 @@ class ForumMessageSerializer(serializers.ModelSerializer):
 class ForumThreadSerializer(serializers.ModelSerializer):
     created_by = serializers.StringRelatedField(read_only=True)
     messages = ForumMessageSerializer(many=True, read_only=True)
-    created_at = serializers.DateTimeField(read_only=True)  # Добавлено read_only
-    updated_at = serializers.DateTimeField(read_only=True)  # Добавлено read_only
+    created_at = serializers.DateTimeField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
     message_count = serializers.SerializerMethodField() 
     
     class Meta:

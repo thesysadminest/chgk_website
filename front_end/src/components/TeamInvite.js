@@ -113,7 +113,6 @@ const TeamInvite = ({ open, onClose, teamId }) => {
       return;
     }
 
-    // Фильтруем только тех пользователей, которых можно пригласить
     const usersToInvite = selectedUsers.filter(userId => 
       !isUserInvited(userId) && !isTeamMember(userId)
     );
@@ -142,10 +141,9 @@ const TeamInvite = ({ open, onClose, teamId }) => {
       setSuccess(`Приглашения отправлены (${usersToInvite.length} пользователям)`);
       setTimeout(() => setSuccess(null), 3000);
       
-      // Добавляем приглашенных пользователей в список
       setInvitedUsers(prev => [...prev, ...usersToInvite.map(id => ({ id }))]);
       setSelectedUsers([]);
-      fetchTeamData(); // Обновляем данные команды
+      fetchTeamData();
     } catch (err) {
       console.error('Invitation error:', err);
       setError(
@@ -159,7 +157,7 @@ const TeamInvite = ({ open, onClose, teamId }) => {
   };
 
   const handleToggleUser = (userId) => {
-    // Не позволяем выбирать уже приглашенных или состоящих в команде
+
     if (isUserInvited(userId)) return;
     if (isTeamMember(userId)) return;
     
@@ -195,7 +193,7 @@ const TeamInvite = ({ open, onClose, teamId }) => {
   if (!isAuthenticated) {
     return (
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        {/* ... (остается без изменений) ... */}
+        {/* ... остается без изменений ... */}
       </Dialog>
     );
   }

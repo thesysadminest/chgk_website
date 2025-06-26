@@ -15,12 +15,12 @@ const AddQuestionSuccess = ({ open, onClose, packType }) => {
   const navigate = useNavigate();
 
   const handleAddAnother = () => {
-    onClose(); // Закрывает модальное окно (убирает Backdrop)
+    onClose(); 
   };
 
   const handleGoToQuestions = () => {
-    onClose(); // Сначала закрываем модальное окно
-    navigate('/questions'); // Затем переходим на страницу вопросов
+    onClose();
+    navigate('/questions');
   };
 
   return (

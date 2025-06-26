@@ -15,11 +15,11 @@ const AddPackSuccess = ({ open, onClose }) => {
   const navigate = useNavigate();
 
   const handleAddAnother = () => {
-    onClose(); // Закрывает модальное окно и перенаправляет на /packs
+    onClose();
   };
 
   const handleGoToPacks = () => {
-    onClose(); // Уже перенаправляет на /packs
+    onClose();
   };
 
   return (

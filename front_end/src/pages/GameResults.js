@@ -1,70 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Paper, 
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
   Container,
   CircularProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Chip,
-  Divider,
+  Stack,
+  Alert
 } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from "@mui/material/styles";
 import axiosInstance from '../components/axiosInstance';
-import { Check, Close, Replay } from '@mui/icons-material';
+import { Check, Close } from '@mui/icons-material';
 
 const GameResults = () => {
-  const { packId, userId, attemptId } = useParams();
+  const { pack_id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
-  
+
   const [results, setResults] = useState({
     loading: true,
     error: null,
     data: null
   });
-  
-  const [stats, setStats] = useState({
-    correctAnswers: 0,
-    totalQuestions: 0,
-    score: 0,
-    percentage: 0,
-    timeSpent: '0 мин'
-  });
 
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const response = await axiosInstance.get(
-          `/game/${packId}/user/${userId}/attempt/${attemptId}/results/`
-        );
-        
+        const response = await axiosInstance.get(`/game/${pack_id}/results/`);
+
+        // Если есть данные из location.state (только что завершенная игра)
+        const finalScore = location.state?.score || response.data.correct_answers;
+        const totalQuestions = location.state?.total || response.data.total_questions;
+
         setResults({
           loading: false,
           error: null,
-          data: response.data
+          data: {
+            ...response.data,
+            correct_answers: finalScore,
+            total_questions: totalQuestions,
+            // Гарантируем, что previous_rating и current_rating всегда есть
+            previous_rating: response.data.previous_rating ||
+              (response.data.current_rating - (response.data.rating_change || 0)),
+            current_rating: response.data.current_rating ||
+              (response.data.previous_rating + (response.data.rating_change || 0))
+          }
         });
-        
-        // Вычисляем статистику
-        const correct = response.data.correct_answers;
-        const total = response.data.total_questions;
-        const percentage = Math.round((correct / total) * 100);
-        
-        setStats({
-          correctAnswers: correct,
-          totalQuestions: total,
-          score: response.data.score || correct, // Используем score если есть, иначе количество правильных
-          percentage,
-          timeSpent: calculateTimeSpent(response.data.start_time, response.data.end_time)
-        });
-        
+
       } catch (error) {
         setResults({
           loading: false,
@@ -75,27 +61,14 @@ const GameResults = () => {
     };
 
     fetchResults();
-  }, [packId, userId, attemptId]);
-
-  const calculateTimeSpent = (start, end) => {
-    if (!start || !end) return 'Неизвестно';
-    
-    const startTime = new Date(start);
-    const endTime = new Date(end);
-    const diff = (endTime - startTime) / 1000; // Разница в секундах
-    
-    const minutes = Math.floor(diff / 60);
-    const seconds = Math.floor(diff % 60);
-    
-    return `${minutes} мин ${seconds} сек`;
-  };
-
-  const handleReplay = () => {
-    navigate(`/game/${packId}/start`);
-  };
+  }, [pack_id, location.state]);
 
   const handleBackToPacks = () => {
     navigate('/packs');
+  };
+
+  const handleGoToRating = () => {
+    navigate('/rating');
   };
 
   if (results.loading) {
@@ -109,11 +82,11 @@ const GameResults = () => {
   if (results.error) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, textAlign: 'center' }}>
-        <Typography color="error" variant="h5" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {results.error}
-        </Typography>
-        <Button 
-          variant="contained" 
+        </Alert>
+        <Button
+          variant="contained"
           onClick={handleBackToPacks}
         >
           Вернуться к списку пакетов
@@ -122,121 +95,141 @@ const GameResults = () => {
     );
   }
 
+  const correctAnswers = results.data.correct_answers;
+  const totalQuestions = results.data.total_questions;
+  const wrongAnswers = totalQuestions - correctAnswers;
+  const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+  const ratingChange = results.data.rating_change;
+  const previousRating = results.data.previous_rating;
+  const currentRating = results.data.current_rating;
+
+  const StatBox = ({ title, value, color, subtitle, icon }) => (
+    <Box sx={{
+      textAlign: 'center',
+      p: 2,
+      minWidth: 150,
+      borderRadius: 2,
+      backgroundColor: 'background.default',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      <Typography variant="subtitle2" sx={{ mb: 1 }}>{title}</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {icon && React.cloneElement(icon, { sx: { color } })}
+        <Typography variant="h4" sx={{ color, fontWeight: 'bold' }}>{value}</Typography>
+      </Box>
+      {subtitle && <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1 }}>{subtitle}</Typography>}
+    </Box>
+  );
+
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, mb: 4, backgroundColor: theme.palette.background.paper }}>
+    <Box sx={{ backgroundColor: theme.palette.background.default, height: '100vh', alignItems: 'center' }}>
+      <Container sx={{ p: 4, mt: 8}}>
+        <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
         <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
           Результаты игры
         </Typography>
-        
+
         <Typography variant="h6" align="center" sx={{ mb: 4, color: theme.palette.text.secondary }}>
-          Пак: {results.data.pack_name || `ID ${packId}`} | Попытка #{attemptId}
+          Пак: {results.data.pack?.name || `ID ${pack_id}`}
         </Typography>
-        
-        {/* Основная статистика */}
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-around', 
-          flexWrap: 'wrap',
-          gap: 2,
-          mb: 4
+
+      
+          <Box sx={{ mb: 2, borderColor: 'none', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1 }}>Изменение рейтинга</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                {previousRating}
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mx: 1 }}>→</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                {currentRating}
+              </Typography>
+              {ratingChange !== 0 && (
+                <Chip
+                  label={`${ratingChange > 0 ? '+' : ''}${ratingChange}`}
+                  color={ratingChange > 0 ? 'success' : 'error'}
+                  size="medium"
+                  sx={{ ml: 2 }}
+                />
+              )}
+            </Box>
+          
+          <Button
+            variant="outlined"
+            onClick={handleGoToRating}
+            sx={{ mt: 1 }}
+            >
+            <Typography variant='h6'>
+                Посмотреть полный рейтинг
+            </Typography>
+          </Button>
+        </Box>
+
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: 'row',
+          p: 3,
+          gap: 2
         }}>
-          <StatBox 
-            title="Правильные ответы" 
-            value={`${stats.correctAnswers}/${stats.totalQuestions}`}
+          <StatBox
+            title="Правильные ответы"
+            value={correctAnswers}
             color={theme.palette.success.main}
+            subtitle={`из ${totalQuestions}`}
+            icon={<Check />}
           />
-          
-          <StatBox 
-            title="Процент правильных" 
-            value={`${stats.percentage}%`}
-            color={stats.percentage > 70 ? theme.palette.success.main : 
-                  stats.percentage > 40 ? theme.palette.warning.main : 
-                  theme.palette.error.main}
+
+          <StatBox
+            title="Неправильные ответы"
+            value={wrongAnswers}
+            color={theme.palette.error.main}
+            subtitle={`из ${totalQuestions}`}
+            icon={<Close />}
           />
-          
-          <StatBox 
-            title="Набрано очков" 
-            value={stats.score}
-            color={theme.palette.primary.main}
-          />
-          
-          <StatBox 
-            title="Затрачено времени" 
-            value={stats.timeSpent}
-            color={theme.palette.info.main}
+
+          <StatBox
+            title="Процент правильных"
+            value={`${percentage}%`}
+            color={
+              percentage > 70 ? theme.palette.success.main :
+                percentage > 40 ? theme.palette.warning.main :
+                  theme.palette.error.main
+            }
           />
         </Box>
-        
-        {/* Детализация по вопросам */}
-        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-          Детализация ответов:
-        </Typography>
-        
-        <TableContainer component={Paper} sx={{ mb: 4 }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: theme.palette.primary.light }}>
-                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Вопрос</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'white' }}>Статус</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'white' }}>Ваш ответ</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'white' }}>Правильный ответ</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {results.data.question_results?.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <Typography variant="body2" noWrap sx={{ maxWidth: 300 }}>
-                      {item.question_text || `Вопрос ${index + 1}`}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    {item.is_correct ? (
-                      <Chip 
-                        icon={<Check />} 
-                        label="Правильно" 
-                        color="success" 
-                        size="small" 
-                      />
-                    ) : (
-                      <Chip 
-                        icon={<Close />} 
-                        label="Неправильно" 
-                        color="error" 
-                        size="small" 
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="body2">
-                      {item.user_answer || '—'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="body2">
-                      {item.correct_answer}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        
-        <Divider sx={{ my: 3 }} />
-        
-        {/* Кнопки действий */}
-        <Box sx={{ 
-          display: 'flex', 
+
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography variant="h4" sx={{
+            color:
+              percentage > 70 ? theme.palette.success.main :
+                percentage > 40 ? theme.palette.warning.main :
+                  theme.palette.error.main,
+            fontWeight: 'bold'
+          }}>
+            {percentage > 70 ? 'Отличный результат!' :
+              percentage > 40 ? 'Неплохо, но можно лучше!' :
+                'Попробуйте еще раз!'}
+          </Typography>
+          {ratingChange !== 0 && (
+            <Typography variant="h6" sx={{ mt: 1 }}>
+              {ratingChange > 0 ? 'Ваш рейтинг увеличился!' : 'Ваш рейтинг уменьшился'}
+            </Typography>
+          )}
+        </Box>
+
+        <Box sx={{
+          display: 'flex',
           justifyContent: 'center',
           gap: 3,
-          mt: 4
+          mt: 4,
+          flexWrap: 'wrap'
         }}>
           <Button
             variant="contained"
-            startIcon={<Replay />}
-            onClick={handleReplay}
+            onClick={handleBackToPacks}
             size="large"
             sx={{
               px: 4,
@@ -247,43 +240,15 @@ const GameResults = () => {
               }
             }}
           >
-            Играть снова
-          </Button>
-          
-          <Button
-            variant="outlined"
-            onClick={handleBackToPacks}
-            size="large"
-            sx={{
-              px: 4,
-              py: 1.5,
-              borderColor: theme.palette.primary.main,
-              color: theme.palette.primary.main,
-              '&:hover': {
-                borderColor: theme.palette.primary.dark,
-              }
-            }}
-          >
-            Выбрать другой пак
+            <Typography variant='h6'>
+                Вернуться к списку пакетов
+            </Typography>
           </Button>
         </Box>
       </Paper>
-    </Container>
+      </Container>
+    </Box>
   );
 };
-
-// Компонент для отображения статистики
-const StatBox = ({ title, value, color }) => (
-  <Box sx={{ 
-    textAlign: 'center',
-    p: 2,
-    minWidth: 150,
-    borderRadius: 2,
-    backgroundColor: 'background.default'
-  }}>
-    <Typography variant="subtitle2" sx={{ mb: 1 }}>{title}</Typography>
-    <Typography variant="h4" sx={{ color, fontWeight: 'bold' }}>{value}</Typography>
-  </Box>
-);
 
 export default GameResults;
