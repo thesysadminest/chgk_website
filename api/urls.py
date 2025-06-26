@@ -8,6 +8,7 @@ urlpatterns = [
     path('question/create/', views.QuestionCreate.as_view(), name="create-question"),
     path('question/delete/<int:pk>/', views.QuestionDelete.as_view(), name="delete-question"),
     path('question/update/<int:pk>/', views.QuestionUpdate.as_view(), name="update-question"),
+    path('question/list/<int:pk>/', views.QuestionViewListAuthor.as_view(), name="question-list-author"),
     
 
     path('pack/list/', views.PackViewList.as_view(), name="pack-list"),

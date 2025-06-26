@@ -49,6 +49,18 @@ class QuestionViewList(generics.ListCreateAPIView):
     def get_queryset(self):
       queryset = Question.objects.all()
       return queryset
+
+class QuestionViewListAuthor(generics.ListCreateAPIView):
+    
+    serializer_class = QuestionSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    def get_queryset(self):
+      queryset = Question.objects.all()
+      author_id = self.kwargs.get('pk')
+      if author_id:
+        queryset = queryset.filter(author_q__id=author_id)
+      return queryset
      
 
 class QuestionView(generics.RetrieveAPIView):
