@@ -361,12 +361,12 @@ const MyProfile = () => {
                   margin={{ left: 70, right: 30, top: 30, bottom: 30 }}
                   sx={{
                     '& .MuiLineElement-root': {
-                      strokeWidth: 3,
-                      filter: 'drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.3))',
+                      strokeWidth: 4,
+                      filter: 'drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4))',
                     },
                     '& .MuiChartsAxis-line': {
                       stroke: 'white',
-                      strokeWidth: 2,
+                      strokeWidth: 3,
                     },
                     '& .MuiChartsAxis-tick': {
                       stroke: 'white',
@@ -379,7 +379,8 @@ const MyProfile = () => {
                     '& .MuiMarkElement-root': {
                       fill: 'white !important',
                       fillOpacity: 1,
-                      filter: 'drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2))',
+                      filter: 'drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4))',
+                      strokeWidth: 4,
                     },
                   }}
                 />

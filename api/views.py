@@ -758,7 +758,7 @@ class SubmitAnswerView(APIView):
             else:
                 request.user.elo_rating = max(500, request.user.elo_rating - rating_change) # минимум ело: 500
             
-            request.user.save()
+            request.user.save(update_fields=['elo_rating'])
             session.save()
 
             return Response({

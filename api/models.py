@@ -94,7 +94,6 @@ class Question(models.Model):
     question_note = models.TextField(blank=True, null=True) # комментарий
     image = models.ImageField(upload_to='media/questions', null=True)
     author_q = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
-    #author_q = models.PrimaryKeyRelatedField(CustomUser, on_delete=models.CASCADE, related_name="questions", null=True, blank=True)
     pub_date_q = models.DateTimeField("date published", auto_now_add=True)
 
     DIFFICULTY_CHOICES = [
@@ -301,3 +300,4 @@ def save_rating_history(sender, instance, **kwargs):
     update_fields = kwargs.get('update_fields') or set()
     if kwargs.get('created', False) or 'elo_rating' in update_fields:
         UserRatingHistory.objects.create(user=instance, rating=instance.elo_rating)
+       
