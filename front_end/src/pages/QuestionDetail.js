@@ -4,7 +4,7 @@ import axios from "axios";
 import { getAccessToken, getUserData } from "../utils/AuthUtils";
 import { Box, Typography, TextField, Button, Stack, Paper, Link as MuiLink, Alert, CircularProgress, Tooltip } from "@mui/material";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
-import { RotateLeft, Edit, Delete, DeleteForever, Done, Close, Face, Event, AddPhotoAlternate, HideImage, Undo } from "@mui/icons-material";
+import { RotateLeft, Edit, Delete, DeleteForever, Done, Close, Face, Event, AddPhotoAlternate, HideImage, Undo, Visibility, VisibilityOff, Check } from "@mui/icons-material";
 
 const QuestionDetail = () => {
   const location = useLocation();
@@ -16,11 +16,12 @@ const QuestionDetail = () => {
     pub_date_q: "",
     image_attached: "",
     question_text: "",
-    answer_text: ""
+    answer_text: "",
+    question_note: ""
   });
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [answerColor, setAnswerColor] = useState("");
+  const [showAnswer, setShowAnswer] = useState(false);
 
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
@@ -55,6 +56,7 @@ const QuestionDetail = () => {
           answer_text: data.answer_text || "",
           author_q: authorName, // Используем обработанное имя автора
           image_attached: data.image_attached || false,
+          question_note: data.question_note,
           author_id: data.author_q?.id || "Неизвестно",
           pub_date_q: data.pub_date_q || "Неизвестно"
         });
@@ -65,6 +67,10 @@ const QuestionDetail = () => {
         console.error("Ошибка при загрузке данных:", error);
       });
   }, [question.id, myName]);
+
+  const handleShowHideAnswer = () => {
+    setShowAnswer(!showAnswer);
+  };
 
   const [questionTextEdit, setQuestionTextEdit] = useState("");
   const [questionAnsEdit, setQuestionAnsEdit] = useState("");
@@ -268,11 +274,9 @@ const QuestionDetail = () => {
   const handleSubmit = () => {
     if (user.username) {
       if (answer.trim().toLowerCase() === question.answer_text.toLowerCase()) {
-        setFeedback("Ответ верный");
-        setAnswerColor("#7fb890");
+        setFeedback("correct");
       } else {
-        setFeedback("Ответ неверный");
-        setAnswerColor("#CD5C5C");
+        setFeedback("incorrect");
       }
     } else {
       navigate("/login");
@@ -281,9 +285,23 @@ const QuestionDetail = () => {
 
   const handleRetry = () => {
     setAnswer("");
+    setShowAnswer(false);
     setFeedback("");
-    setAnswerColor("");
   };
+
+  const [drawerWidth, setDrawerWidth] = useState('240px');
+  const [drawerDuration, setDrawerDuration] = useState('255ms');
+
+  useEffect(() => {
+    const drawer = document.getElementById('drawer');
+    if (drawer) {
+      const width = window.getComputedStyle(drawer).width;
+      setDrawerWidth(width);
+    }
+    
+    document.getElementById('drawer').addEventListener("drawerEvent", (e) => {(e.detail.open) ? setDrawerDuration("255ms") : setDrawerDuration("195ms")});
+    document.getElementById('drawer').addEventListener("drawerEvent", (e) => {(e.detail.open) ? setDrawerWidth("240px") : setDrawerWidth("65px")});
+  }, []);
 
   return (
     <>
@@ -378,14 +396,12 @@ const QuestionDetail = () => {
           {question.author_id && (
             <Box sx={{position: "relative"}}>
               <img
-
-                
                 src={deleteImage ? "/side_owl.jpg"
                      : (newImageUrl ? newImageUrl
                         : (finalImageUrl ? finalImageUrl
                            : (question.image_attached ? `${API_BASE_URL}/api/question/${question.id}/?image=true` : "/side_owl.jpg")))}
                 style={{
-                  maxHeight: "50vh", maxWidth: "40vw",
+                  maxHeight: "50vh", maxWidth: "25vw",
                   borderRadius: "20px",
                   filter: buttonsEdit ? "blur(5px) brightness(60%)" : "blur(0px) brightness(100%)",
                   transition: "filter 0.3s ease-in-out"}}
@@ -427,6 +443,7 @@ const QuestionDetail = () => {
             <Box>
               <TextField
                 label="Текст вопроса *"
+                variant_tf="dark"
                 fullWidth
                 disabled={buttonsPending}
                 defaultValue={question.question_text}
@@ -435,6 +452,7 @@ const QuestionDetail = () => {
               />
               <TextField
                 label="Правильный ответ *"
+                variant_tf="dark"
                 fullWidth
                 disabled={buttonsPending}
                 defaultValue={question.answer_text}
@@ -447,60 +465,136 @@ const QuestionDetail = () => {
         </>
       )}
 
-    {!(buttonsEdit) && (
-      <Tooltip disableHoverListener={user.username} disableFocusListener disableTouchListener title={
-                 <Typography variant="h6">
-                   Для ввода и проверки ответа необходимо{" "}
-                   <Link component={Link} to="/login" state={{ redirect: location }}>
-                     авторизоваться
-                   </Link>.
-                 </Typography>
-               }>
-        <span>
-          <TextField
-            disabled={!user.username}
-            InputLabelProps={{ shrink: true }}
-            label="Ваш ответ"
-            multiline
-            rows={3}
-            value={answer}
-            onChange={handleAnswerChange}
-            variant="filled"
-            fullWidth
-            sx={{ mt: 2, mb: 2 }}
-            style={{ backgroundColor: answerColor }}
-          />
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Button
-              disabled={!user.username}
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              sx={{ mr: 2 }}
-            >
-              Отправить ответ
-            </Button>
-            {feedback === "Ответ неверный" && (
-              <Button
-                variant="outlined"
-                color="secondary"
-                startIcon={<RotateLeft />}
-                onClick={handleRetry}
-              >
-                Попробовать снова
-              </Button>
+    {!(buttonsEdit || deletedState) && (
+      <>
+        {feedback && (
+          <Paper elevation={3}
+                 sx={{
+                   padding: '24px',
+                   borderRadius: '12px',
+                   backgroundColor: (feedback === "correct" ? 'success.dark' : 'error.dark'),
+                   mb: "16px"
+                 }}>
+            <Box display="flex" alignItems="center">
+              {feedback === "correct" ? (
+                <Check sx={{ color: 'inherit', fontSize: '2rem', mr: 2 }} />
+              ) : (
+                <Close sx={{ color: 'inherit', fontSize: '2rem', mr: 2 }} />
+              )}
+              <Typography variant="h5" sx={{ 
+                            fontWeight: 'bold',
+                            color: 'inherit',
+                            mr: "16px"
+                          }}>
+                {feedback === "correct" ? 'Правильно!' : 'Неправильно!'}
+              </Typography>
+              {feedback === "incorrect" && (
+                <Button
+                  onClick={handleShowHideAnswer}
+                  sx={{backgroundColor: 'default.red2',
+                       color: 'default.white3'}}
+                >
+                  {showAnswer ? (<VisibilityOff sx={{ mr: 1 }} />) : (<Visibility sx={{ mr: 1 }} />)}
+                  {showAnswer ? "Спрятать ответ" : "Узнать ответ"}
+                </Button>
+              )}
+            </Box>
+
+            {(feedback === "correct" || showAnswer) && (
+              <>
+                <Box mb={3} mt={3}>
+                  <Typography variant="h6" color="inherit" mb={1}>
+                    Ваш ответ:
+                  </Typography>
+                  <Typography variant="body1" sx={{ 
+                                fontWeight: 500,
+                                color: 'inherit',
+                                wordBreak: 'break-word'
+                              }}>
+                    {answer || '—'}
+                  </Typography>
+                </Box>
+
+                <Box mb={3}>
+                  <Typography variant="h6" color="inherit" mb={1}>
+                    Правильный ответ:
+                  </Typography>
+                  <Typography variant="body1" sx={{ 
+                                fontWeight: 500,
+                                color: 'inherit',
+                                wordBreak: 'break-word'
+                              }}>
+                    {question.answer_text}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" color="inherit" mb={1}>
+                    Комментарий автора:
+                  </Typography>
+                  <Typography variant="body1" sx={{ 
+                                color: 'inherit',
+                                wordBreak: 'break-word'
+                              }}>
+                    {question.question_note ? question.question_note : "Автор не оставил комментариев"}
+                  </Typography>
+                </Box>
+              </>
             )}
-          </Box>
-        </span>
-      </Tooltip>
+          </Paper>
+        )}
+        
+        <Tooltip disableHoverListener={user.username} disableFocusListener disableTouchListener title={
+                   <Typography variant="h6">
+                     Для ввода и проверки ответа необходимо{" "}
+                     <Link component={Link} to="/login" state={{ redirect: location }}>
+                       авторизоваться
+                     </Link>.
+                   </Typography>
+                 }>
+          <span>
+            <TextField
+              disabled={!user.username}
+              label="Ваш ответ"
+              value={answer}
+              onChange={handleAnswerChange}
+              variant_tf="dark"
+              fullWidth
+              sx={{ mt: 2, mb: 2 }}
+            />
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Button
+                disabled={!user.username}
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                sx={{ mr: 2 }}
+              >
+                Отправить ответ
+              </Button>
+              {feedback  && (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleRetry}
+                  sx={{ mr: 2 }}
+                >
+                  <RotateLeft />
+                </Button>
+              )}
+            </Box>
+          </span>
+        </Tooltip>
+      </>
     )}
-    
-    {feedback && (
-      <Typography variant="subtitle1" sx={{ mt: 2, color: answerColor }}>
-        {feedback}
-      </Typography>
-    )}
-    
+
+    <Box
+      sx={{
+        pointerEvents: "none",
+        position: "fixed", width: `calc(100vw - ${drawerWidth})`, height: `calc(100vh - 64px)`, top: "64px", left: drawerWidth,
+        boxShadow: (feedback === "correct" ? "0px 0px 80px 1px green inset" : (feedback === "incorrect" ? "0px 0px 80px 1px red inset" : "")),
+        transition: `box-shadow 1s ease-in-out, ${drawerDuration} cubic-bezier(0.4, 0, 0.6, 1) 0ms`}}>
+    </Box>
     </>
   );
 };

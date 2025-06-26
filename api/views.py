@@ -120,11 +120,11 @@ class QuestionDelete(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Question.objects.all()
 
-    def delete(self, request, pk=None):
+    '''def delete(self, request, pk=None):
         if request.query_params.get('image') == 'true':
             instance = self.get_object()
             instance.delete_image()
-            return Response({"message" : "Image removed successfully!"}, status=204)
+        return Response({"message" : "Image removed successfully!"}, status=204)'''
 
 class QuestionUpdate(generics.UpdateAPIView):
     queryset = Question.objects.all()
@@ -842,7 +842,8 @@ class PackQuestionView(APIView):
             return Response({
                 "question": {
                     "id": question.id,
-                    "question_text": question.question_text
+                    "question_text": question.question_text,
+                    "image_attached": bool(question.image)
                 },
                 "session": GameSessionSerializer(session).data
             })

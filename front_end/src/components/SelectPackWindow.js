@@ -222,7 +222,7 @@ const SelectPackWindow = ({ open, onClose }) => {
                 >
                   <ListItemText
                     primary={pack.name}
-                    secondary={`${pack.question_count} вопросов`}
+                    secondary={`Вопросов: ${pack.questions.length}`}
                   />
                   <Button
                     variant="contained"

@@ -22,9 +22,10 @@ import {
 import { 
   Quiz, 
   Group, 
-  People,
+  Groups,
   Email,
   MilitaryTech,
+  LibraryBooks
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
@@ -83,13 +84,11 @@ const MyProfile = () => {
         // Загрузка ресурсов пользователя
         setResourcesLoading(true);
         const [questionsRes, packsRes, teamsRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/api/question/list/`, { 
+          axios.get(`${API_BASE_URL}/api/question/list/${userData.id}`, { 
             headers: { "Authorization": `Bearer ${token}` },
-            params: { author_q: userData.id }
           }),
-          axios.get(`${API_BASE_URL}/api/pack/list/`, { 
+          axios.get(`${API_BASE_URL}/api/pack/list/${userData.id}`, { 
             headers: { "Authorization": `Bearer ${token}` },
-            params: { author_p: userData.id }
           }),
           axios.get(`${API_BASE_URL}/api/team/list/`, { 
             headers: { "Authorization": `Bearer ${token}` } 
@@ -264,31 +263,25 @@ const MyProfile = () => {
           </Box>
         )}
 
-        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: 'wrap' }}>
-          <Chip 
-            icon={<Quiz />} 
-            label={`Вопросов: ${userResources.questions.length}`} 
-            variant="outlined" 
-          />
-          <Chip 
-            icon={<Group />} 
-            label={`Пакетов: ${userResources.packs.length}`} 
-            variant="outlined" 
-          />
-          <Chip 
-            icon={<People />} 
-            label={`Команд: ${userResources.teams.length}`} 
-            variant="outlined" 
-          />
-        </Box>
-
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Button 
-            variant="outlined" 
-            onClick={() => {}}
-          >
-            Редактировать профиль
-          </Button>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: 'wrap', justifyContent: "space-evenly" }}>
+          <Paper variant_p="chip">
+            <Quiz />
+            <Typography sx={{ ml: "4px" }}>
+              Вопросов: {userResources.questions.length}
+            </Typography>
+          </Paper>
+          <Paper variant_p="chip">
+            <LibraryBooks />
+            <Typography sx={{ ml: "4px" }}>
+              Пакетов: {userResources.packs.length}
+            </Typography>
+          </Paper>
+          <Paper variant_p="chip">
+            <Groups />
+            <Typography sx={{ ml: "4px" }}>
+              Команд: {userResources.teams.length}
+            </Typography>
+          </Paper>
         </Box>
       </Paper>
 
@@ -416,8 +409,8 @@ const MyProfile = () => {
         sx={{ mb: 3 }}
       >
         <Tab label="Мои вопросы" icon={<Quiz />} />
-        <Tab label="Мои пакеты" icon={<Group />} />
-        <Tab label="Мои команды" icon={<People />} />
+        <Tab label="Мои пакеты" icon={<LibraryBooks />} />
+        <Tab label="Мои команды" icon={<Groups />} />
       </Tabs>
 
       <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
@@ -550,7 +543,7 @@ const MyProfile = () => {
                   <ListItemButton onClick={() => handleTeamClick(team.id)}>
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: 'primary.main' }}>
-                        <People />
+                        <Groups />
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText

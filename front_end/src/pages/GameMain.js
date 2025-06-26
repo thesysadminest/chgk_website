@@ -1,3 +1,4 @@
+import API_BASE_URL from '../config';
 import React, { useState, useEffect } from 'react';
 import axiosInstance from "../components/axiosInstance";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -16,7 +17,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Paper
+  Paper,
+  Stack
 } from '@mui/material';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -376,9 +378,25 @@ const GameMain = () => {
               <Typography variant="subtitle1" color="text.secondary" mb={1}>
                 Вопрос {gameState.session?.current_question_index + 1} из {gameState.session?.questions_count}
               </Typography>
-              <Typography variant="h5" component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}> 
-                {gameState.question?.question_text}
-              </Typography>
+
+              <Stack
+                direction="row" 
+                sx={{ 
+                  mb: 2,
+                  gap: 4
+                }}
+              >
+                <img
+                  src={gameState.question?.image_attached ? `${API_BASE_URL}/api/question/${gameState.question.id}/?image=true` : "/side_owl.jpg"}
+                  style={{
+                    maxHeight: "50vh", maxWidth: "20vw",
+                    borderRadius: "20px"}}
+                  alt="Раздатка"
+                />
+                <Typography variant="h5" component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}> 
+                  {gameState.question?.question_text}
+                </Typography>
+              </Stack>
             </QuestionPaper>
 
             {gameState.answered || timeExpired ? (
@@ -440,7 +458,7 @@ const GameMain = () => {
             ) : (
               <AnswerField
                 fullWidth
-                variant="outlined"
+                variant_tf="dark"
                 label="Ваш ответ"
                 multiline
                 rows={4}
@@ -509,8 +527,18 @@ const GameMain = () => {
           </CardContent>
         </StyledCard>
       </Box>
+
+      <Box
+        sx={{
+          pointerEvents: "none",
+          position: "fixed", width: "100%", height: `calc(100vh - 64px)`, top: "64px",
+          boxShadow: (gameState.answered || timeExpired ? (gameState.isCorrect ? "0px 0px 80px 1px green inset" : "0px 0px 80px 1px red inset") : ""),
+          transition: "box-shadow 0.8s ease-in-out"}}>
+      </Box>
     </>
   );
 };
+
+// #c62828 #1b5e20
 
 export default GameMain;

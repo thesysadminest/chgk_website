@@ -191,8 +191,13 @@ export default function NavBar({ children }) {
 
     verifyAuth();
   }, []);
+  
+  const drawerEvent = new CustomEvent('drawerEvent', {
+    detail: { open: !open } 
+  });
 
   const handleDrawerToggle = () => {
+    document.getElementById('drawer').dispatchEvent(drawerEvent);
     setOpen(!open);
   };
 
@@ -289,7 +294,7 @@ export default function NavBar({ children }) {
                }} />
         )}
 
-        <Drawer variant="permanent" open={open}>
+        <Drawer variant="permanent" id="drawer" open={open}>
           <PlayButtonContainer open={open}>
             <img 
               src="/arrow.png" 

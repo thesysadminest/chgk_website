@@ -252,6 +252,7 @@ const PackDetail = () => {
                 <>
                   <TextField
                     label="Название пакета *"
+                    variant_tf="dark"
                     fullWidth
                     disabled={buttonsPending}
                     defaultValue={pack.name}
@@ -260,6 +261,7 @@ const PackDetail = () => {
                   />
                   <TextField
                     label="Описание пакета *"
+                    variant_tf="dark"
                     fullWidth
                     disabled={buttonsPending}
                     defaultValue={pack.description}

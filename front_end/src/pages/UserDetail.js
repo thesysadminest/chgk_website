@@ -20,19 +20,22 @@ import {
   Skeleton,
   Snackbar
 } from "@mui/material";
+import { 
+  Quiz, 
+  Group, 
+  Groups,
+  Email,
+  MilitaryTech,
+  LibraryBooks
+} from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
-import EmailIcon from "@mui/icons-material/Email";
-import QuizIcon from "@mui/icons-material/Quiz";
-import GroupIcon from "@mui/icons-material/Group";
-import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
-import GroupsIcon from "@mui/icons-material/Groups";
 import { getAccessToken } from "../utils/AuthUtils";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { LineChart } from '@mui/x-charts/LineChart';
 
 const StyledProfileBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
+  padding: theme.spacing(3),
   borderRadius: theme.shape.borderRadius,
   boxShadow: theme.shadows[3],
   marginBottom: theme.spacing(4),
@@ -77,13 +80,11 @@ const UserDetail = () => {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         
         const [questionsRes, packsRes, teamsRes, ratingRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/api/question/list/`, { 
+          axios.get(`${API_BASE_URL}/api/question/list/${userId}`, { 
             headers,
-            params: { author_q: userId }
           }),
-          axios.get(`${API_BASE_URL}/api/pack/list/`, { 
+          axios.get(`${API_BASE_URL}/api/pack/list/${userId}`, { 
             headers,
-            params: { author_p: userId }
           }),
           axios.get(`${API_BASE_URL}/api/team/list/`, { headers }),
           axios.get(`${API_BASE_URL}/api/user/rating-history/`, { headers })
@@ -200,7 +201,7 @@ const UserDetail = () => {
   const isCurrentUser = currentUserId === parseInt(userId);
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", p: 3, mt: -4 }}>
+    <Box sx={{ width: 800, mx: "auto", p: 3 }}>
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -228,7 +229,7 @@ const UserDetail = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Typography variant="h4">{userData.username}</Typography>
               <Chip 
-                icon={<MilitaryTechIcon />} 
+                icon={<MilitaryTech />} 
                 label={`Рейтинг: ${userData.elo_rating || 0}`} 
                 color="primary"
               />
@@ -236,7 +237,7 @@ const UserDetail = () => {
             
             {userData.email && (
               <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-                <EmailIcon sx={{ mr: 1 }} />
+                <Email sx={{ mr: 1 }} />
                 <Typography variant="body1" color="text.secondary">
                   {userData.email}
                 </Typography>
@@ -274,22 +275,25 @@ const UserDetail = () => {
           </Box>
         )}
 
-        <Box sx={{ display: "flex", gap: 2, flexWrap: 'wrap' }}>
-          <Chip 
-            icon={<QuizIcon />} 
-            label={`Вопросов: ${userResources.questions.length}`} 
-            variant="outlined" 
-          />
-          <Chip 
-            icon={<GroupIcon />} 
-            label={`Пакетов: ${userResources.packs.length}`} 
-            variant="outlined" 
-          />
-          <Chip 
-            icon={<GroupsIcon />} 
-            label={`Команд: ${userResources.teams.length}`} 
-            variant="outlined" 
-          />
+        <Box sx={{ display: "flex", gap: 2, flexWrap: 'wrap', justifyContent: "space-evenly" }}>
+          <Paper variant_p="chip">
+            <Quiz />
+            <Typography sx={{ ml: "4px" }}>
+              Вопросов: {userResources.questions.length}
+            </Typography>
+          </Paper>
+          <Paper variant_p="chip">
+            <LibraryBooks />
+            <Typography sx={{ ml: "4px" }}>
+              Пакетов: {userResources.packs.length}
+            </Typography>
+          </Paper>
+          <Paper variant_p="chip">
+            <Groups />
+            <Typography sx={{ ml: "4px" }}>
+              Команд: {userResources.teams.length}
+            </Typography>
+          </Paper>
         </Box>
       </StyledProfileBox>
 
@@ -397,9 +401,9 @@ const UserDetail = () => {
         textColor="primary"
         sx={{ mb: 3 }}
       >
-        <Tab label="Вопросы" icon={<QuizIcon />} />
-        <Tab label="Пакеты" icon={<GroupIcon />} />
-        <Tab label="Команды" icon={<GroupsIcon />} />
+        <Tab label="Вопросы" icon={<Quiz />} />
+        <Tab label="Пакеты" icon={<LibraryBooks />} />
+        <Tab label="Команды" icon={<Groups />} />
       </Tabs>
 
       <Box sx={{ display: 'flex', gap: 3 }}>
@@ -484,7 +488,7 @@ const UserDetail = () => {
                 >
                   <ListItemAvatar>
                     <Avatar sx={{ bgcolor: 'primary.main' }}>
-                      <GroupIcon />
+                      <Group />
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
@@ -536,7 +540,7 @@ const UserDetail = () => {
                 >
                   <ListItemAvatar>
                     <Avatar sx={{ bgcolor: 'primary.main' }}>
-                      <GroupsIcon />
+                      <Groups />
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText

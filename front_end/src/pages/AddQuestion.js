@@ -2,7 +2,8 @@ import API_BASE_URL from '../config';
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
-  Box, 
+  Box,
+  Stack,
   Button, 
   TextField, 
   Typography, 
@@ -14,6 +15,7 @@ import {
   Select,
   InputLabel
 } from "@mui/material";
+import { AddPhotoAlternate, HideImage } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { Link } from 'react-router-dom';
@@ -70,6 +72,34 @@ const AddQuestion = () => {
     }));
   };
 
+  const [newImage, setNewImage] = useState("");
+  const [newImageUrl, setNewImageUrl] = useState("");
+
+  const handleImgEditButton = () => {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = "image/*";
+
+    input.onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      setNewImage(file);
+
+      const imageUrl = URL.createObjectURL(file);
+      setNewImageUrl(imageUrl);
+    }
+
+    
+    input.click();
+    // setButtonsImgEdit(true);
+  };
+
+  const handleImgDeleteButton = () => {
+    setNewImage("");
+    setNewImageUrl("");
+  };
+
   const handleAddQuestion = async (type) => {
     if (!authState.isAuthenticated || !isFormValid) return;
 
@@ -103,10 +133,28 @@ const AddQuestion = () => {
         }
       );
 
-      if (response.status === 201) {
-        setSuccessModalOpen(true);
-        setQuestionData({ text: "", answer: "", comment: "", difficulty: 1});
+      if (response.status !== 201) {  
+        throw new Error("Ошибка при добавлении вопроса");
       }
+
+      if (newImage) {
+        const formData = new FormData();
+        formData.append('image', newImage);
+
+        const imgReplaceResponse = await axios.put(
+          `${API_BASE_URL}/api/question/update/${response.data.id}/?image=true`, formData,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+            },
+          });
+
+        if (imgReplaceResponse.status !== 200) {
+          throw new Error("Ошибка при добавлении изображения");
+        }
+      }
+      
     } catch (error) {
       console.error("Ошибка при добавлении вопроса:", error);
       if (error.response?.status === 401) {
@@ -125,6 +173,8 @@ const AddQuestion = () => {
         );
       }
     } finally {
+      setSuccessModalOpen(true);
+      setQuestionData({ text: "", answer: "", comment: "", difficulty: 1});
       setSubmitting(false);
     }
   };
@@ -209,7 +259,27 @@ const AddQuestion = () => {
           flexDirection: 'column',
           gap: 2,
           py: 2,
-      }}>
+           }}>
+
+        {newImage && (
+          <img
+            src={newImageUrl}
+            style={{
+              maxHeight: "30vh", maxWidth: "25vw",
+              borderRadius: "5px",
+              height: "auto", width: "auto"}}
+            alt="Раздатка"/>
+        )}
+        <Stack spacing={2} direction="row">
+          <Button onClick={handleImgEditButton} variant="red"> 
+            <AddPhotoAlternate sx={{mr: 2}} />
+            Выбрать изображение
+          </Button>
+          <Button onClick={handleImgDeleteButton} disabled={!newImage} variant="red">
+            <HideImage sx={{mr: 2}} />
+            Удалить изображение
+          </Button>
+        </Stack>
         <TextField
           label="Текст вопроса"
           fullWidth
@@ -310,27 +380,18 @@ const AddQuestion = () => {
           >
             <span>
               <Button
-                variant="contained"
+                variant="red"
                 disabled={isButtonDisabled}
                 onClick={() => handleAddQuestion("open")}
                 sx={{
                   py: 1.5,
                   px: 3,
-                  backgroundColor: isButtonDisabled ? 
-                    theme.palette.action.disabled : 
-                    theme.palette.primary.main,
-                  '&:hover': {
-                    backgroundColor: isButtonDisabled ? 
-                      theme.palette.action.disabled : 
-                      theme.palette.primary.dark,
-                  }
                 }}
               >
                  Добавить в открытый пак
               </Button>
             </span>
           </Tooltip>
-
         </Box>
       </Box>
 

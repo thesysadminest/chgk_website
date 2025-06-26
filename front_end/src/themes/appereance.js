@@ -247,6 +247,16 @@ const darkTheme = createTheme({
               '& .MuiTouchRipple-child': {
                 display: 'none',
               }
+            },
+
+            '&.Mui-disabled': {
+              backgroundColor: grey1,
+              color: white5,
+              '& .MuiTouchRipple-root': {
+                '& .MuiTouchRipple-child': {
+                  display: 'none',
+                }
+              }
             }
           },
         },
@@ -412,7 +422,7 @@ const darkTheme = createTheme({
           props: { variant_tf: "dark" },
           style: {
             "& .MuiInputLabel-root": {
-              color: black5,
+              color: greyButton,
             },
             "& .MuiOutlinedInput-root": {
               "& .MuiOutlinedInput-input": {
