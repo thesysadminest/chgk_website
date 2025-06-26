@@ -47,7 +47,6 @@ const MyProfile = () => {
   });
   const [resourcesLoading, setResourcesLoading] = useState(true);
 
-  // Функция для форматирования даты в формате DD.MM.YYYY
   const formatDate = (dateString) => {
     if (!dateString) return "Неизвестно";
     const date = new Date(dateString);
@@ -68,20 +67,17 @@ const MyProfile = () => {
           return;
         }
 
-        // Загрузка данных пользователя
         const userResponse = await axios.get(
           `${API_BASE_URL}/api/user/${userData.id}/`,
           { headers: { "Authorization": `Bearer ${token}` } }
         );
         setUser(userResponse.data[0]);
 
-        // Загрузка истории рейтинга
         const ratingResponse = await axios.get(
           `${API_BASE_URL}/api/user/rating-history`,
           { headers: { "Authorization": `Bearer ${token}` } }
         );
 
-        // Загрузка ресурсов пользователя
         setResourcesLoading(true);
         const [questionsRes, packsRes, teamsRes] = await Promise.all([
           axios.get(`${API_BASE_URL}/api/question/list/${userData.id}`, { 
@@ -95,7 +91,6 @@ const MyProfile = () => {
           })
         ]);
 
-        // Фильтрация команд, где пользователь является участником
         const userTeams = teamsRes.data.filter(team => 
           team.active_members.some(member => member.id === userData.id)
         );
@@ -106,7 +101,6 @@ const MyProfile = () => {
           teams: userTeams
         });
 
-        // Обработка данных рейтинга
         if (ratingResponse.data && Array.isArray(ratingResponse.data)) {
           const endDate = new Date();
           const startDate = new Date(userData.date_joined);
@@ -317,7 +311,6 @@ const MyProfile = () => {
                 overflow: 'hidden'
               }}>
                 {ratingZones.map((zone, index) => {
-                  // Фиксированные значения для всех зон (0-2000)
                   const top = ((2000 - zone.max) / 2000) * 100;
                   const bottom = ((2000 - zone.min) / 2000) * 100;
                   
@@ -420,7 +413,7 @@ const MyProfile = () => {
           flex: 1, 
           display: activeTab === 0 ? 'block' : 'none',
           width: '100%',
-          minWidth: 0 // Чтобы flex не ломал ширину
+          minWidth: 0
         }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
             Мои вопросы

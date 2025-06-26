@@ -103,7 +103,7 @@ const Invitations = () => {
   };
 
   const handleResponse = async (invitationId, response, e) => {
-    e.stopPropagation(); // Предотвращаем всплытие события
+    e.stopPropagation();
     try {
       setLoading(true);
       const accessToken = getAccessToken();

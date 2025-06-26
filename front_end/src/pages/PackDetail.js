@@ -26,17 +26,14 @@ const PackDetail = () => {
   const myName = getUserData()?.username || null;
   const [isMyPack, setIsMyPack] = useState(false);
 
-  // Функция для получения username автора по ID
   const getAuthorUsername = async (authorId) => {
     if (!authorId) return "Неизвестно";
     
-    // Если уже есть в кэше
     if (authorsCache[authorId]) return authorsCache[authorId];
     
     try {
       const response = await axios.get(`${API_BASE_URL}/api/user/${authorId}/`);
       const username = response.data.username;
-      // Сохраняем в кэш
       setAuthorsCache(prev => ({ ...prev, [authorId]: username }));
       return username;
     } catch (error) {
@@ -52,7 +49,6 @@ const PackDetail = () => {
         const response = await axios.get(`${API_BASE_URL}/api/pack/${pack.id}/`);
         console.log("Raw response data:", response.data);
         
-        // Упрощенная обработка
         const packData = response.data;
         setPack({
           id: packData.id || "",

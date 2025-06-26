@@ -157,7 +157,7 @@ const GameMain = () => {
     try {
       const response = await axiosInstance.post(
         `/game/${pack_id}/questions/${gameState.question.id}/submit/`,
-        { answer: '' }, // Пустой ответ при истечении времени
+        { answer: '' },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -167,7 +167,7 @@ const GameMain = () => {
 
       setGameState(prev => ({
         ...prev,
-        isCorrect: false, // Всегда false при истечении времени
+        isCorrect: false,
         correctAnswer: response.data.correct_answer,
         authorComment: response.data.author_comment || 'Время истекло',
         session: response.data.session,

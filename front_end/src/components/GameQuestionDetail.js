@@ -26,15 +26,12 @@ const GameQuestionDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Получаем текущий вопрос
         const questionRes = await axiosInstance.get(`/game/packs/${packId}/questions/${questionId}/`);
         setQuestion(questionRes.data);
         
-        // Получаем список всех вопросов для навигации
         const packRes = await axiosInstance.get(`/game/packs/${packId}/questions/`);
         setQuestionsList(packRes.data.questions);
         
-        // Находим текущий индекс
         const index = packRes.data.questions.findIndex(q => q.id === parseInt(questionId));
         setCurrentIndex(index >= 0 ? index : 0);
         

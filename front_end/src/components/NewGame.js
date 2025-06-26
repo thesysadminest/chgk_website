@@ -58,8 +58,8 @@ const NewGame = ({ onClose }) => {
   };
 
   const handleSelectQuestions = () => {
-    //onClose(); // Закрываем текущее окно
-    setselectPackOpen(true); // Открываем окно выбора вопросов
+    //onClose();
+    setselectPackOpen(true); 
   };
 
   if (authState.isLoading || gameLoading) {

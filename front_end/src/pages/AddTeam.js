@@ -43,9 +43,8 @@ const AddTeam = () => {
   const [searchText, setSearchText] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
-  // Добавляем состояние для данных команды
   const [team, setTeam] = useState({
-    members_count: 1, // Капитан (текущий пользователь) уже включен
+    members_count: 1,
     pending_invitations_count: 0
   });
 
@@ -70,7 +69,6 @@ const AddTeam = () => {
         const token = getAccessToken();
         if (!token) throw new Error("Токен доступа не найден");
 
-        // Получаем список пользователей (исключая текущего)
         const usersResponse = await axios.get(
           `${API_BASE_URL}/api/user/list/`,
           { headers: { "Authorization": `Bearer ${token}` } }
@@ -130,16 +128,14 @@ const handleCreateTeam = async () => {
     const token = getAccessToken();
     if (!token) throw new Error("Токен доступа не найден");
 
-    // Добавляем текущую дату для created_at
     const currentDate = new Date().toISOString();
     
-    // Создаем команду
     const teamResponse = await axios.post(
       `${API_BASE_URL}/api/team/create/`,
       {
         name: teamName.trim(),
         description: teamDescription.trim() || null,
-        created_at: currentDate, // Добавляем текущую дату
+        created_at: currentDate,
       },
       {
         headers: {
@@ -152,7 +148,6 @@ const handleCreateTeam = async () => {
     const teamId = teamResponse.data.id;
     let successfulInvitations = 0;
 
-    // Отправляем приглашения
     if (selectedUsers.length > 0) {
       try {
         const inviteResponse = await axios.post(
@@ -168,12 +163,11 @@ const handleCreateTeam = async () => {
         successfulInvitations = inviteResponse.data.invitations?.length || 0;
       } catch (inviteError) {
         console.error("Ошибка при отправке приглашений:", inviteError);
-        // Можно продолжить, даже если приглашения не отправились
       }
     }
 
     setTeam({
-      ...teamResponse.data, // Используем данные из ответа сервера
+      ...teamResponse.data,
       pending_invitations_count: successfulInvitations,
     });
     

@@ -35,9 +35,8 @@ const QuestionDetail = () => {
     axios.get(`${API_BASE_URL}/api/question/${question.id}/`)
       .then(response => {
         const data = Array.isArray(response.data) ? response.data[0] : response.data;
-        console.log("Полученные данные вопроса:", data); // Добавим лог для отладки
+        console.log("Полученные данные вопроса:", data); 
         
-        // Определяем имя автора вопроса
         let authorName = "Неизвестно";
         if (data.author_q) {
           if (typeof data.author_q === 'object' && data.author_q.username) {
@@ -45,7 +44,6 @@ const QuestionDetail = () => {
           } else if (typeof data.author_q === 'string') {
             authorName = data.author_q;
           } else if (typeof data.author_q === 'number') {
-            // Если приходит только ID автора, можно сделать дополнительный запрос
             authorName = `ID: ${data.author_q}`;
           }
         }
@@ -54,7 +52,7 @@ const QuestionDetail = () => {
           id: data.id,
           question_text: data.question_text || "Неизвестно",
           answer_text: data.answer_text || "",
-          author_q: authorName, // Используем обработанное имя автора
+          author_q: authorName, 
           image_attached: data.image_attached || false,
           question_note: data.question_note,
           author_id: data.author_q?.id || "Неизвестно",

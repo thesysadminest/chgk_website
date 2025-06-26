@@ -10,8 +10,6 @@ const PackAddQuestion = () => {
   const navigate = useNavigate();
 
   const handleAddToPack = () => {
-    // Здесь будет логика добавления вопроса в временное хранилище
-    // или передача данных обратно в AddPack
     alert("Вопрос добавлен в пак!");
     navigate("/add-pack"); 
   };

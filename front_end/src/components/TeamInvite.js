@@ -193,7 +193,7 @@ const TeamInvite = ({ open, onClose, teamId }) => {
   if (!isAuthenticated) {
     return (
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        {/* ... остается без изменений ... */}
+        {/* ... */}
       </Dialog>
     );
   }

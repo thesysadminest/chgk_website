@@ -32,7 +32,6 @@ const GameResults = () => {
       try {
         const response = await axiosInstance.get(`/game/${pack_id}/results/`);
 
-        // Если есть данные из location.state (только что завершенная игра)
         const finalScore = location.state?.score || response.data.correct_answers;
         const totalQuestions = location.state?.total || response.data.total_questions;
 
@@ -43,7 +42,6 @@ const GameResults = () => {
             ...response.data,
             correct_answers: finalScore,
             total_questions: totalQuestions,
-            // Гарантируем, что previous_rating и current_rating всегда есть
             previous_rating: response.data.previous_rating ||
               (response.data.current_rating - (response.data.rating_change || 0)),
             current_rating: response.data.current_rating ||

@@ -66,7 +66,6 @@ const MyTeams = () => {
           }
         });
 
-        // Filter teams where current user is in active_members
         const filteredTeams = response.data.filter(team => 
           team.active_members.some(member => member.id === userData.id)
         );

@@ -329,10 +329,8 @@ const NewsPage = () => {
     const csrfToken = getCookie('csrftoken');
     if (!csrfToken) throw new Error('CSRF token not found');
 
-    // Получаем текущий голос пользователя
     const currentVote = getCachedVote(messageId) || 0;
     
-    // Если повторное нажатие на ту же кнопку - снимаем голос
     const newVoteValue = currentVote === voteValue ? 0 : voteValue;
 
     setVotingStates(prev => ({ ...prev, [messageId]: newVoteValue }));
@@ -552,7 +550,7 @@ const NewsPage = () => {
             justifyContent: 'center',
             
           }}>
-            <Typography variant="h4" sx={{ textAlign: 'center', fontWeight: 'bold', color: theme.palette.primary.main, mb: 1 }}>
+            <Typography variant="h4" sx={{ textAlign: 'center', fontWeight: 'bold', color: 'white', mb: 1 }}>
               ЧГК Форум
             </Typography>
             
@@ -704,7 +702,7 @@ const NewsPage = () => {
   borderRadius: 2,
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'flex-end' // Добавляем выравнивание по правому краю
+  alignItems: 'flex-end'
 }}>
   <TextField
     fullWidth
@@ -732,7 +730,7 @@ const NewsPage = () => {
     endIcon={forumLoading ? <CircularProgress size={24} /> : <Send />}
     size="large"
     sx={{ 
-      alignSelf: 'flex-end' // Убедитесь, что кнопка выравнивается по правому краю
+      alignSelf: 'flex-end'
     }}
   >
     {forumLoading ? 'Отправка...' : 'Отправить'}
