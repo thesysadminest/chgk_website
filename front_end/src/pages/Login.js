@@ -137,6 +137,8 @@ const Login = () => {
           value={formData.username}
           onChange={handleChange}
           disabled={submitting}
+          sx={{  borderRadius: 1, backgroundColor: theme.palette.background.white, '& .MuiInputBase-input': {
+              color: theme.palette.text.dark }}}
         />
 
         <TextField
@@ -149,6 +151,8 @@ const Login = () => {
           value={formData.password}
           onChange={handleChange}
           disabled={submitting}
+          sx={{  borderRadius: 1, backgroundColor: theme.palette.background.white, '& .MuiInputBase-input': {
+              color: theme.palette.text.dark }}}
         />
 
         <Tooltip 
@@ -168,9 +172,7 @@ const Login = () => {
                 backgroundColor: submitting 
                   ? theme.palette.action.disabledBackground 
                   : theme.palette.primary.main,
-                color: submitting 
-                  ? theme.palette.text.disabled 
-                  : theme.palette.primary.contrastText,
+                color: theme.palette.primary.contrastText,
                 "&:hover": {
                   backgroundColor: submitting 
                     ? theme.palette.action.disabledBackground 
@@ -179,7 +181,7 @@ const Login = () => {
                 borderRadius: theme.shape.borderRadius,
                 "&.Mui-disabled": {
                   backgroundColor: theme.palette.action.disabledBackground,
-                  color: theme.palette.text.disabled
+                  color: theme.palette.default.greyButton
                 }
               }}
             >

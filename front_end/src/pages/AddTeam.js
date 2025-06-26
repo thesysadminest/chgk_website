@@ -272,7 +272,7 @@ const handleCreateTeam = async () => {
             }}
           />
           <TextField
-            label="Описание команды"
+            label="Описание команды *"
             fullWidth
             multiline
             rows={3}
@@ -280,6 +280,7 @@ const handleCreateTeam = async () => {
             onChange={(e) => setTeamDescription(e.target.value)}
             sx={{ 
               borderRadius: 1,
+              backgroundColor: theme.palette.background.white, 
               '& .MuiInputBase-input': {
                 color: theme.palette.text.dark
               }
