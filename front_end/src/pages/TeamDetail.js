@@ -116,22 +116,19 @@ const handleResponse = async (response) => {
       return;
     }
 
-    // 1. Получаем все приглашения пользователя
     const invitationsResponse = await axios.get(
       `${API_BASE_URL}/api/user/${currentUserId}/invitations/`, 
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    console.log("Все приглашения пользователя:", invitationsResponse.data); // Логируем для отладки
+    console.log("Все приглашения пользователя:", invitationsResponse.data); 
 
-    // 2. Ищем приглашение для текущей команды
     const userInvitation = invitationsResponse.data.find(inv => {
       console.log("Проверяем приглашение:", inv);
-      // Сравниваем как числа, если teamId строка
       return inv.team.id === parseInt(teamId) && inv.status === 'pending';
     });
 
-    console.log("Найденное приглашение:", userInvitation); // Логируем результат поиска
+    console.log("Найденное приглашение:", userInvitation); 
 
     if (!userInvitation) {
       setSnackbar({
@@ -142,7 +139,6 @@ const handleResponse = async (response) => {
       return;
     }
 
-    // 3. Отправляем ответ на приглашение
     const result = await axios.post(
       `${API_BASE_URL}/api/user/${currentUserId}/invitations/${userInvitation.id}/respond/`,
       { response: response ? 'accept' : 'reject' },
@@ -154,7 +150,7 @@ const handleResponse = async (response) => {
       }
     );
 
-    console.log("Ответ сервера:", result.data); // Логируем ответ сервера
+    console.log("Ответ сервера:", result.data);
 
     setSnackbar({
       open: true,
@@ -162,7 +158,6 @@ const handleResponse = async (response) => {
       severity: "success"
     });
 
-    // 4. Обновляем данные
     await fetchTeamData();
 
   } catch (error) {
@@ -192,14 +187,12 @@ const handleLeaveTeam = async () => {
       return;
     }
 
-    // 1. Отправляем запрос на выход из команды
     await axios.post(
       `${API_BASE_URL}/api/team/${teamId}/leave/`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    // 2. Обновляем данные команды
     const teamResponse = await axios.get(
       `${API_BASE_URL}/api/team/${teamId}/`,
       { headers: { Authorization: `Bearer ${token}` } }
@@ -208,7 +201,6 @@ const handleLeaveTeam = async () => {
     const updatedTeam = Array.isArray(teamResponse.data) ? teamResponse.data[0] : teamResponse.data;
     setTeam(updatedTeam);
 
-    // 3. Проверяем, что пользователь больше не в команде
     const isStillMember = updatedTeam.active_members.some(member => member.id === currentUserId);
     if (isStillMember) {
       throw new Error("Не удалось выйти из команды");

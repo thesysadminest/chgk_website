@@ -226,13 +226,23 @@ class PackView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
     queryset = Pack.objects.all()
 
-    
 class PackViewList(generics.ListCreateAPIView):
     serializer_class = PackSerializer
     permission_classes = [permissions.AllowAny]
     
     def get_queryset(self):
       queryset = Pack.objects.all()
+      return queryset
+    
+class PackViewListAuthor(generics.ListCreateAPIView):
+    serializer_class = PackSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    def get_queryset(self):
+      queryset = Pack.objects.all()
+      author_id = self.kwargs.get('pk')
+      if author_id:
+        queryset = queryset.filter(author_p__id=author_id)
       return queryset
     
 class AddQuestionToPack(viewsets.ModelViewSet):

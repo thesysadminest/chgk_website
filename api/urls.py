@@ -17,6 +17,7 @@ urlpatterns = [
     path('pack/delete/<int:pk>/', views.PackDelete.as_view(), name="delete-pack"),
     path('pack/update/<int:pk>/', views.PackUpdate.as_view(), name="update-pack"),
     path('pack/question/<int:pk>/', views.AddQuestionToPack.as_view({'post': 'update'}), name="add-q-to-pack"),
+    path('pack/list/<int:pk>/', views.PackViewListAuthor.as_view(), name="pack-list-author"),
     
 
     path('team/<int:pk>/', views.TeamView.as_view(), name="view-team"),

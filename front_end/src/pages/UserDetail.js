@@ -58,7 +58,7 @@ const UserDetail = () => {
     severity: "success"
   });
   const [resourcesLoading, setResourcesLoading] = useState(true);
-  const userId = parseInt(id, 10); // Парсим в число
+  const userId = parseInt(id, 10);
 
   console.log(id);
   console.log(userId);
@@ -76,7 +76,6 @@ const UserDetail = () => {
         const token = getAccessToken();
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         
-        // Параллельная загрузка всех данных
         const [questionsRes, packsRes, teamsRes, ratingRes] = await Promise.all([
           axios.get(`${API_BASE_URL}/api/question/list/`, { 
             headers,
@@ -90,19 +89,16 @@ const UserDetail = () => {
           axios.get(`${API_BASE_URL}/api/user/rating-history/`, { headers })
         ]);
 
-        // Фильтрация команд, где пользователь является участником
         const userTeams = teamsRes.data.filter(team => 
           team.active_members.some(member => member.id === userId)
         );
 
-        // Загрузка данных пользователя
         const userResponse = await axios.get(
           `${API_BASE_URL}/api/user/${userId}/`,
           { headers }
         );
         
         setUserData(userResponse.data[0]);
-        // Обработка данных рейтинга
         let processedRatingData = [];
         if (ratingRes.data && Array.isArray(ratingRes.data)) {
           const endDate = new Date();

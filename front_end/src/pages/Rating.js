@@ -32,7 +32,6 @@ const Rating = () => {
           user: isAuthorized ? user : null,
           isLoading: false
         });
-        // Инициализируем selectedUserId после аутентификации
         if (isAuthorized) {
           setSelectedUserId(user.id);
         }
@@ -96,7 +95,6 @@ const Rating = () => {
     }
   }, [authState.isAuthenticated, authState.isLoading]);
 
-  // Автоматически выделяем строку после загрузки данных
   useEffect(() => {
     if (authState.isAuthenticated && rows.length > 0 && selectedUserId) {
       const userIndex = rows.findIndex(row => row.id === selectedUserId);

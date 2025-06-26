@@ -71,17 +71,13 @@ const Registration = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        // Обработка ошибок валидации Django
         const errorMessages = [];
 
         if (result.errors) {
-          // Для кастомных ошибок из handle_exception
           errorMessages.push(result.errors);
         } else if (result.non_field_errors) {
-          // Для non_field_errors
           errorMessages.push(...result.non_field_errors);
         } else {
-          // Для ошибок полей
           for (const field in result) {
             errorMessages.push(`${field}: ${result[field].join(', ')}`);
           }
