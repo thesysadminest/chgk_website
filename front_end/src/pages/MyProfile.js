@@ -46,6 +46,16 @@ const MyProfile = () => {
   });
   const [resourcesLoading, setResourcesLoading] = useState(true);
 
+  // Функция для форматирования даты в формате DD.MM.YYYY
+  const formatDate = (dateString) => {
+    if (!dateString) return "Неизвестно";
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -201,13 +211,14 @@ const MyProfile = () => {
   const maxRating = chartData.length > 0 ? Math.max(...chartData.map(d => d.rating)) + 200 : 3000;
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
+    <Box sx={{ width: 800, mx: "auto", p: 3 }}>
       <Paper 
         sx={{ 
           padding: theme.spacing(3),
           marginBottom: theme.spacing(3),
           backgroundColor: theme.palette.background.light,
-          borderRadius: 2
+          borderRadius: 2,
+          width: '100%'
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
@@ -237,9 +248,7 @@ const MyProfile = () => {
 
             <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Зарегистрирован: {user.date_joined 
-                  ? new Date(user.date_joined).toLocaleDateString("ru-RU") 
-                  : "Неизвестно"}
+                Зарегистрирован: {formatDate(user.date_joined)}
               </Typography>
             </Box>
           </Box>
@@ -288,10 +297,11 @@ const MyProfile = () => {
           padding: theme.spacing(3),
           marginBottom: theme.spacing(8),
           backgroundColor: theme.palette.background.light,
-          borderRadius: 2
+          borderRadius: 2,
+          width: '100%'
         }}
       >
-        <Box sx={{ height: 300, width: '100%' , mb: 4}}>
+        <Box sx={{ height: 300, mb: 4}}>
           <Typography variant="h6" gutterBottom>История рейтинга</Typography>
           
           {chartData.length > 0 ? (
@@ -347,7 +357,7 @@ const MyProfile = () => {
                   xAxis={[{
                     dataKey: 'date',
                     scaleType: 'time',
-                    valueFormatter: (date) => date.toLocaleDateString(),
+                    valueFormatter: (date) => formatDate(date),
                   }]}
                   yAxis={[{
                     min: 0,
@@ -366,7 +376,7 @@ const MyProfile = () => {
                   sx={{
                     '& .MuiLineElement-root': {
                       strokeWidth: 3,
-                      filter: 'drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.3))', // Тень для линии
+                      filter: 'drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.3))',
                     },
                     '& .MuiChartsAxis-line': {
                       stroke: 'white',
@@ -383,7 +393,7 @@ const MyProfile = () => {
                     '& .MuiMarkElement-root': {
                       fill: 'white !important',
                       fillOpacity: 1,
-                      filter: 'drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2))', // Тень для маркеров
+                      filter: 'drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2))',
                     },
                   }}
                 />
@@ -397,7 +407,7 @@ const MyProfile = () => {
         </Box>
       </Paper>
 
-<Tabs 
+      <Tabs 
         value={activeTab} 
         onChange={handleTabChange}
         variant="fullWidth"
@@ -410,12 +420,14 @@ const MyProfile = () => {
         <Tab label="Мои команды" icon={<People />} />
       </Tabs>
 
-      <Box sx={{ display: 'flex', gap: 3 }}>
+      <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
         {/* Вопросы */}
         <Paper sx={{ 
           p: 3, 
           flex: 1, 
-          display: activeTab === 0 ? 'block' : 'none' 
+          display: activeTab === 0 ? 'block' : 'none',
+          width: '100%',
+          minWidth: 0 // Чтобы flex не ломал ширину
         }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
             Мои вопросы
@@ -442,7 +454,7 @@ const MyProfile = () => {
                     <ListItemText
                       primary={question.question_text}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
-                      secondary={`Опубликовано: ${new Date(question.pub_date_q).toLocaleDateString()}`}
+                      secondary={`Опубликовано: ${formatDate(question.pub_date_q)}`}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -459,7 +471,9 @@ const MyProfile = () => {
         <Paper sx={{ 
           p: 3, 
           flex: 1, 
-          display: activeTab === 1 ? 'block' : 'none' 
+          display: activeTab === 1 ? 'block' : 'none',
+          width: '100%',
+          minWidth: 0
         }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
             Мои пакеты
@@ -508,7 +522,9 @@ const MyProfile = () => {
         <Paper sx={{ 
           p: 3, 
           flex: 1, 
-          display: activeTab === 2 ? 'block' : 'none' 
+          display: activeTab === 2 ? 'block' : 'none',
+          width: '100%',
+          minWidth: 0
         }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
             Мои команды

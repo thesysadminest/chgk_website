@@ -70,7 +70,7 @@ const Invitations = () => {
       setLoading(true);
       const accessToken = getAccessToken();
       const response = await axios.get(
-        `${API_BASE_URL} /api/user/${userId}/invitations/`, 
+        `${API_BASE_URL}/api/user/${userId}/invitations/`, 
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`
@@ -108,7 +108,7 @@ const Invitations = () => {
       setLoading(true);
       const accessToken = getAccessToken();
       await axios.post(
-        `${API_BASE_URL} /api/user/${authState.user?.id}/invitations/${invitationId}/respond/`,
+        `${API_BASE_URL}/api/user/${authState.user?.id}/invitations/${invitationId}/respond/`,
         { response: response ? 'accept' : 'reject' },
         {
           headers: {
