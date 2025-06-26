@@ -97,7 +97,7 @@ const UserMenu = ({ onLogout }) => {
             <Box sx={{ p: 2 }}>
               <List>
                 {[
-                  ["Профиль", "/myprofile"],
+                  ["Мой профиль", "/myprofile"],
                   ["Мои команды", "/myteams"],
                   ["Мои приглашения", "/invitations"],
                  

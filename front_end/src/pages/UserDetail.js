@@ -24,12 +24,12 @@ import { styled } from "@mui/material/styles";
 import EmailIcon from "@mui/icons-material/Email";
 import QuizIcon from "@mui/icons-material/Quiz";
 import GroupIcon from "@mui/icons-material/Group";
-import HistoryIcon from "@mui/icons-material/History";
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { getAccessToken } from "../utils/AuthUtils";
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
+import { LineChart } from '@mui/x-charts/LineChart';
 
 const StyledProfileBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -40,14 +40,14 @@ const StyledProfileBox = styled(Paper)(({ theme }) => ({
 
 const UserDetail = () => {
   const theme = useTheme();
-  const { id: userId } = useParams();
+  const { id } = useParams();
   const [userData, setUserData] = useState(null);
   const [userResources, setUserResources] = useState({
     questions: [],
     packs: [],
-    teams: [],
-    pending_invitations: []
+    teams: []
   });
+  const [ratingData, setRatingData] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,42 +57,71 @@ const UserDetail = () => {
     message: "",
     severity: "success"
   });
-  const [resourcesLoaded, setResourcesLoaded] = useState(false);
+  const [resourcesLoading, setResourcesLoading] = useState(true);
+  const userId = parseInt(id, 10); // Парсим в число
+
+  console.log(id);
+  console.log(userId);
 
   useEffect(() => {
+    if (!userId) {
+      setError("Неверный ID пользователя");
+      setLoading(false);
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
         setLoading(true);
         const token = getAccessToken();
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         
-        const userResponse = await axios.get(
-          `${API_BASE_URL}/api/user/${userId}/`
+        // Параллельная загрузка всех данных
+        const [questionsRes, packsRes, teamsRes, ratingRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/api/question/list/`, { 
+            headers,
+            params: { author_q: userId }
+          }),
+          axios.get(`${API_BASE_URL}/api/pack/list/`, { 
+            headers,
+            params: { author_p: userId }
+          }),
+          axios.get(`${API_BASE_URL}/api/team/list/`, { headers }),
+          axios.get(`${API_BASE_URL}/api/user/rating-history/`, { headers })
+        ]);
+
+        // Фильтрация команд, где пользователь является участником
+        const userTeams = teamsRes.data.filter(team => 
+          team.active_members.some(member => member.id === userId)
         );
-        
-        setUserData(userResponse.data[0]);
 
-        if (token) {
-          const currentUserResponse = await axios.get(
-            `${API_BASE_URL}/api/user/me/`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setCurrentUserId(currentUserResponse.data.id);
-        }
-
-        const resourcesResponse = await axios.get(
+        // Загрузка данных пользователя
+        const userResponse = await axios.get(
           `${API_BASE_URL}/api/user/${userId}/`,
           { headers }
         );
         
+        setUserData(userResponse.data[0]);
+        // Обработка данных рейтинга
+        let processedRatingData = [];
+        if (ratingRes.data && Array.isArray(ratingRes.data)) {
+          const endDate = new Date();
+          const startDate = new Date(userResponse.data[0].date_joined);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(endDate.getDate() - 30);
+          const chartStartDate = startDate > thirtyDaysAgo ? startDate : thirtyDaysAgo;
+          
+          processedRatingData = processRatingData(ratingRes.data, chartStartDate, endDate);
+        }
+
         setUserResources({
-          questions: resourcesResponse.data.questions || [],
-          packs: resourcesResponse.data.packs || [],
-          teams: resourcesResponse.data.teams || [],
-          pending_invitations: resourcesResponse.data.pending_invitations || []
+          questions: questionsRes.data,
+          packs: packsRes.data,
+          teams: userTeams
         });
         
-        setResourcesLoaded(true);
+        setRatingData(processedRatingData);
+        setResourcesLoading(false);
 
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
@@ -105,6 +134,28 @@ const UserDetail = () => {
     fetchUserData();
   }, [userId]);
 
+  const processRatingData = (data, startDate, endDate) => {
+    const dateMap = {};
+    const result = [];
+    
+    data.forEach(item => {
+      const date = new Date(item.date).toISOString().split('T')[0];
+      dateMap[date] = item.rating;
+    });
+
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      result.push({
+        date: new Date(currentDate),
+        rating: dateMap[dateStr] || (result.length > 0 ? result[result.length - 1].rating : 1000)
+      });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return result;
+  };
+
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
@@ -112,6 +163,19 @@ const UserDetail = () => {
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
+
+  const ratingZones = [
+    { min: 0, max: 200, color: '#CCCCCC'}, //1
+    { min: 200, max: 400, color: '#77FF77'}, // 2
+    { min: 400, max: 600, color: '#77DDBB'}, // 3 
+    { min: 600, max: 800, color: '#AAAAFF'}, // 4
+    { min: 800, max: 1000, color: '#FF88FF'}, // 5
+    { min: 1000, max: 1200, color: '#FFCC88'}, // 6
+    { min: 1200, max: 1400, color: '#FFBB55'}, // 7
+    { min: 1400, max: 1600, color: '#FF7777'}, // 8
+    { min: 1600, max: 1800, color: '#FF3333'}, // 9
+    { min: 1800, max: 2000, color: '#AA0000'} // 10
+  ];
 
   if (loading) {
     return (
@@ -169,7 +233,7 @@ const UserDetail = () => {
               <Typography variant="h4">{userData.username}</Typography>
               <Chip 
                 icon={<MilitaryTechIcon />} 
-                label={`Рейтинг: ${userData.rating || 0}`} 
+                label={`Рейтинг: ${userData.elo_rating || 0}`} 
                 color="primary"
               />
             </Box>
@@ -233,6 +297,102 @@ const UserDetail = () => {
         </Box>
       </StyledProfileBox>
 
+      {/* График рейтинга */}
+      <StyledProfileBox>
+        <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+          История рейтинга
+        </Typography>
+        {ratingData.length > 0 ? (
+          <Box sx={{ height: 300, width: '100%', position: 'relative' }}>
+            {/* Цветные зоны - фиксированные от 0 до 2000 */}
+            <Box sx={{
+              position: 'absolute',
+              top: '30px',
+              left: '70px',
+              right: '30px',
+              bottom: '30px',
+              zIndex: 0,
+              display: 'flex',
+              flexDirection: 'column-reverse',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              {ratingZones.map((zone, index) => {
+                const top = ((2000 - zone.max) / 2000) * 100;
+                const bottom = ((2000 - zone.min) / 2000) * 100;
+                
+                return (
+                  <Box 
+                    key={index}
+                    sx={{
+                      position: 'absolute',
+                      top: `${top}%`,
+                      bottom: `${100 - bottom}%`,
+                      left: 0,
+                      right: 0,
+                      backgroundColor: zone.color,
+                      borderBottom: index !== ratingZones.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none'
+                    }}
+                  />
+                );
+              })}
+            </Box>
+
+            {/* График с фиксированным масштабом 0-2000 */}
+            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+              <LineChart
+                xAxis={[{
+                  dataKey: 'date',
+                  scaleType: 'time',
+                  valueFormatter: (date) => date.toLocaleDateString(),
+                }]}
+                yAxis={[{
+                  min: 0,
+                  max: 2000,
+                  tickInterval: ratingZones.map(zone => zone.min).concat(2000),
+                }]}
+                series={[{
+                  dataKey: 'rating',
+                  area: false,
+                  color: '#EDC240',
+                  showMark: ({ index }) => index === 0 || index === ratingData.length - 1,
+                }]}
+                dataset={ratingData}
+                height={300}
+                margin={{ left: 70, right: 30, top: 30, bottom: 30 }}
+                sx={{
+                  '& .MuiLineElement-root': {
+                    strokeWidth: 3,
+                    filter: 'drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.3))',
+                  },
+                  '& .MuiChartsAxis-line': {
+                    stroke: 'white',
+                    strokeWidth: 2,
+                  },
+                  '& .MuiChartsAxis-tick': {
+                    stroke: 'white',
+                    strokeWidth: 2,
+                  },
+                  '& .MuiChartsAxis-tickLabel': {
+                    fill: 'white',
+                    fontSize: '0.75rem',
+                  },
+                  '& .MuiMarkElement-root': {
+                    fill: 'white !important',
+                    fillOpacity: 1,
+                    filter: 'drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2))',
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+        ) : (
+          <Typography color="text.secondary" sx={{ mt: 2 }}>
+            Нет данных о рейтинге
+          </Typography>
+        )}
+      </StyledProfileBox>
+
       <Tabs 
         value={activeTab} 
         onChange={handleTabChange}
@@ -247,8 +407,7 @@ const UserDetail = () => {
       </Tabs>
 
       <Box sx={{ display: 'flex', gap: 3 }}>
-        {/* Вопросы */}
-        <Paper sx={{ 
+       <Paper sx={{ 
           p: 3, 
           flex: 1, 
           display: activeTab === 0 ? 'block' : 'none' 
@@ -256,7 +415,7 @@ const UserDetail = () => {
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
             Созданные вопросы
           </Typography>
-          {!resourcesLoaded ? (
+          {resourcesLoading ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {[...Array(3)].map((_, i) => (
                 <Skeleton key={i} height={72} />
@@ -266,16 +425,22 @@ const UserDetail = () => {
             <List disablePadding>
               {userResources.questions.map((question) => (
                 <ListItem 
-                  key={question.id} 
+                  key={question.id}
+                  button
+                  component="a"
+                  href={`/question/${question.id}`}
                   sx={{
                     borderRadius: 1,
                     mb: 1,
-                    backgroundColor: 'background.paper'
+                    color: theme.palette.background.white,
+                    backgroundColor: 'background.paper',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    }
                   }}
                 >
                   <ListItemText
                     primary={question.question_text}
-                    primaryTypographyProps={{ fontWeight: 'medium' }}
                     secondary={`Опубликовано: ${new Date(question.pub_date_q).toLocaleDateString()}`}
                   />
                 </ListItem>
@@ -297,7 +462,7 @@ const UserDetail = () => {
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
             Созданные пакеты
           </Typography>
-          {!resourcesLoaded ? (
+          {resourcesLoading ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {[...Array(3)].map((_, i) => (
                 <Skeleton key={i} variant="rectangular" height={72} />
@@ -308,10 +473,17 @@ const UserDetail = () => {
               {userResources.packs.map((pack) => (
                 <ListItem 
                   key={pack.id}
+                  button
+                  component="a"
+                  href={`/pack/${pack.id}`}
                   sx={{
                     borderRadius: 1,
                     mb: 1,
-                    backgroundColor: 'background.paper'
+                    color: theme.palette.background.white,
+                    backgroundColor: 'background.paper',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    }
                   }}
                 >
                   <ListItemAvatar>
@@ -321,8 +493,7 @@ const UserDetail = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={pack.name}
-                    primaryTypographyProps={{ fontWeight: 'medium' }}
-                    secondary={`${pack.questions_count || 0} вопросов • Рейтинг: ${pack.rating || 0}`}
+                    secondary={`${pack.questions?.length || 0} вопросов • Рейтинг: ${pack.rating || 0}`}
                   />
                 </ListItem>
               ))}
@@ -343,7 +514,7 @@ const UserDetail = () => {
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
             Команды пользователя
           </Typography>
-          {!resourcesLoaded ? (
+          {resourcesLoading ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {[...Array(3)].map((_, i) => (
                 <Skeleton key={i} variant="rectangular" height={72} />
@@ -354,23 +525,29 @@ const UserDetail = () => {
               {userResources.teams.map((team) => (
                 <ListItem 
                   key={team.id}
+                  button
+                  component="a"
+                  href={`/team/${team.id}`}
                   sx={{
                     borderRadius: 1,
                     mb: 1,
-                    backgroundColor: 'background.paper'
+                    color: theme.palette.background.white,
+                    backgroundColor: 'background.paper',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    }
                   }}
                 >
                   <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                    <Avatar sx={{ bgcolor: 'primary.main' }}>
                       <GroupsIcon />
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
                     primary={team.name}
-                    primaryTypographyProps={{ fontWeight: 'medium' }}
-                    secondary={`${team.members_count || 0} участников • Очки: ${team.team_score || 0}`}
+                    secondary={`${team.active_members?.length || 0} участников`}
                   />
-                  {team.captain === currentUserId && (
+                  {team.captain === parseInt(userId) && (
                     <Chip 
                       label="Капитан" 
                       size="small" 

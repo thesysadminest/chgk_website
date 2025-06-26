@@ -17,11 +17,9 @@ import {
   Tab,
   CircularProgress,
   Alert,
-  Skeleton,
-  ClickAwayListener
+  Skeleton
 } from "@mui/material";
 import { 
-  Add, 
   Quiz, 
   Group, 
   People,
@@ -31,7 +29,6 @@ import {
 import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
 import { LineChart } from '@mui/x-charts/LineChart';
 
 const MyProfile = () => {
@@ -41,53 +38,71 @@ const MyProfile = () => {
   const [ratingData, setRatingData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
   const [userResources, setUserResources] = useState({
     questions: [],
     packs: [],
     teams: []
   });
-  const [resourcesLoading, setResourcesLoading] = useState(false);
+  const [resourcesLoading, setResourcesLoading] = useState(true);
 
- useEffect(() => {
-  const fetchUserData = async () => {
-    try {
-      const token = localStorage.getItem("access_token");
-      const userData = JSON.parse(localStorage.getItem("user"));
-      
-      if (!token || !userData) {
-        setError("Требуется авторизация");
-        return;
-      }
-
-        const response = await axios.get(
-          `${API_BASE_URL}/api/user/${userData.id}/`,
-          {
-            headers: {
-              "Authorization": `Bearer ${token}`
-            }
-          }
-        );
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const userData = JSON.parse(localStorage.getItem("user"));
         
-        setUser(response.data[0]);
+        if (!token || !userData) {
+          setError("Требуется авторизация");
+          return;
+        }
 
+        // Загрузка данных пользователя
+        const userResponse = await axios.get(
+          `${API_BASE_URL}/api/user/${userData.id}/`,
+          { headers: { "Authorization": `Bearer ${token}` } }
+        );
+        setUser(userResponse.data[0]);
+
+        // Загрузка истории рейтинга
         const ratingResponse = await axios.get(
           `${API_BASE_URL}/api/user/rating-history`,
-          {
-            headers: {
-              "Authorization": `Bearer ${token}`
-            }
-          }
-        )
+          { headers: { "Authorization": `Bearer ${token}` } }
+        );
 
+        // Загрузка ресурсов пользователя
+        setResourcesLoading(true);
+        const [questionsRes, packsRes, teamsRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/api/question/list/`, { 
+            headers: { "Authorization": `Bearer ${token}` },
+            params: { author_q: userData.id }
+          }),
+          axios.get(`${API_BASE_URL}/api/pack/list/`, { 
+            headers: { "Authorization": `Bearer ${token}` },
+            params: { author_p: userData.id }
+          }),
+          axios.get(`${API_BASE_URL}/api/team/list/`, { 
+            headers: { "Authorization": `Bearer ${token}` } 
+          })
+        ]);
+
+        // Фильтрация команд, где пользователь является участником
+        const userTeams = teamsRes.data.filter(team => 
+          team.active_members.some(member => member.id === userData.id)
+        );
+
+        setUserResources({
+          questions: questionsRes.data,
+          packs: packsRes.data,
+          teams: userTeams
+        });
+
+        // Обработка данных рейтинга
         if (ratingResponse.data && Array.isArray(ratingResponse.data)) {
           const endDate = new Date();
           const startDate = new Date(userData.date_joined);
-          
           const thirtyDaysAgo = new Date();
           thirtyDaysAgo.setDate(endDate.getDate() - 30);
-          
           const chartStartDate = startDate > thirtyDaysAgo ? startDate : thirtyDaysAgo;
           
           const processedData = processRatingData(ratingResponse.data, chartStartDate, endDate);
@@ -96,14 +111,15 @@ const MyProfile = () => {
 
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
-        navigate("/login");
+        setError("Ошибка загрузки данных");
       } finally {
         setLoading(false);
+        setResourcesLoading(false);
       }
     };
 
-  fetchUserData(); // Вызываем функцию загрузки данных
-}, []); // Пустой массив зависимостей для однократного выполнения
+    fetchUserData();
+  }, []);
 
   const processRatingData = (data, startDate, endDate) => {
     const dateMap = {};
@@ -125,14 +141,6 @@ const MyProfile = () => {
     }
 
     return result;
-  };
-
-  const handleCreateClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCreateClose = () => {
-    setAnchorEl(null);
   };
 
   const handleTabChange = (event, newValue) => {
@@ -213,7 +221,7 @@ const MyProfile = () => {
               <Typography variant="h4">{user.username}</Typography>
               <Chip 
                 icon={<MilitaryTech />} 
-                label={`Рейтинг: ${user.rating || 0}`} 
+                label={`Рейтинг: ${user.elo_rating || 0}`} 
                 color="primary"
               />
             </Box>
@@ -389,7 +397,7 @@ const MyProfile = () => {
         </Box>
       </Paper>
 
-      <Tabs 
+<Tabs 
         value={activeTab} 
         onChange={handleTabChange}
         variant="fullWidth"
@@ -483,7 +491,7 @@ const MyProfile = () => {
                     <ListItemText
                       primary={pack.name}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
-                      secondary={`${pack.questions_count || 0} вопросов • Рейтинг: ${pack.rating || 0}`}
+                      secondary={`${pack.questions?.length || 0} вопросов`}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -532,7 +540,7 @@ const MyProfile = () => {
                     <ListItemText
                       primary={team.name}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
-                      secondary={`${team.members_count || 0} участников • Очки: ${team.team_score || 0}`}
+                      secondary={`${team.active_members?.length || 0} участников`}
                     />
                     {team.captain === user.id && (
                       <Chip 
