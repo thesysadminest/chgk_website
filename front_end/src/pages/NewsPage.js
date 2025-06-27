@@ -327,7 +327,6 @@ const NewsPage = () => {
 
   try {
     const csrfToken = getCookie('csrftoken');
-    if (!csrfToken) throw new Error('CSRF token not found');
 
     const currentVote = getCachedVote(messageId) || 0;
     

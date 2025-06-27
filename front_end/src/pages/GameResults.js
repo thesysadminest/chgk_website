@@ -122,7 +122,7 @@ const GameResults = () => {
   );
 
   return (
-    <Box sx={{ backgroundColor: theme.palette.background.default, height: '100vh', width: '100vw', alignItems: 'center', overflowX: 'hidden' }}>
+    <Box sx={{ backgroundColor: theme.palette.background.default, height: '100vh', width: '100vw', alignItems: 'center', overflowX: 'hidden', ml:-1 }}>
       <Container sx={{ p: 4, mt: 8}}>
         <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
         <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
